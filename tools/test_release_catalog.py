@@ -1,3 +1,6 @@
+import os
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -5,6 +8,23 @@ from tools.verify_release_catalog import compare_files
 
 
 class CatalogFiles(unittest.TestCase):
+    def test_verification_builds_generator_with_an_empty_cargo_target(self):
+        root = Path(__file__).resolve().parents[1]
+        parent = root / 'target'
+        parent.mkdir(exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=parent) as directory:
+            build = Path(directory) / 'build'
+            env = dict(os.environ, CARGO_TARGET_DIR=str(build))
+            env.pop('GITHUB_EVENT_PATH', None)
+            result = subprocess.run(
+                [sys.executable, '-B', str(root / 'tools/verify_release_catalog.py')],
+                cwd=root, env=env, capture_output=True, encoding='utf-8', timeout=300,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn('previous release identities verified', result.stdout)
+            program = 'xtask.exe' if os.name == 'nt' else 'xtask'
+            self.assertTrue((build / 'debug' / program).is_file())
+
     def test_tampering_missing_and_extra_files_are_rejected(self):
         parent = Path(__file__).resolve().parents[1] / 'target'
         parent.mkdir(exist_ok=True)
