@@ -658,5 +658,82 @@
         "bytes": 4627832
       }
     ]
+  },
+  {
+    "product_version": "1.0.0-alpha.10",
+    "source_commit": "a42f2aab7153f2a3e92f82f02fcdbfe34948e054",
+    "source_manifest_sha256": "46ea05186f4b8decf20d46381c6d4b2de6ccaec302e5eb44e2d783ebfd689a4e",
+    "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)",
+    "supported_formats": {
+      "cli_machine_interface": [
+        "1.0-alpha.5"
+      ],
+      "hook_protocol": [
+        "1.0-alpha.1",
+        "1.0-alpha.2"
+      ],
+      "pack_distribution": [
+        "1.0-alpha.2",
+        "1.0-alpha.3"
+      ],
+      "pack_source": [
+        "1.0-alpha.2",
+        "1.0-alpha.3",
+        "1.0-alpha.4"
+      ],
+      "persistence": [
+        "1.0-alpha.6"
+      ],
+      "revision_canonical": [
+        "1.0-alpha.1",
+        "1.0-alpha.2"
+      ],
+      "snapshot_bundle": [
+        "1.0-alpha.1"
+      ],
+      "snapshot_integrity": [
+        "1.0-alpha.1"
+      ]
+    },
+    "default_formats": {
+      "cli_machine_interface": "1.0-alpha.5",
+      "hook_protocol": "1.0-alpha.2",
+      "pack_distribution": "1.0-alpha.3",
+      "pack_source": "1.0-alpha.4",
+      "persistence": "1.0-alpha.6",
+      "revision_canonical": "1.0-alpha.2",
+      "snapshot_bundle": "1.0-alpha.1",
+      "snapshot_integrity": "1.0-alpha.1"
+    },
+    "artifacts": [
+      {
+        "platform": "windows-x86_64",
+        "flavor": "normal",
+        "url": "https://github.com/Pipapoen/pactrun/releases/download/v1.0.0-alpha.10/pactrun-1.0.0-alpha.10-windows-x86_64.zip",
+        "sha256": "4ac47e8360fe7173960a05adbb51df1d6a3f9a78e8ca776c69df390135ffc6e4",
+        "bytes": 4607145
+      },
+      {
+        "platform": "windows-x86_64",
+        "flavor": "test",
+        "url": "https://github.com/Pipapoen/pactrun/releases/download/v1.0.0-alpha.10/pactrun-test-1.0.0-alpha.10-windows-x86_64.zip",
+        "sha256": "52a192b0eaded67cd47f3e9fa7695581e51d60505ff0d4327a10971a8998365b",
+        "bytes": 4607155
+      },
+      {
+        "platform": "linux-x86_64",
+        "flavor": "normal",
+        "url": "https://github.com/Pipapoen/pactrun/releases/download/v1.0.0-alpha.10/pactrun-1.0.0-alpha.10-linux-x86_64.tar.gz",
+        "sha256": "f192cbbf5e6c3534b13d76719a33c16e5616855477b0ba526d1b0be77b595eb4",
+        "bytes": 4640427
+      },
+      {
+        "platform": "linux-x86_64",
+        "flavor": "test",
+        "url": "https://github.com/Pipapoen/pactrun/releases/download/v1.0.0-alpha.10/pactrun-test-1.0.0-alpha.10-linux-x86_64.tar.gz",
+        "sha256": "12b3a00646de0092b811d76ad7ba293cc11d6263bbfff233c7c3dc22162b8f65",
+        "bytes": 4640420
+      }
+    ]
   }
 ]
