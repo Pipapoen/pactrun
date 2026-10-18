@@ -6,13 +6,16 @@ title: Vocabulary
 
 | Term | Meaning | Details |
 | --- | --- | --- |
-| Package / Pack | Stable product lineage; Pack is the supported package kind | [System model](./system-model.md), [identity](../packages/identity.md) |
+| Package | Stable service-management product lineage, identified by a Package ID | [System model](./system-model.md), [identity](../packages/identity.md) |
+| Revision Pack | Installable bundle of one Revision's definition and files, Package ID and optional descriptions | [Revision Packs](../packages/revision-packs.md) |
 | Revision | Exact immutable operational definition and owned runtime content | [Object model](./objects.md), [Core format](../packages/revision-format.md) |
+| Revision ID | Content digest identifying a version within its Package; 64 lowercase hexadecimal digits in current public interfaces | [Identity](../packages/identity.md) |
 | Local name | User-assigned Package or Revision reference within a Store | [Local names and resolution](../packages/local-names.md) |
 | Instance | Long-lived managed object with stable identity and an active Revision | [Instance identity and state](../instances/identity-state.md) |
 | Managed Input Binding | Detached value whose authoritative bytes are owned by Pactrun | [Bindings and protection](../instances/bindings.md), [Input behavior](../instances/inputs-secrets.md) |
 | Secret | Protection and disclosure rules, not a claim that Pactrun is a secret vault | [System model](./system-model.md), [Input behavior](../instances/inputs-secrets.md) |
-| ServiceStorage / Managed Service Resource | Provided storage lifetime and separately service-authoritative live state | [Resource ownership](../instances/service-resources.md), [ServiceStorage execution](../instances/service-storage.md) |
+| ServiceStorage | Instance-scoped persistent allocation supplied by Pactrun for service or Hook use | [ServiceStorage execution](../instances/service-storage.md) |
+| Managed Service Resource | Separately identified service-owned file or directory declared within a ServiceStorage allocation | [Resource ownership](../instances/service-resources.md) |
 | Workspace | Execution-scoped scratch under granted Hook authority | [Hook authority](../interfaces/hooks.md) |
 | Plan | Compiled intent and checks, not a durable replay log | [Execution](../operations/execution.md) |
 | Run | Durable execution-attempt record, distinct from an ephemeral Plan | [Execution](../operations/execution.md), [behavior](../operations/actions-plans-runs.md) |

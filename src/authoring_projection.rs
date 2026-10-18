@@ -19,7 +19,7 @@ pub(super) fn parse_source(bytes: &[u8]) -> Result<VersionedPackSourceCandidate,
     crate::domain::VersionDomain::PackSource
         .require(&version)
         .map_err(AuthoringError::new)?;
-    if version == crate::domain::OPERATION_SOURCE_FORMAT {
+    if version == crate::domain::OPERATION_SOURCE_FORMAT || version == "1.0-alpha.4" {
         let candidate = super::operation::parse(bytes)?;
         return Ok(VersionedPackSourceCandidate {
             package_id: candidate.package_id,
@@ -36,7 +36,7 @@ pub(super) fn parse_source(bytes: &[u8]) -> Result<VersionedPackSourceCandidate,
     )?;
     root.remove("source_format");
     let package_id = PackageId::from_str(&string_scalar(take(&mut root, "package_id")?)?)
-        .map_err(AuthoringError::new)?;
+        .map_err(|e| AuthoringError::new(format!("pactrun.yaml package_id: {e}")))?;
     let json = revision_v2_json(text, take(&mut root, "revision")?)?;
     let bytes = serde_json::to_vec(&json).map_err(|e| AuthoringError::new(e.to_string()))?;
     let revision = project_service_revision_source(&bytes)
@@ -385,11 +385,12 @@ mod tests {
     // Verifies: PR-REQ-0331
     #[test]
     fn unsupported_source_header_is_selected_before_interpreting_future_body_fields() {
-        let error = super::parse_source(b"source_format: 1.0-alpha.4\nfuture_body: {}\n")
+        let error = super::parse_source(b"source_format: 1.0-alpha.5\nfuture_body: {}\n")
             .unwrap_err()
             .to_string();
         for part in [
             "pack_source",
+            "1.0-alpha.5",
             "1.0-alpha.4",
             "1.0-alpha.3",
             "1.0-alpha.2",

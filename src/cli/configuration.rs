@@ -318,13 +318,13 @@ mod tests {
             0
         );
         let value: serde_json::Value = serde_json::from_slice(&out).unwrap();
-        assert_eq!(value["format_version"], "1.0-alpha.3");
+        assert_eq!(value["format_version"], "1.0-alpha.5");
         assert!(value["command"].is_null());
         assert!(
             value["error"]["message"]
                 .as_str()
                 .unwrap()
-                .contains("machine interface")
+                .contains("--machine-version 1.0-alpha.5")
         );
         assert!(
             !String::from_utf8(out)

@@ -183,19 +183,19 @@ fn human_nested_capabilities_and_outputs_share_summary_blocks() {
 // Supporting coverage for PR-TEST-0683.
 #[test]
 fn human_migration_summaries_belong_to_exact_edges_not_whole_paths() {
-    let a = json!({"package_id":"package","content_digest":"sha256:a"});
-    let b = json!({"package_id":"package","content_digest":"sha256:b"});
-    let c = json!({"package_id":"package","content_digest":"sha256:c"});
-    let foreign = json!({"package_id":"other-package","content_digest":"sha256:b"});
+    let a = json!({"package_id":"package","revision_id":"a"});
+    let b = json!({"package_id":"package","revision_id":"b"});
+    let c = json!({"package_id":"package","revision_id":"c"});
+    let foreign = json!({"package_id":"other-package","revision_id":"b"});
     let mut value = json!({"candidates":[{"path_id":"mp1-example","unique_prefix_length":64,
         "edge_count":2,"revisions":[a,b,c]}],"next_after":null,"presentation":[
-        {"revision":foreign,"entries":[{"target":{"kind":"migration_edge","source_digest":"sha256:a"},"summary":"Wrong package"}]},
+        {"revision":foreign,"entries":[{"target":{"kind":"migration_edge","source_revision_id":"a"},"summary":"Wrong package"}]},
         {"revision":b,"entries":[
             {"target":{"kind":"revision"},"summary":"Not a path summary"},
-            {"target":{"kind":"migration_edge","source_digest":"sha256:wrong"},"summary":"Wrong edge"},
-            {"target":{"kind":"migration_edge","source_digest":"sha256:a"},"summary":"First edge."}
+            {"target":{"kind":"migration_edge","source_revision_id":"wrong"},"summary":"Wrong edge"},
+            {"target":{"kind":"migration_edge","source_revision_id":"a"},"summary":"First edge."}
         ]},
-        {"revision":c,"entries":[{"target":{"kind":"migration_edge","source_digest":"sha256:b"},"summary":"Second edge."}]}
+        {"revision":c,"entries":[{"target":{"kind":"migration_edge","source_revision_id":"b"},"summary":"Second edge."}]}
     ]});
     let text = show("instance migration-paths", &value);
     assert!(text.contains("STEP  SUMMARY"));
@@ -236,14 +236,15 @@ fn human_execution_views_show_targets_blockers_and_retained_input_roles() {
     );
     assert!(input.contains("instance") && input.contains("config") && input.contains("state"));
     let mut plan = json!({"preview":"not_admitted","action_id":"inspect","instance_id":"instance","expected_state_version":"state","access":"observe",
-        "revision":{"package_id":"package","content_digest":"sha256:revision"},"required_inputs_satisfied":false,"missing_input_ids":["config"],
+        "revision":{"package_id":"package","revision_id":"revision"},"required_inputs_satisfied":false,"missing_input_ids":["config"],
         "launch":{"kind":"interpreter","resolved_path":{"encoding":"utf8","value":"/host/with space/launcher"}},"terminal":"none"});
     let rendered = show("invoke", &plan);
     for fact in [
         "config",
         "inspect",
         "instance",
-        "package:revision",
+        "Package ID: package",
+        "Revision ID: revision",
         "/host/with space/launcher",
         "no Run created",
     ] {

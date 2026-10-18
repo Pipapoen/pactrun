@@ -67,6 +67,81 @@ fn install(app: &PactrunApplication, path: &Path) -> crate::application::Install
     .unwrap()
 }
 
+// Test-ID: PR-TEST-0810
+// Verifies: PR-REQ-0407, PR-REQ-0409
+#[test]
+fn revision_pack_ids_preserve_source_and_archive_identity_across_formats() {
+    let temp = roots();
+    let origin = PactrunApplication::open(store(temp.path(), "origin")).unwrap();
+    let destination = PactrunApplication::open(store(temp.path(), "destination")).unwrap();
+    let source = source(temp.path(), 1);
+    let runtime =
+        "files:\n  - {id: alpha, source: data.bin, path: lib/alpha.bin, executable: true}\n";
+    let package = "package_id: 00000000000000000000000000000011\n";
+    let old = format!(
+        "source_format: 1.0-alpha.3\n{package}revision: {{}}\nruntime_content:\n{}",
+        runtime
+            .lines()
+            .map(|line| format!("  {line}\n"))
+            .collect::<String>()
+    );
+    fs::write(source.join("pactrun.yaml"), old).unwrap();
+    let expected = install(&origin, &source).revision;
+    let current = format!(
+        "source_format: 1.0-alpha.4\n{package}revision:\n  runtime_content:\n{}",
+        runtime
+            .lines()
+            .map(|line| format!("    {line}\n"))
+            .collect::<String>()
+    );
+    fs::write(source.join("pactrun.yaml"), current).unwrap();
+    assert_eq!(install(&origin, &source).revision, expected);
+    let archive = temp.path().join("current.pack");
+    origin
+        .export_revision_pack(&expected, &archive, true, &ActionCancellation::default())
+        .unwrap();
+    let expanded = temp.path().join("expanded");
+    unpack(&archive, &expanded);
+    let descriptor = expanded.join(DESCRIPTOR);
+    let mut header: serde_json::Value =
+        serde_json::from_slice(&fs::read(&descriptor).unwrap()).unwrap();
+    assert_eq!(header["format_version"], "1.0-alpha.3");
+    assert_eq!(header["revision_id"], expected.content_digest.revision_id());
+    assert!(header.get("revision_digest").is_none());
+    assert_eq!(install(&destination, &archive).revision, expected);
+    header["revision_id"] = expected.content_digest.to_string().into();
+    fs::write(&descriptor, serde_json::to_vec(&header).unwrap()).unwrap();
+    assert!(
+        destination
+            .install_pack(
+                &expanded,
+                PackMetadataConflict::Reject,
+                &ActionCancellation::default()
+            )
+            .is_err()
+    );
+    header.as_object_mut().unwrap().remove("revision_id");
+    header["revision_digest"] = expected.content_digest.to_string().into();
+    header["format_version"] = "1.0-alpha.2".into();
+    fs::write(&descriptor, serde_json::to_vec(&header).unwrap()).unwrap();
+    assert_eq!(install(&destination, &expanded).revision, expected);
+    header["revision_id"] = expected.content_digest.revision_id().into();
+    fs::write(&descriptor, serde_json::to_vec(&header).unwrap()).unwrap();
+    assert!(
+        destination
+            .install_pack(
+                &expanded,
+                PackMetadataConflict::Reject,
+                &ActionCancellation::default()
+            )
+            .is_err()
+    );
+    fs::write(source.join("data.bin"), b"new version").unwrap();
+    let changed = install(&origin, &source).revision;
+    assert_eq!(changed.package_id, expected.package_id);
+    assert_ne!(changed.content_digest, expected.content_digest);
+}
+
 // Test-ID: PR-TEST-0594
 // Verifies: PR-REQ-0011, PR-REQ-0012, PR-REQ-0013, PR-REQ-0084
 #[test]
@@ -719,6 +794,16 @@ fn pack_metadata_dto_roundtrips_every_portable_variant() {
     let encoded = serde_json::to_vec(&crate::pack_metadata::Metadata::encode(&metadata)).unwrap();
     let decoded: crate::pack_metadata::Metadata = serde_json::from_slice(&encoded).unwrap();
     assert_eq!(decoded.decode().unwrap(), metadata);
+    let current = serde_json::to_vec(&crate::pack_metadata::Metadata::encode_version(
+        &metadata, true,
+    ))
+    .unwrap();
+    let decoded: crate::pack_metadata::Metadata = serde_json::from_slice(&current).unwrap();
+    assert_eq!(decoded.decode_version(true).unwrap(), metadata);
+    let wrong_version: crate::pack_metadata::Metadata = serde_json::from_slice(&current).unwrap();
+    assert!(wrong_version.decode_version(false).is_err());
+    let wrong_version: crate::pack_metadata::Metadata = serde_json::from_slice(&encoded).unwrap();
+    assert!(wrong_version.decode_version(true).is_err());
 }
 
 #[test]
@@ -916,7 +1001,7 @@ fn pack_cli_output_failure_reports_publication_truth() {
     drop(app);
     let output = temp.path().join("published.pack");
     let output_base = temp.path().join("published");
-    let reference = format!("exact:{}/{}", id.package_id, id.content_digest);
+    let reference = format!("{}:{}", id.package_id, id.content_digest.revision_id());
     let args = vec![
         "revision".into(),
         "export".into(),
@@ -946,7 +1031,7 @@ fn pack_cli_output_failure_reports_publication_truth() {
     let args = vec![
         "revision".into(),
         "export".into(),
-        format!("exact:{}/{}", id.package_id, id.content_digest).into(),
+        format!("{}:{}", id.package_id, id.content_digest.revision_id()).into(),
         "--output".into(),
         failed_base.into_os_string(),
     ];

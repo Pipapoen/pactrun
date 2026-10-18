@@ -4,7 +4,11 @@ title: Package and Revision Identity
 
 # Package and Revision Identity
 
-A Package ID identifies a lineage; a content digest identifies operational meaning. Their pair identifies an exact Revision. Presentation, provenance, and local trust are not part of that identity.
+A Package ID identifies a service-management product lineage. A Revision is one
+immutable version of its management definition and owned runtime content. Its
+Revision ID is the content digest, rendered as 64 lowercase hexadecimal digits
+within its Package. The full management key combines Package ID and Revision ID.
+Presentation, provenance, and local trust do not change either ID.
 
 ### PR-REQ-0011 - Stable Package lineage
 
@@ -32,9 +36,11 @@ bytes MUST remain outside the Revision digest.
 
 ### PR-REQ-0013 - Exact Revision identity
 
-An exact `RevisionIdentity` MUST be the pair of `PackageId` and
-`RevisionContentDigest`. Equal content digests under different Package IDs MUST
-remain distinct Revision identities.
+A Revision ID MUST be the existing content digest within one Package. The
+internal `RevisionIdentity` management key MUST retain both `PackageId` and
+`RevisionContentDigest`. Equal Revision IDs under different Package IDs MUST
+remain separately managed versions; naming the digest a Revision ID does not
+make it a globally unique Package-independent object key.
 
 **Verification: PR-TEST-0053, PR-TEST-0054, PR-TEST-0594.**
 
@@ -112,12 +118,14 @@ characters when rendered or parsed. Pactrun MUST generate new values using the
 operating system cryptographic random source. `InstanceStateVersion` MUST NOT
 expose arithmetic or ordering semantics.
 
-`RevisionContentDigest` MUST contain a SHA-256 result and use `sha256:` followed
-by 64 lowercase hexadecimal characters. `RevisionIdentity` MUST remain the
-structured pair of `PackageId` and `RevisionContentDigest`; a flattened display
-spelling is not a second identity. These primitives do not define a generic
-Serde representation; persistence and external interfaces specify their own
-representations.
+`RevisionContentDigest` MUST retain its SHA-256 bytes. Its frozen canonical,
+historical Hook and Snapshot codecs retain `sha256:` followed by 64 lowercase
+hexadecimal characters. Current public Revision IDs use the same 64 digits
+without that prefix under [the Revision Pack contract](./revision-packs.md).
+`RevisionIdentity` remains an internal structured Package/version key. These
+primitives do not define a generic Serde representation; each versioned codec
+specifies its own representation. Changing text presentation MUST NOT rehash or
+rewrite historical content.
 
 **Verification: PR-TEST-0039.**
 

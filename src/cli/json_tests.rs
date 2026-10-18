@@ -30,13 +30,13 @@ fn json_ok(root: &Path, args: &[&str]) -> serde_json::Value {
 fn json_install(root: &Path, source: &Path) -> String {
     let (code, value, err) = json_invoke(
         root,
-        vec!["pack".into(), "install".into(), source.as_os_str().into()],
+        vec!["revision".into(), "install".into(), source.as_os_str().into()],
     );
     assert_eq!(code, 0, "{value}; {err}");
     format!(
-        "exact:{}/{}",
+        "{}:{}",
         value["result"]["revision"]["package_id"].as_str().unwrap(),
-        value["result"]["revision"]["content_digest"]
+        value["result"]["revision"]["revision_id"]
             .as_str()
             .unwrap()
     )
@@ -47,9 +47,9 @@ fn installed_reference(bytes: &[u8]) -> String {
     assert_eq!(value["status"], "success");
     let revision = &value["result"]["revision"];
     format!(
-        "exact:{}/{}",
+        "{}:{}",
         revision["package_id"].as_str().unwrap(),
-        revision["content_digest"].as_str().unwrap()
+        revision["revision_id"].as_str().unwrap()
     )
 }
 
@@ -94,7 +94,7 @@ fn json_selection_parse_and_startup_errors_precede_storage() {
     assert!(!missing.exists());
     json_ok(&missing, &["--version"]);
     json_ok(&missing, &["--help"]);
-    json_ok(&missing, &["pack", "generate-id"]);
+    json_ok(&missing, &["package", "generate-id"]);
 }
 
 // Test-ID: PR-TEST-0558
@@ -165,7 +165,7 @@ fn json_management_catalog_and_raw_input_share_backend_facts() {
     json_ok(&root, &["input", "delete", "node", "config"]);
     let before_inspection = json_ok(&root, &["instance", "show", "node"]);
     for args in [
-        vec!["revision", "list"],
+        vec!["revision", "list", revision.split_once(':').unwrap().0],
         vec!["revision", "show", &revision],
         vec!["revision", "metadata", "show", &revision],
         vec!["instance", "history", "list"],
@@ -195,7 +195,7 @@ fn json_management_catalog_and_raw_input_share_backend_facts() {
             &["revision", field, "clear", &revision, "--expect", value],
         );
     }
-    let named_reference=format!("{}:{}",created["active_revision"]["package_id"].as_str().unwrap(),created["active_revision"]["content_digest"].as_str().unwrap().strip_prefix("sha256:").unwrap());
+    let named_reference=format!("{}:{}",created["active_revision"]["package_id"].as_str().unwrap(),created["active_revision"]["revision_id"].as_str().unwrap());
     json_ok(&root,&["revision","rename",&named_reference,"alias"]);
     json_ok(&root,&["revision","show",&format!("{}:alias",created["active_revision"]["package_id"].as_str().unwrap())]);
     json_ok(&root,&["revision","unname",&named_reference]);
@@ -710,10 +710,11 @@ fn unsupported_pack_contract_refuses_public_install_without_changing_existing_ob
         &["instance", "create", "kept", "--revision", &revision],
     );
     let before = json_ok(&root, &["instance", "show", "kept"]);
-    let revisions = json_ok(&root, &["revision", "list"]);
+    let package = revision.split_once(':').unwrap().0;
+    let revisions = json_ok(&root, &["revision", "list", package]);
     let service = temp.path().join("service-sentinel");
     fs::write(&service, b"not managed by installation").unwrap();
-    for token in ["1.0-alpha.4", "2.0", "1", "1.0-alpha.01"] {
+    for token in ["1.0-alpha.5", "2.0", "1", "1.0-alpha.01"] {
         fs::write(
             source.join("pactrun.yaml"),
             format!("source_format: {token}\nfuture_body: {{}}\n"),
@@ -721,20 +722,20 @@ fn unsupported_pack_contract_refuses_public_install_without_changing_existing_ob
         .unwrap();
         let (code, response, stderr) = json_invoke(
             &root,
-            vec!["pack".into(), "install".into(), source.as_os_str().into()],
+            vec!["revision".into(), "install".into(), source.as_os_str().into()],
         );
         assert_eq!(code, 1, "{response}");
         assert_eq!(response["status"], "failure");
         assert!(stderr.is_empty());
-        if token == "1.0-alpha.4" {
+        if token == "1.0-alpha.5" {
             let diagnostic = response["error"].to_string();
             assert!(diagnostic.contains("1.0-alpha.2"), "{diagnostic}");
             assert!(diagnostic.contains("1.0-alpha.3"), "{diagnostic}");
-            assert!(diagnostic.contains("1.0-alpha.4"), "{diagnostic}");
+            assert!(diagnostic.contains("1.0-alpha.5"), "{diagnostic}");
             assert!(!diagnostic.contains("minimum product"));
         }
         assert_eq!(json_ok(&root, &["instance", "show", "kept"]), before);
-        assert_eq!(json_ok(&root, &["revision", "list"]), revisions);
+        assert_eq!(json_ok(&root, &["revision", "list", package]), revisions);
         assert_eq!(fs::read(&service).unwrap(), b"not managed by installation");
     }
 }

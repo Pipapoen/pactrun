@@ -53,28 +53,229 @@ fn invoke(root: &Path, args: &[&str]) -> (i32, String, String) {
         String::from_utf8(err).unwrap(),
     )
 }
+
+fn revision_fixture(count: u8) -> (tempfile::TempDir, PathBuf, Vec<RevisionIdentity>) {
+    let (temp, root, _) = fixture(0);
+    let p = PactrunPersistence::open(&root).unwrap();
+    let mut ids = Vec::new();
+    for number in 0..count {
+        let json = serde_json::json!({"format_version":"1.0-alpha.1","inputs":[{"id":format!("input{number}"),"required":false,"protection":"normal"}],"actions":[],"migrations":[],"service_storages":[],"service_resources":[]});
+        let core = crate::revision_canonical::project_service_revision_source(
+            &serde_json::to_vec(&json).unwrap(),
+        )
+        .unwrap();
+        let runtime =
+            project_runtime_content_closure_v1(RuntimeContentProjectionInputV1 { files: vec![] })
+                .unwrap();
+        let content = crate::revision_canonical::validate_service_revision_content(core, runtime)
+            .unwrap()
+            .into();
+        ids.push(
+            p.persist_versioned_revision_with_metadata(
+                PackageId::from_bytes([42; 16]),
+                &content,
+                &[],
+                &RevisionMetadataMutationBatch::new([]).unwrap(),
+            )
+            .unwrap(),
+        );
+    }
+    (temp, root, ids)
+}
 fn ok(root: &Path, args: &[&str]) -> String {
     let (code, out, err) = invoke(root, args);
     assert_eq!(code, 0, "{args:?}: {err}");
     out
 }
 
+// Test-ID: PR-TEST-0811
+// Verifies: PR-REQ-0410
+#[test]
+fn package_catalog_groups_versions_and_scopes_revision_pages() {
+    let (temp, root, ids) = fixture(3);
+    let package = ids[0].package_id.to_string();
+    ok(&root, &["package", "rename", &package, "app"]);
+    let source = temp.path().join("new-version");
+    fs::create_dir(&source).unwrap();
+    fs::write(
+        source.join("pactrun.yaml"),
+        format!("source_format: 1.0-alpha.4\npackage_id: {package}\nrevision: {{}}\n"),
+    )
+    .unwrap();
+    ok(&root, &["revision", "install", source.to_str().unwrap()]);
+    let listed: serde_json::Value = serde_json::from_str(&ok(
+        &root,
+        &["--format", "json", "package", "list", "--limit", "2"],
+    ))
+    .unwrap();
+    let items = listed["result"]["items"].as_array().unwrap();
+    assert_eq!(items.len(), 2);
+    assert_eq!(items[0]["package_id"], package);
+    assert_eq!(items[0]["package_name"], "app");
+    assert_eq!(items[0]["revision_count"], "2");
+    let after = listed["result"]["next"].as_str().unwrap();
+    let rest: serde_json::Value = serde_json::from_str(&ok(
+        &root,
+        &["--format", "json", "package", "list", "--after", after],
+    ))
+    .unwrap();
+    assert_eq!(rest["result"]["items"].as_array().unwrap().len(), 1);
+    let shown: serde_json::Value =
+        serde_json::from_str(&ok(&root, &["--format", "json", "package", "show", "app"])).unwrap();
+    assert_eq!(shown["result"]["revision_count"], "2");
+    assert!(shown["result"].get("metadata").is_none());
+    let versions: serde_json::Value = serde_json::from_str(&ok(
+        &root,
+        &[
+            "--format", "json", "revision", "list", "app", "--limit", "1",
+        ],
+    ))
+    .unwrap();
+    assert_eq!(versions["result"]["items"].as_array().unwrap().len(), 1);
+    assert_eq!(
+        versions["result"]["items"][0]["revision"]["package_id"],
+        package
+    );
+    let cursor = versions["result"]["next"].as_str().unwrap();
+    let rest: serde_json::Value = serde_json::from_str(&ok(
+        &root,
+        &[
+            "--format", "json", "revision", "list", "app", "--after", cursor,
+        ],
+    ))
+    .unwrap();
+    assert_eq!(rest["result"]["items"].as_array().unwrap().len(), 1);
+    assert_eq!(
+        rest["result"]["items"][0]["revision"]["package_id"],
+        package
+    );
+    let (code, _, error) = invoke(
+        &root,
+        &[
+            "revision",
+            "list",
+            &ids[1].package_id.to_string(),
+            "--after",
+            cursor,
+        ],
+    );
+    assert_ne!(code, 0);
+    assert!(error.contains("another Package"));
+    let human = ok(&root, &["revision", "list", "app", "--limit", "1"]);
+    assert!(human.contains(&format!("pactrun revision list {package} --limit")));
+    assert_eq!(invoke(&root, &["revision", "list"]).0, 2);
+    ok(&root, &["package", "rename", &package, "01010101"]);
+    assert_ne!(invoke(&root, &["package", "show", "01010101"]).0, 0);
+    assert_ne!(invoke(&root, &["revision", "list", "01010101"]).0, 0);
+}
+
+// Test-ID: PR-TEST-0812
+// Verifies: PR-REQ-0410
+#[test]
+fn package_queries_and_removed_commands_do_not_create_missing_stores() {
+    let temp = tempfile::tempdir_in(Path::new(env!("CARGO_MANIFEST_DIR")).join("target")).unwrap();
+    let root = temp.path().join("missing");
+    assert!(ok(&root, &["package", "list"]).contains("No Packages"));
+    let id = ok(&root, &["package", "generate-id"]);
+    assert_eq!(id.trim().len(), 32);
+    assert!(id.trim().parse::<PackageId>().is_ok());
+    assert_ne!(invoke(&root, &["package", "show", "missing"]).0, 0);
+    assert_ne!(invoke(&root, &["revision", "list", "missing"]).0, 0);
+    for (args, replacement) in [
+        (vec!["pack", "generate-id"], "package generate-id"),
+        (vec!["pack", "install", "missing"], "revision install"),
+    ] {
+        let (code, _, error) = invoke(&root, &args);
+        assert_eq!(code, 2);
+        assert!(error.contains(replacement));
+    }
+    assert!(!root.exists());
+}
+
+// Test-ID: PR-TEST-0813
+// Verifies: PR-REQ-0411
+#[test]
+fn public_revision_ids_are_bare_and_old_machine_contracts_are_refused() {
+    let (_temp, root, ids) = fixture(1);
+    let version: serde_json::Value =
+        serde_json::from_str(&ok(&root, &["--format", "json", "--version"])).unwrap();
+    assert_eq!(version["format_version"], "1.0-alpha.5");
+    let response: serde_json::Value = serde_json::from_str(&ok(
+        &root,
+        &["--format", "json", "revision", "show", &exact_text(&ids[0])],
+    ))
+    .unwrap();
+    let id = &response["result"]["revision"];
+    assert_eq!(id["package_id"], ids[0].package_id.to_string());
+    assert_eq!(id["revision_id"], ids[0].content_digest.revision_id());
+    assert!(id.get("content_digest").is_none());
+    assert!(id.get("revision_content_digest").is_none());
+    for old in ["1.0-alpha.3", "1.0-alpha.4"] {
+        let (code, out, _) = invoke(
+            &root,
+            &[
+                "--format",
+                "json",
+                "--machine-version",
+                old,
+                "package",
+                "generate-id",
+            ],
+        );
+        assert_eq!(code, 2);
+        let failure: serde_json::Value = serde_json::from_str(&out).unwrap();
+        assert_eq!(failure["format_version"], "1.0-alpha.5");
+        assert!(
+            failure["error"]["message"]
+                .as_str()
+                .unwrap()
+                .contains("1.0-alpha.5")
+        );
+    }
+    let note = "sha256:author-text-is-not-a-revision-id";
+    ok(
+        &root,
+        &[
+            "revision",
+            "note",
+            "set",
+            &exact_text(&ids[0]),
+            "--value",
+            note,
+            "--expect-absent",
+        ],
+    );
+    let raw = ok(
+        &root,
+        &[
+            "--format",
+            "json",
+            "revision",
+            "note",
+            "show",
+            &exact_text(&ids[0]),
+        ],
+    );
+    assert!(raw.contains(note));
+}
+
 // Test-ID: PR-TEST-0529
 // Verifies: PR-REQ-0353, PR-REQ-0118
 #[test]
 fn catalog_pages_are_bounded_ordered_and_continue_after_deleted_cursors() {
-    let (_temp, root, ids) = fixture(51);
+    let (_temp, root, ids) = revision_fixture(51);
+    let package = ids[0].package_id.to_string();
     let db = rusqlite::Connection::open(root.join("database/pactrun.sqlite3")).unwrap();
     for (index, id) in ids.iter().enumerate() {
         db.execute(
-            "UPDATE revision_installations SET installed_at_unix_ms=?1 WHERE package_id=?2",
-            rusqlite::params![index as i64 * 1000, id.package_id.as_bytes().as_slice()],
+            "UPDATE revision_installations SET installed_at_unix_ms=?1 WHERE package_id=?2 AND revision_content_digest=?3",
+            rusqlite::params![index as i64 * 1000, id.package_id.as_bytes().as_slice(), id.content_digest.as_bytes().as_slice()],
         )
         .unwrap();
     }
-    let first = ok(&root, &["revision", "list", "--no-trunc"]);
+    let first = ok(&root, &["revision", "list", &package, "--no-trunc"]);
     assert!(first.contains("50 records shown."));
-    assert!(!first.contains(&ids[0].package_id.to_string()));
+    assert!(!first.contains(&ids[0].content_digest.revision_id()));
     let after = RevisionCursor {
         identity: ids[1].clone(),
         installed_at_unix_ms: Some(1000),
@@ -84,9 +285,16 @@ fn catalog_pages_are_bounded_ordered_and_continue_after_deleted_cursors() {
     ok(&root, &["revision", "delete", &exact_text(&ids[1])]);
     let last = ok(
         &root,
-        &["revision", "list", "--after", &after, "--no-trunc"],
+        &[
+            "revision",
+            "list",
+            &package,
+            "--after",
+            &after,
+            "--no-trunc",
+        ],
     );
-    assert!(last.contains(&ids[0].package_id.to_string()));
+    assert!(last.contains(&ids[0].content_digest.revision_id()));
     assert!(last.contains("1 record shown."));
     assert!(!last.contains("More results"));
     let p = PactrunPersistence::open_read_only(&root).unwrap();
@@ -98,7 +306,7 @@ fn catalog_pages_are_bounded_ordered_and_continue_after_deleted_cursors() {
     );
     assert!(p.catalog_revisions(0, None).is_err());
     assert!(p.catalog_revisions(501, None).is_err());
-    let short = ok(&root, &["revision", "list", "--limit", "1"]);
+    let short = ok(&root, &["revision", "list", &package, "--limit", "1"]);
     let columns: Vec<_> = short.lines().nth(1).unwrap().split_whitespace().collect();
     assert!(!columns[0].contains("..."));
     assert!(!columns[1].contains("..."));
@@ -106,7 +314,8 @@ fn catalog_pages_are_bounded_ordered_and_continue_after_deleted_cursors() {
     assert!(ok(&root, &["revision", "show", reference]).contains("Core format: 1.0-alpha.1"));
     let show = ok(&root, &["revision", "show", &exact_text(&ids[0])]);
     assert!(show.contains("Core format: 1.0-alpha.1"));
-    assert!(show.contains(&exact_text(&ids[0])));
+    assert!(show.contains(&package));
+    assert!(show.contains(&ids[0].content_digest.revision_id()));
 }
 
 // Test-ID: PR-TEST-0678
@@ -149,9 +358,9 @@ fn revision_catalog_orders_unknown_times_last_and_retains_deleted_cursor_positio
     );
     assert!(second.next.is_none());
     assert!(second.items[1].local.installed_at_unix_ms.is_none());
-    let shown = ok(&root, &["revision", "list", "--after", &cursor.to_string()]);
+    let shown = ok(&root, &["revision", "list", &ids[1].package_id.to_string()]);
     assert!(shown.contains("1970-01-01T00:00:01Z"));
-    assert!(shown.contains("Unknown"));
+    assert!(ok(&root, &["revision", "list", &ids[2].package_id.to_string()]).contains("Unknown"));
     let writer = PactrunPersistence::open(&root).unwrap();
     writer
         .rename_package(
@@ -195,7 +404,9 @@ fn catalog_local_mutations_require_semantic_cas_and_do_not_enforce_trust() {
     );
     ok(&root, &["revision", "rename", &a, "current"]);
     ok(&root, &["revision", "rename", &a, "current"]);
-    assert!(ok(&root, &["revision", "show", "production:current"]).contains(&a));
+    let shown = ok(&root, &["revision", "show", "production:current"]);
+    assert!(shown.contains(&ids[0].package_id.to_string()));
+    assert!(shown.contains(&ids[0].content_digest.revision_id()));
     assert_eq!(
         invoke(
             &root,
@@ -220,7 +431,9 @@ fn catalog_local_mutations_require_semantic_cas_and_do_not_enforce_trust() {
         ],
     );
     ok(&root, &["revision", "rename", &b, "current"]);
-    assert!(ok(&root, &["revision", "show", "production:current"]).contains(&b));
+    let shown = ok(&root, &["revision", "show", "production:current"]);
+    assert!(shown.contains(&ids[1].package_id.to_string()));
+    assert!(shown.contains(&ids[1].content_digest.revision_id()));
     ok(&root, &["revision", "unname", &b]);
     ok(&root, &["revision", "unname", &b]);
     let text = "已驗證\nnext\u{1b}[31m";
@@ -375,13 +588,20 @@ fn catalog_metadata_preserves_claim_sources_and_refuses_ambiguous_resolution() {
             &["revision", "rename", &exact_text(revision), "stable"],
         );
     }
-    let (code, _, err) = invoke(&root, &["revision", "show", "00000000:stable"]);
+    let (code, output, _) = invoke(
+        &root,
+        &["--format", "json", "revision", "show", "00000000:stable"],
+    );
     assert_eq!(code, 1);
-    assert!(err.contains("resolution.ambiguous_reference"));
+    let error: serde_json::Value = serde_json::from_str(&output).unwrap();
+    assert_eq!(error["error"]["reference"]["owner"], "resolution");
+    assert_eq!(error["error"]["reference"]["code"], "ambiguous_reference");
+    assert_eq!(error["result"]["candidates"].as_array().unwrap().len(), 2);
     for revision in &ids {
         let reference = format!("{}:stable", revision.package_id);
         let shown = ok(&root, &["revision", "show", &reference]);
-        assert!(shown.contains(&exact_text(revision)));
+        assert!(shown.contains(&revision.package_id.to_string()));
+        assert!(shown.contains(&revision.content_digest.revision_id()));
     }
     assert_ne!(invoke(&root, &["revision", "show", "00000000:Stable"]).0, 0);
     assert_ne!(
@@ -441,10 +661,10 @@ fn catalog_rejects_invalid_options_before_storage_and_queries_do_not_bootstrap()
     let absent = root.join("absent");
     let revision = exact_text(&ids[0]);
     for args in [
-        vec!["revision", "list", "--limit", "0"],
-        vec!["revision", "list", "--limit", "501"],
-        vec!["revision", "list", "--no-trunc", "--no-trunc"],
-        vec!["revision", "list", "--after", "alias:x"],
+        vec!["revision", "list", "app", "--limit", "0"],
+        vec!["revision", "list", "app", "--limit", "501"],
+        vec!["revision", "list", "app", "--no-trunc", "--no-trunc"],
+        vec!["revision", "list", "app", "--after", "alias:x"],
         vec!["revision", "show", "exact:123/sha256:123"],
         vec![
             "revision",
@@ -468,7 +688,7 @@ fn catalog_rejects_invalid_options_before_storage_and_queries_do_not_bootstrap()
         assert_eq!(invoke(&absent, &args).0, 2, "{args:?}");
     }
     for args in [
-        vec!["revision", "list"],
+        vec!["package", "list"],
         vec!["run", "list"],
         vec!["instance", "history", "list"],
         vec!["instance", "deletion", "list"],
@@ -502,11 +722,14 @@ fn catalog_output_failure_is_read_only_and_control_text_is_escaped() {
             Ok(())
         }
     }
-    let command = CatalogCommand::Revisions(PageOptions {
-        limit: 50,
-        after: None,
-        no_trunc: false,
-    });
+    let command = CatalogCommand::Revisions(
+        LocalSelector::parse("00000000000000000000000000000000").unwrap(),
+        PageOptions {
+            limit: 50,
+            after: None,
+            no_trunc: false,
+        },
+    );
     let capture = reply::Capture::new("revision list", false, reply::DisplayOptions::default());
     execute(command, &root, reply::OutputContext(&capture)).unwrap();
     assert_eq!(
@@ -581,7 +804,10 @@ fn catalog_concurrent_cas_has_one_winner_and_snapshot_queries_reject_corruption(
         .0,
         1
     );
-    assert_eq!(invoke(&root, &["revision", "list"]).0, 1);
+    assert_eq!(
+        invoke(&root, &["revision", "list", &ids[0].package_id.to_string()]).0,
+        1
+    );
 }
 
 // Test-ID: PR-TEST-0790

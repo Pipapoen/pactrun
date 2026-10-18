@@ -133,7 +133,7 @@ fn accepted_run_links_core_trace_without_recording_hook_terminal_text() {
     fs::write(source.join("pactrun.yaml"), format!("source_format: 1.0-alpha.3\npackage_id: 000000000000000000000000000000a8\nrevision:\n  inputs: []\n  actions:\n    - id: inspect\n      access: observe\n      parameters: []\n      outputs: []\n      hook:\n        protocol_version: 1.0-alpha.2\n        launch: {{kind: direct, executable: worker}}\n        args: ['--exact', 'trace_native_worker', '--nocapture', '--test-threads=1']\n        io: {{terminal: output}}\nruntime_content:\n  files:\n    - {{id: worker, source: {worker}, path: bin/{worker}, executable: true}}\n")).unwrap();
     let installed = fixture
         .command()
-        .args(["--format", "json", "pack", "install"])
+        .args(["--format", "json", "revision", "install"])
         .arg(&source)
         .output()
         .unwrap();
@@ -202,7 +202,7 @@ fn detailed_input_reads_are_real_events_without_changing_secret_bytes() {
     fs::write(source.join("pactrun.yaml"), "source_format: 1.0-alpha.3\npackage_id: 000000000000000000000000000000b8\nrevision:\n  inputs: [{id: config, protection: secret}]\nruntime_content: {}\n").unwrap();
     let installed = fixture
         .command()
-        .args(["--format", "json", "pack", "install"])
+        .args(["--format", "json", "revision", "install"])
         .arg(&source)
         .output()
         .unwrap();

@@ -3,19 +3,18 @@ use super::*;
 use crate::domain::*;
 
 impl PactrunApplication {
+    pub(crate) fn matching_revisions(
+        &self,
+        reference: &LocalRevisionReference,
+    ) -> Result<IdentityMatches, ApplicationError> {
+        Ok(self.persistence.matching_revisions(reference)?)
+    }
     pub(crate) fn identity_prefix(
         &self,
         kind: CatalogIdentityKind,
         prefix: &str,
     ) -> Result<IdentityMatches, ApplicationError> {
         Ok(self.persistence.identity_prefix(kind, prefix)?)
-    }
-    pub(crate) fn revision_prefix(
-        &self,
-        package: &str,
-        digest: &str,
-    ) -> Result<IdentityMatches, ApplicationError> {
-        Ok(self.persistence.revision_prefix(package, digest)?)
     }
 
     pub(crate) fn inspect_retirements(
@@ -74,12 +73,31 @@ impl PactrunApplication {
     ) -> Result<RevisionCatalogEntry, ApplicationError> {
         Ok(self.persistence.catalog_resolve_revision(selector)?)
     }
-    pub(crate) fn catalog_revisions(
+
+    pub(crate) fn catalog_packages(
         &self,
+        limit: usize,
+        after: Option<PackageId>,
+    ) -> Result<CatalogPage<PackageCatalogEntry, PackageId>, ApplicationError> {
+        Ok(self.persistence.catalog_packages(limit, after)?)
+    }
+
+    pub(crate) fn catalog_package(
+        &self,
+        id: PackageId,
+    ) -> Result<PackageCatalogEntry, ApplicationError> {
+        Ok(self.persistence.catalog_package(id)?)
+    }
+
+    pub(crate) fn catalog_package_revisions(
+        &self,
+        package: PackageId,
         limit: usize,
         after: Option<&RevisionCursor>,
     ) -> Result<CatalogPage<RevisionCatalogEntry, RevisionCursor>, ApplicationError> {
-        Ok(self.persistence.catalog_revisions(limit, after)?)
+        Ok(self
+            .persistence
+            .catalog_package_revisions(package, limit, after)?)
     }
     pub(crate) fn catalog_history(
         &self,

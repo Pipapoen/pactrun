@@ -34,18 +34,18 @@ fn install(root: &Path, source: &Path, edges: &[(&str, bool)]) -> String {
         "  migrations: []\n".to_owned()
     } else {
         format!("  migrations:\n{}", edges.iter().map(|(revision, required)| format!(
-            "    - source_revision_digest: {}\n      transitions: []\n      requires_source: {}\n      requires_target: []\n      produces_target: []\n",
-            revision.rsplit('/').next().unwrap(), if *required { "[{role: active, input_id: config}]" } else { "[]" })).collect::<String>())
+            "    - source_revision_digest: sha256:{}\n      transitions: []\n      requires_source: {}\n      requires_target: []\n      produces_target: []\n",
+            revision.rsplit(':').next().unwrap(), if *required { "[{role: active, input_id: config}]" } else { "[]" })).collect::<String>())
     };
     fs::write(source.join("pactrun.yaml"), format!("source_format: 1.0-alpha.2\npackage_id: 00000000000000000000000000000077\nrevision:\n  inputs:\n    - id: config\n      protection: secret\n  actions: []\n{edges}runtime_content:\n  files: []\n")).unwrap();
     installed_reference(root, source)
 }
 fn installed_reference(root: &Path, source: &Path) -> String {
-    let value = json_result(root, &["pack", "install", source.to_str().unwrap()]);
+    let value = json_result(root, &["revision", "install", source.to_str().unwrap()]);
     format!(
-        "exact:{}/{}",
+        "{}:{}",
         value["revision"]["package_id"].as_str().unwrap(),
-        value["revision"]["content_digest"].as_str().unwrap()
+        value["revision"]["revision_id"].as_str().unwrap()
     )
 }
 fn json_result(root: &Path, args: &[&str]) -> serde_json::Value {
@@ -182,18 +182,18 @@ fn incomplete_migration_is_success_with_readiness_reported_in_human_and_json_out
             &[
                 "--format",
                 "json",
-                "pack",
+                "revision",
                 "install",
                 f.source.to_str().unwrap(),
             ],
         ))
         .unwrap();
         let target = format!(
-            "exact:{}/{}",
+            "{}:{}",
             installed["result"]["revision"]["package_id"]
                 .as_str()
                 .unwrap(),
-            installed["result"]["revision"]["content_digest"]
+            installed["result"]["revision"]["revision_id"]
                 .as_str()
                 .unwrap()
         );
@@ -297,7 +297,7 @@ fn acquisition_diagnostics_are_typed_redacted_and_never_accept_a_run() {
     let f = setup(false);
     let before = successful(&f.root, &["instance", "show", "demo"]);
     let missing = f.source.join("private-host-path-and-secret-sentinel");
-    let digest = f.b.rsplit('/').next().unwrap();
+    let digest = f.b.rsplit(':').next().unwrap();
     let input = format!("{digest}/config={}", missing.display());
     let base = [
         "instance",
@@ -343,7 +343,7 @@ fn acquisition_diagnostics_are_typed_redacted_and_never_accept_a_run() {
         assert!(value["result"].is_null());
         let diagnostic = &value["error"]["diagnostic"];
         assert_eq!(diagnostic["kind"], "migration_input_acquisition");
-        assert_eq!(diagnostic["target_revision"]["content_digest"], digest);
+        assert_eq!(diagnostic["target_revision"]["revision_id"], digest);
         assert_eq!(
             diagnostic["target_revision"]["package_id"],
             "00000000000000000000000000000077"
@@ -410,7 +410,7 @@ fn acquisition_distinguishes_open_permissions_and_staging_read_failure() {
     fs::set_permissions(&private, fs::Permissions::from_mode(0o000)).unwrap();
     let input = format!(
         "{}/config={}",
-        f.b.rsplit('/').next().unwrap(),
+        f.b.rsplit(':').next().unwrap(),
         private.display()
     );
     let output = command(
@@ -438,7 +438,7 @@ fn acquisition_distinguishes_open_permissions_and_staging_read_failure() {
     assert_eq!(value["error"]["diagnostic"]["phase"], "open_source");
     let input = format!(
         "{}/config={}",
-        f.b.rsplit('/').next().unwrap(),
+        f.b.rsplit(':').next().unwrap(),
         f.source.display()
     );
     let staged = command(
@@ -499,7 +499,7 @@ fn operator_plan_never_opens_files_and_conflicts_are_checked_before_acquisition(
     let absent = f.source.join("not-present=still not present");
     let input = format!(
         "{}/config={}",
-        &f.b.rsplit('/').next().unwrap()[..15],
+        &f.b.rsplit(':').next().unwrap()[..15],
         absent.display()
     );
     let plan = successful(
@@ -523,7 +523,7 @@ fn operator_plan_never_opens_files_and_conflicts_are_checked_before_acquisition(
     assert_no_execution(&f.root, &before);
     let conflict = format!(
         "{}/config={}",
-        f.c.rsplit('/').next().unwrap(),
+        f.c.rsplit(':').next().unwrap(),
         absent.display()
     );
     let result = command(
@@ -573,7 +573,7 @@ fn native_operator_file_paths_and_empty_values_survive_a_chained_migration() {
         fs::write(&file, bytes).unwrap();
         let input = format!(
             "{}/config={}",
-            f.b.rsplit('/').next().unwrap(),
+            f.b.rsplit(':').next().unwrap(),
             file.display()
         );
         let result = json_result(
@@ -625,7 +625,7 @@ fn operator_acquisition_and_invalid_target_fail_without_acceptance() {
     let missing = f.source.join("missing");
     let input = format!(
         "{}/config={}",
-        f.b.rsplit('/').next().unwrap(),
+        f.b.rsplit(':').next().unwrap(),
         missing.display()
     );
     let args = [
@@ -646,7 +646,7 @@ fn operator_acquisition_and_invalid_target_fail_without_acceptance() {
     );
     let wrong = format!(
         "{}/config={}",
-        f.a.rsplit('/').next().unwrap(),
+        f.a.rsplit(':').next().unwrap(),
         missing.display()
     );
     let result = command(
@@ -1048,13 +1048,13 @@ fn real_cli_executes_selected_direct_and_chained_paths_and_shows_durable_runs() 
             inspection["migration_progress"]["committed_edges"],
             edge_count
         );
-        let target_digest = f.c.rsplit('/').next().unwrap();
+        let target_digest = f.c.rsplit(':').next().unwrap();
         assert_eq!(
-            inspection["migration_progress"]["boundary_revision"]["content_digest"],
+            inspection["migration_progress"]["boundary_revision"]["revision_id"],
             target_digest
         );
         assert_eq!(
-            json_result(&f.root, &["instance", "show", "demo"])["active_revision"]["content_digest"],
+            json_result(&f.root, &["instance", "show", "demo"])["active_revision"]["revision_id"],
             target_digest
         );
         assert!(successful(&f.root, &["run", "list", "demo"]).contains("Migration"));
@@ -1086,7 +1086,7 @@ fn unsupported_hook_protocol_suffix_does_not_execute_a_declarative_prefix() {
     let f = setup(false);
     let before = successful(&f.root, &["instance", "show", "demo"]);
     fs::write(f.source.join("tool"), b"must never be launched").unwrap();
-    fs::write(f.source.join("pactrun.yaml"),format!("source_format: 1.0-alpha.2\npackage_id: 00000000000000000000000000000077\nrevision:\n  inputs: []\n  actions: []\n  migrations:\n    - source_revision_digest: {}\n      transitions: []\n      requires_source: []\n      requires_target: []\n      produces_target: []\n      hook:\n        protocol_version: 1.0-alpha.1\n        launch: {{ kind: direct, executable: tool }}\n        args: []\n        io: {{ terminal: none }}\nruntime_content:\n  files:\n    - {{ id: tool, source: tool, path: bin/tool, executable: true }}\n",f.c.rsplit('/').next().unwrap())).unwrap();
+    fs::write(f.source.join("pactrun.yaml"),format!("source_format: 1.0-alpha.2\npackage_id: 00000000000000000000000000000077\nrevision:\n  inputs: []\n  actions: []\n  migrations:\n    - source_revision_digest: sha256:{}\n      transitions: []\n      requires_source: []\n      requires_target: []\n      produces_target: []\n      hook:\n        protocol_version: 1.0-alpha.1\n        launch: {{ kind: direct, executable: tool }}\n        args: []\n        io: {{ terminal: none }}\nruntime_content:\n  files:\n    - {{ id: tool, source: tool, path: bin/tool, executable: true }}\n",f.c.rsplit(':').next().unwrap())).unwrap();
     let manifest = fs::read_to_string(f.source.join("pactrun.yaml")).unwrap();
     fs::write(
         f.source.join("pactrun.yaml"),
@@ -1134,7 +1134,7 @@ fn real_cli_requires_declassification_authorization_and_releases_only_the_target
             data.to_str().unwrap(),
         ],
     );
-    fs::write(f.source.join("pactrun.yaml"),format!("source_format: 1.0-alpha.2\npackage_id: 00000000000000000000000000000077\nrevision:\n  inputs:\n    - {{ id: released, required: true }}\n  actions: []\n  migrations:\n    - source_revision_digest: {}\n      transitions:\n        - {{ kind: declassify, source: {{ role: active, input_id: config }}, target_input_id: released }}\n      requires_source: [{{role: active, input_id: config}}]\n      requires_target: []\n      produces_target: []\nruntime_content:\n  files: []\n",f.a.rsplit('/').next().unwrap())).unwrap();
+    fs::write(f.source.join("pactrun.yaml"),format!("source_format: 1.0-alpha.2\npackage_id: 00000000000000000000000000000077\nrevision:\n  inputs:\n    - {{ id: released, required: true }}\n  actions: []\n  migrations:\n    - source_revision_digest: sha256:{}\n      transitions:\n        - {{ kind: declassify, source: {{ role: active, input_id: config }}, target_input_id: released }}\n      requires_source: [{{role: active, input_id: config}}]\n      requires_target: []\n      produces_target: []\nruntime_content:\n  files: []\n",f.a.rsplit(':').next().unwrap())).unwrap();
     let target = installed_reference(&f.root, &f.source);
     let before = successful(&f.root, &["instance", "show", "demo"]);
     let refused = command(&f.root, &["instance", "migrate", "demo", "--to", &target]);

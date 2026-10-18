@@ -165,7 +165,7 @@ fn configuration_errors_precede_acquisition_and_do_not_break_help_or_raw_channel
 #[test]
 fn configuration_retention_overrides_are_tristate_for_every_operation() {
     let id = "00000000000000000000000000000001";
-    let revision = "exact:00000000000000000000000000000001/sha256:0000000000000000000000000000000000000000000000000000000000000001";
+    let revision = "00000000000000000000000000000001:0000000000000000000000000000000000000000000000000000000000000001";
     for base in [
         vec!["invoke", "node", "inspect"],
         vec!["snapshot", "capture", "node"],

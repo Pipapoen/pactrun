@@ -233,7 +233,7 @@ struct ServiceTransition {
 #[derive(Clone, Serialize)]
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 struct Migration {
-    source_revision_digest: String,
+    source_revision_id: String,
     transitions: Vec<Transition>,
     #[serde(skip_serializing_if = "Option::is_none")]
     requires_source: Option<Vec<InputRef>>,
@@ -361,7 +361,7 @@ impl Capabilities {
                     target_inputs,
                     parameters: ordinary_parameters(core, &site),
                     outputs: ordinary_outputs(core, &site),
-                    source_revision_digest: m.source_revision_digest.as_str().into(),
+                    source_revision_id: hex::encode(m.source_revision_digest.to_bytes()),
                     transitions: m
                         .transitions
                         .iter()

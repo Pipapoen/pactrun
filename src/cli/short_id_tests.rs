@@ -10,7 +10,8 @@ fn short_id_grammar_preserves_full_tokens_names_and_preflight_ordering() {
         assert!(text.parse::<Selector<RunId>>().is_err());
     }
     assert!("mp1-abcdef12".parse::<Selector<crate::domain::MigrationPathId>>().is_ok());
-    assert!("sha256:abcdef123".parse::<Selector<RevisionContentDigest>>().is_ok());
+    assert!("abcdef123".parse::<Selector<RevisionContentDigest>>().is_ok());
+    assert!("sha256:abcdef123".parse::<Selector<RevisionContentDigest>>().is_err());
     assert!(parse_state_version("abcdef12".into()).is_err());
     assert!(parse_input_id("abcdef12").is_ok());
     let mut command=parse_command(["action","show","abcdef12","abcdef12"].map(Into::into).to_vec()).unwrap();
@@ -21,7 +22,7 @@ fn short_id_grammar_preserves_full_tokens_names_and_preflight_ordering() {
     struct MustNotRead;
     impl Read for MustNotRead {fn read(&mut self,_:&mut[u8])->io::Result<usize>{panic!("prefix preflight must not acquire stdin")}}
     let mut stdin=CancellableStdin::new(MustNotRead,ActionCancellation::default());
-    let code=run(["--format","json","instance","create","new","--revision","exact:abcdef12/sha256:abcdef12","--input-stdin","config"].map(Into::into).to_vec(),Some(missing.as_os_str().into()),&mut stdin,&mut Vec::new(),&mut Vec::new());
+    let code=run(["--format","json","instance","create","new","--revision","abcdef12:abcdef12","--input-stdin","config"].map(Into::into).to_vec(),Some(missing.as_os_str().into()),&mut stdin,&mut Vec::new(),&mut Vec::new());
     assert_eq!(code,1);assert!(stdin.worker.is_none());assert!(!missing.exists());
     for args in [vec!["run","show","abcdef12","--bogus"],vec!["instance","deletion","confirm-complete","abcdef12","--attempt","abcdef12","--if-version","abcdef12","--assert-cleanup-complete"]] {
         let(code,_,_)=json_invoke(&missing,args.iter().map(OsString::from).collect());assert_eq!(code,2);assert!(!missing.exists());
@@ -78,11 +79,11 @@ fn short_id_resolution_and_display_cover_hidden_history_collisions_without_write
 #[test]
 fn short_revision_selectors_preserve_machine_ids_and_exact_metadata_cas() {
     let (_temp,root,source)=cli_roots();let revision=json_install(&root,&source);
-    let (package,digest)=revision.strip_prefix("exact:").unwrap().split_once('/').unwrap();
-    let short=format!("exact:{}/sha256:{}",&package[..8],&digest[7..16]);
+    let (package,digest)=revision.split_once(':').unwrap();
+    let short=format!("{}:{}",&package[..8],&digest[..9]);
     let shown=json_ok(&root,&["revision","show",&short]);
-    assert_eq!(shown["revision"]["package_id"],package);assert_eq!(shown["revision"]["content_digest"],digest);
-    let named_short=format!("{}:{}",&package[..8],&digest[7..16]);
+    assert_eq!(shown["revision"]["package_id"],package);assert_eq!(shown["revision"]["revision_id"],digest);
+    let named_short=format!("{}:{}",&package[..8],&digest[..9]);
     json_ok(&root,&["revision","rename",&named_short,"prod"]);
     assert_eq!(json_ok(&root,&["revision","show",&format!("{package}:prod")])["revision"],shown["revision"]);
     json_ok(&root,&["revision","unname",&named_short]);

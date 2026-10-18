@@ -43,7 +43,7 @@ try {
   await authorSidebar.getByText('First Hello Pack', {exact: true}).click();
   await authorSidebar.getByRole('link', {name: 'Getting Ready', exact: true}).click();
   await article().getByRole('heading', {name: 'Getting Ready', exact: true}).waitFor();
-  assert.ok((await article().innerText()).includes('Service Storage'));
+  assert.ok((await article().innerText()).includes('ServiceStorage'));
   checks.push('author sidebar opens the first Hello Pack introduction');
   await page.locator('.pagination-nav__link--next').click();
   await article().getByRole('heading', {name: 'Understanding a Pack', exact: true}).waitFor();
@@ -57,7 +57,7 @@ try {
   await article().getByRole('heading', {name: 'Installing the First Revision', exact: true}).waitFor();
   assert.equal(await page.locator('.pagination-nav__link--next').count(), 0);
   const installationLesson = await article().innerText();
-  for (const command of ['pactrun pack install ./pack', 'pactrun revision list',
+  for (const command of ['pactrun revision install ./pack', "pactrun revision list 'PACKAGE_ID'",
     "pactrun revision show 'REVISION_REFERENCE'"]) assert.ok(installationLesson.includes(command), command);
   await page.locator('.pagination-nav__link--prev').click();
   await article().getByRole('heading', {name: 'Understanding a Pack', exact: true}).waitFor();
@@ -105,11 +105,15 @@ try {
   assert.ok(response.ok());
   const responseSchema = await response.json();
   assert.equal(responseSchema.properties.format.const, 'pactrun.cli');
-  const operationInterface = responseSchema.properties.format_version.const === '1.0-alpha.4';
+  const operationInterface = ['1.0-alpha.4', '1.0-alpha.5'].includes(responseSchema.properties.format_version.const);
   await article().getByRole('link', {name: operationInterface ? 'Current JSON/JSONL reference' : 'JSON/JSONL reference', exact: true}).click();
   await article().getByRole('heading', {name: operationInterface ? 'Current JSON and JSONL reference' : 'JSON and JSONL reference', exact: true}).waitFor();
-  assert.ok((await article().innerText()).includes('format_version'));
   assert.ok((await article().innerText()).includes(responseSchema.properties.format_version.const));
+  if (operationInterface) {
+    await article().getByRole('link', {name: 'machine output', exact: true}).click();
+    await article().getByRole('heading', {name: 'JSON and JSONL envelope reference', exact: true}).waitFor();
+  }
+  assert.ok((await article().innerText()).includes('format_version'));
   checks.push('user vocabulary, machine-output meanings and schema stay in Users');
   await scopedSearch('Users', 'snapshot integrity');
 

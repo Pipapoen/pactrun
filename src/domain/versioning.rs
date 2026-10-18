@@ -256,8 +256,10 @@ impl VersionDomain {
                     number: if matches!(self, Self::Persistence) {
                         6
                     } else if matches!(self, Self::Machine) {
-                        4
+                        5
                     } else if matches!(self, Self::PackSource) {
+                        4
+                    } else if matches!(self, Self::PackDistribution) {
                         3
                     } else {
                         2
@@ -269,9 +271,10 @@ impl VersionDomain {
     pub(crate) const fn current_text(self) -> &'static str {
         match self {
             Self::Persistence => "1.0-alpha.6",
-            Self::Machine => "1.0-alpha.4",
-            Self::PackSource => "1.0-alpha.3",
-            Self::Revision | Self::Hook | Self::PackDistribution => "1.0-alpha.2",
+            Self::Machine => "1.0-alpha.5",
+            Self::PackSource => "1.0-alpha.4",
+            Self::PackDistribution => "1.0-alpha.3",
+            Self::Revision | Self::Hook => "1.0-alpha.2",
             _ => "1.0-alpha.1",
         }
     }
@@ -282,10 +285,10 @@ impl VersionDomain {
     }
     pub(crate) const fn supported_texts(self) -> &'static [&'static str] {
         match self {
-            Self::PackSource => &["1.0-alpha.2", "1.0-alpha.3"],
+            Self::PackSource => &["1.0-alpha.2", "1.0-alpha.3", "1.0-alpha.4"],
             Self::Revision | Self::Hook => &["1.0-alpha.1", "1.0-alpha.2"],
-            Self::PackDistribution => &["1.0-alpha.2"],
-            Self::Machine => &["1.0-alpha.3", "1.0-alpha.4"],
+            Self::PackDistribution => &["1.0-alpha.2", "1.0-alpha.3"],
+            Self::Machine => &["1.0-alpha.5"],
             Self::Persistence => &["1.0-alpha.6"],
             Self::Snapshot | Self::SnapshotBundle => &["1.0-alpha.1"],
         }

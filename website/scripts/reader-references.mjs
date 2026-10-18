@@ -17,10 +17,11 @@ export const references = [
   ['Users', 'resource-details', 'Resource command details', 'spec/instances/resource-commands.md'],
   ['Users', 'retirement-details', 'Retirement and recovery details', 'spec/lifecycle/retirement.md'],
   ['Users', 'object-lifecycle', 'Retained objects and garbage collection', 'spec/lifecycle/objects-gc.md'],
-  ['Users', 'machine-output', 'Legacy JSON and JSONL reference', 'spec/interfaces/machine-output.md'],
+  ['Users', 'machine-output', 'JSON and JSONL envelope reference', 'spec/interfaces/machine-output.md'],
   ['Users', 'operation-output', 'Current JSON and JSONL reference', 'spec/interfaces/operation-machine-output.md'],
   ['Users', 'snapshot-limits', 'Snapshot limits and compatibility', 'spec/snapshots/limits.md'],
-  ['Authors', 'source-format', 'Complete Pack source reference', 'spec/packages/source-format.md'],
+  ['Authors', 'revision-packs', 'Revision Pack source and IDs', 'spec/packages/revision-packs.md'],
+  ['Authors', 'source-format', 'Legacy Source 1.0-alpha.2 reference', 'spec/packages/source-format.md'],
   ['Authors', 'revision-format', 'Declaration types and identity', 'spec/packages/revision-format.md'],
   ['Authors', 'hook-protocol', 'Direct Hook message reference', 'spec/interfaces/hook-protocol.md'],
   ['Authors', 'shell-loader', 'Shell helper reference', 'spec/interfaces/shell-loader.md'],
@@ -122,19 +123,24 @@ export function expectedReferences(documents) {
 
 // Emit bounded apply_patch inputs, never edit repository documents implicitly.
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  if (process.argv[2] !== '--patch-dir' || !process.argv[3]) throw new Error('Usage: node reader-references.mjs --patch-dir target/...');
+  if (process.argv[2] !== '--patch-dir' || !process.argv[3]) throw new Error('Usage: node reader-references.mjs --patch-dir target/... [--edition VERSION]');
   const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+  const edition = process.argv[4] === '--edition' ? process.argv[5] : null;
+  if ((process.argv.length > 4 && !edition) || process.argv.length > 6 ||
+      (edition && !/^\d+\.\d+\.\d+(?:-(?:alpha|beta|rc)\.\d+)?$/.test(edition)))
+    throw new Error('Use --edition with one exact product version');
+  const docsPath = edition ? `website/versioned_docs/version-${edition}` : 'docs';
   const out = path.resolve(root, process.argv[3]);
   if (!out.startsWith(path.join(root, 'target') + path.sep)) throw new Error('Patch output must be under target/');
   await mkdir(out, {recursive: true});
   if ((await readdir(out)).length) throw new Error('Use an empty patch directory; stale patches must not be reapplied');
-  const docs = await readDocuments(path.join(root, 'docs'));
+  const docs = await readDocuments(path.join(root, docsPath));
   const existing = new Map(docs);
   let count = 0;
   const emit = async patch => writeFile(path.join(out, String(count++).padStart(4, '0') + '.patch'), '*** Begin Patch\n' + patch + '*** End Patch\n');
   for (const [name, body] of expectedReferences(docs)) {
     if (existing.get(name) === body) continue;
-    const file = 'docs/' + name;
+    const file = docsPath + '/' + name;
     if (existing.has(name)) await emit(`*** Delete File: ${file}\n`);
     const marker = '<!-- reader-reference:building -->';
     await emit(`*** Add File: ${file}\n+${marker}\n`);

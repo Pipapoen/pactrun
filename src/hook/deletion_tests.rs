@@ -195,7 +195,10 @@ fn service_presence_failure_is_retained_after_repair_and_instance_retirement() {
     assert!(!human.contains("config.json"));
     let (mut legacy, mut errors) = (Vec::new(), Vec::new());
     assert_ne!(crate::cli::run(vec!["--format".into(), "json".into(), "--machine-version".into(), "1.0-alpha.3".into(), "run".into(), "show".into(), run.to_string().into()], Some(f.storage.clone().into_os_string()), &mut io::empty(), &mut legacy, &mut errors), 0);
-    assert!(String::from_utf8(legacy).unwrap().contains("cannot represent service prerequisite"));
+    let refusal: serde_json::Value = serde_json::from_slice(&legacy).unwrap();
+    assert_eq!(refusal["format_version"], "1.0-alpha.5");
+    assert_eq!(refusal["error"]["kind"], "usage");
+    assert!(refusal["error"]["message"].as_str().unwrap().contains("1.0-alpha.5"));
     assert_eq!(inspect(), original);
     let cleanup = start(&f, DeletionMode::ManagedCleanup); assert_eq!(finish(&f, cleanup).outcome, RunOutcome::Succeeded);
     assert!(!path.exists()); assert_eq!(inspect(), original);

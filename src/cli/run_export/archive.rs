@@ -154,7 +154,7 @@ impl RunExportSink for Writer<'_> {
                 .collect();
         }
         let projected =
-            execution_presentation::Inspection::for_version(view, machine::Version::Operations)
+            execution_presentation::Inspection::for_version(view, machine::Version::RevisionIds)
                 .map_err(|_| {
                     PersistenceError::CorruptRun("Run report cannot project history".into())
                 })?;

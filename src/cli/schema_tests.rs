@@ -20,7 +20,7 @@ fn core_trace_schema_preserves_decimal_counters_and_bounded_policy() {
     let span = window.begin(TracePhase::Command, 0).unwrap();
     window.end(span, TracePhase::Command, 5, 5, PhaseResult::Succeeded);
     window.close(0);
-    let response = json!({"format":"pactrun.cli","format_version":"1.0-alpha.4","command":"diagnostic show","status":"success","result":window.snapshot(),"error":null});
+    let response = json!({"format":"pactrun.cli","format_version":"1.0-alpha.5","command":"diagnostic show","status":"success","result":window.snapshot(),"error":null});
     let validator = jsonschema::validator_for(&generated()).unwrap();
     assert!(validator.is_valid(&response));
     let mut invalid = response.clone();
@@ -66,8 +66,10 @@ fn generated() -> Value {
     cases!(crate::trace_journal::Listing => "diagnostic list");
     cases!(crate::domain::TraceDocument => "diagnostic show");
     cases!(p::Version<'static> => "version");
-    cases!(p::Package => "pack generate-id");
-    cases!(t::PackInstall => "pack install");
+    cases!(p::Package => "package generate-id");
+    cases!(c::Page<c::PackageEntry> => "package list");
+    cases!(c::PackageEntry => "package show");
+    cases!(t::PackInstall => "revision install");
     cases!(t::PackExport => "revision export");
     let instance = shape::<p::Instance>(&mut generator);
     let created = shape::<t::CreatedRestore>(&mut generator);
@@ -149,11 +151,11 @@ fn generated() -> Value {
     }
     let mut schema = json!({
         "$schema":"https://json-schema.org/draft/2020-12/schema",
-        "title":"Pactrun CLI machine interface 1.0-alpha.4", "type":"object",
+        "title":"Pactrun CLI machine interface 1.0-alpha.5", "type":"object",
         "required":["format","format_version","command","status","result","error"],
         "properties":{
             "format":{"const":"pactrun.cli"},
-            "format_version":{"const":"1.0-alpha.4"},
+            "format_version":{"const":"1.0-alpha.5"},
             "command":{"anyOf":[{"enum":commands},{"type":"null"}]},
             "status":{"enum":["success","failure"]},
             "result":{"type":["object","null"]},
@@ -272,7 +274,7 @@ fn generated() -> Value {
     schema["$defs"]["CoreEvent"]["properties"]["source"] = json!({"const":"pactrun"});
     let record = &mut schema["$defs"]["Record"];
     record["properties"]["format"] = json!({"const":"pactrun.cli"});
-    record["properties"]["format_version"] = json!({"const":"1.0-alpha.4"});
+    record["properties"]["format_version"] = json!({"const":"1.0-alpha.5"});
     record["properties"]["sequence"] = json!({"type":"string","pattern":"^[1-9][0-9]*$"});
     for branch in record["oneOf"].as_array_mut().unwrap() {
         if branch["properties"]["type"]["const"] == "diagnostic" {
@@ -285,6 +287,31 @@ fn generated() -> Value {
         }
     }
     // Ensure a generated schema is itself a valid schema object.
+    fn revision_id_fields(schema: &mut Value) {
+        match schema {
+            Value::Object(object) => {
+                if let Some(properties) =
+                    object.get_mut("properties").and_then(Value::as_object_mut)
+                {
+                    for name in ["revision_id", "source_revision_id", "target_revision_id"] {
+                        if let Some(field) = properties.get_mut(name) {
+                            field["pattern"] = json!("^[0-9a-f]{64}$");
+                        }
+                    }
+                }
+                for value in object.values_mut() {
+                    revision_id_fields(value);
+                }
+            }
+            Value::Array(values) => {
+                for value in values {
+                    revision_id_fields(value);
+                }
+            }
+            _ => (),
+        }
+    }
+    revision_id_fields(&mut schema);
     let _: Schema = serde_json::from_value(schema.clone()).unwrap();
     schema
 }
@@ -381,9 +408,9 @@ fn cli_json_schema_contract_matches_explicit_projections() {
         "schema drift: review target/cli-json-evidence/cli-machine.schema.json; no automatic contract update"
     );
     let validator = jsonschema::validator_for(&checked).unwrap();
-    let legacy_help = json!({"format":"pactrun.cli","format_version":"1.0-alpha.4","command":"help","status":"success","result":{"usage":"Earlier help text"},"error":null});
+    let legacy_help = json!({"format":"pactrun.cli","format_version":"1.0-alpha.5","command":"help","status":"success","result":{"usage":"Earlier help text"},"error":null});
     assert!(validator.is_valid(&legacy_help));
-    let success = json!({"format":"pactrun.cli","format_version":"1.0-alpha.4","command":"version","status":"success","result":{"product_version":"test","build_target":"test","rustc":"test","source_commit":null,"source_manifest_sha256":null,"supported_formats":{},"default_formats":{}},"error":null});
+    let success = json!({"format":"pactrun.cli","format_version":"1.0-alpha.5","command":"version","status":"success","result":{"product_version":"test","build_target":"test","rustc":"test","source_commit":null,"source_manifest_sha256":null,"supported_formats":{},"default_formats":{}},"error":null});
     assert!(validator.is_valid(&success));
     let mut missing = success.clone();
     missing.as_object_mut().unwrap().remove("format_version");
@@ -406,7 +433,7 @@ fn cli_json_schema_contract_matches_explicit_projections() {
     let mut additive = success;
     additive["future_field"] = true.into();
     assert!(validator.is_valid(&additive));
-    let mut acquisition = json!({"format":"pactrun.cli","format_version":"1.0-alpha.4","command":"instance migrate","status":"failure","result":null,"error":{"kind":"operation","message":"safe explanation","reference":null,"diagnostic":{"kind":"migration_input_acquisition","phase":"open_source","instance_id":"00000000000000000000000000000001","target_revision":{"package_id":"00000000000000000000000000000002","content_digest":format!("sha256:{}","0".repeat(64))},"input_id":"credentials","reason":"permission_denied","run_acceptance":"not_accepted"}}});
+    let mut acquisition = json!({"format":"pactrun.cli","format_version":"1.0-alpha.5","command":"instance migrate","status":"failure","result":null,"error":{"kind":"operation","message":"safe explanation","reference":null,"diagnostic":{"kind":"migration_input_acquisition","phase":"open_source","instance_id":"00000000000000000000000000000001","target_revision":{"package_id":"00000000000000000000000000000002","revision_id":"0".repeat(64)},"input_id":"credentials","reason":"permission_denied","run_acceptance":"not_accepted"}}});
     assert!(validator.is_valid(&acquisition));
     let mut previous = checked.clone();
     previous["properties"]["error"]["anyOf"][1]["properties"]
@@ -456,7 +483,7 @@ fn retirement_extensions_are_optional_members_not_existing_enum_changes() {
         .unwrap()
         .remove("reason");
     let previous_validator = jsonschema::validator_for(&previous).unwrap();
-    let mut response = json!({"format":"pactrun.cli","format_version":"1.0-alpha.4","command":"invoke","status":"failure","result":{"run_id":"00000000000000000000000000000001"},"error":{"kind":"operation","message":"safe guidance","reference":{"owner":"admission","code":"plan_invalidated"},"deletion_obligation":{"instance_id":"00000000000000000000000000000002","run_id":"00000000000000000000000000000001"}}});
+    let mut response = json!({"format":"pactrun.cli","format_version":"1.0-alpha.5","command":"invoke","status":"failure","result":{"run_id":"00000000000000000000000000000001"},"error":{"kind":"operation","message":"safe guidance","reference":{"owner":"admission","code":"plan_invalidated"},"deletion_obligation":{"instance_id":"00000000000000000000000000000002","run_id":"00000000000000000000000000000001"}}});
     assert!(validator.is_valid(&response));
     assert!(previous_validator.is_valid(&response));
     response["error"]

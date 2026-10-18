@@ -44,7 +44,7 @@ fn unified_pack_cli_exports_imports_and_reports_metadata_conflicts() {
         &[
             "--format",
             "json",
-            "pack",
+            "revision",
             "install",
             source.to_str().unwrap(),
         ],
@@ -54,11 +54,7 @@ fn unified_pack_cli_exports_imports_and_reports_metadata_conflicts() {
     let reference = format!(
         "{}:{}",
         revision["package_id"].as_str().unwrap(),
-        revision["content_digest"]
-            .as_str()
-            .unwrap()
-            .strip_prefix("sha256:")
-            .unwrap()
+        revision["revision_id"].as_str().unwrap()
     );
     let exported = temp.path().join("portable.pack");
     let export_base = temp.path().join("portable");
@@ -84,7 +80,7 @@ fn unified_pack_cli_exports_imports_and_reports_metadata_conflicts() {
         &[
             "--format",
             "json",
-            "pack",
+            "revision",
             "install",
             exported.to_str().unwrap(),
         ],
@@ -96,14 +92,14 @@ fn unified_pack_cli_exports_imports_and_reports_metadata_conflicts() {
         yaml.replace("Published", "Local"),
     )
     .unwrap();
-    let args = ["pack", "install", source.to_str().unwrap()];
+    let args = ["revision", "install", source.to_str().unwrap()];
     let rejected = call(&b, &args);
     assert!(!rejected.status.success());
     assert!(String::from_utf8_lossy(&rejected.stderr).contains("--metadata-conflict"));
     let kept = ok(
         &b,
         &[
-            "pack",
+            "revision",
             "install",
             source.to_str().unwrap(),
             "--metadata-conflict",
@@ -114,7 +110,7 @@ fn unified_pack_cli_exports_imports_and_reports_metadata_conflicts() {
     ok(
         &b,
         &[
-            "pack",
+            "revision",
             "install",
             source.to_str().unwrap(),
             "--metadata-conflict",
@@ -142,7 +138,7 @@ fn unified_pack_cli_exports_imports_and_reports_metadata_conflicts() {
         !call(
             &b,
             &[
-                "pack",
+                "revision",
                 "install",
                 source.to_str().unwrap(),
                 "--metadata-conflict",

@@ -10,7 +10,7 @@ from pathlib import Path
 import re, shutil, signal, sqlite3, subprocess, tempfile, threading, time
 from contextlib import closing
 
-MACHINE_FORMATS = ('1.0-alpha.1', '1.0-alpha.2', '1.0-alpha.3', '1.0-alpha.4')
+MACHINE_FORMATS = ('1.0-alpha.1', '1.0-alpha.2', '1.0-alpha.3', '1.0-alpha.4', '1.0-alpha.5')
 SOURCE_FORMATS = ('1.0-alpha.1', '1.0-alpha.2')
 
 def isolated_product_environment(root):
@@ -57,17 +57,27 @@ def cli_result(output, command):
     return envelope['format_version'], envelope['result']
 
 def installed_reference(output):
-    version, result = cli_result(output, 'pack install')
+    envelope = json.loads(output)
+    if not isinstance(envelope, dict):
+        raise ValueError('Invalid installation response envelope')
+    new_ids = envelope.get('format_version') == '1.0-alpha.5'
+    version, result = cli_result(output, 'revision install' if new_ids else 'pack install')
     revision = result.get('revision')
     if not isinstance(revision, dict):
         raise ValueError('Missing installed Revision identity')
-    package, digest = revision.get('package_id'), revision.get('content_digest')
+    package, digest = revision.get('package_id'), revision.get('revision_id' if new_ids else 'content_digest')
     if (not isinstance(package, str) or not re.fullmatch('[0-9a-f]{32}', package)
-            or not isinstance(digest, str) or not re.fullmatch('sha256:[0-9a-f]{64}', digest)):
+            or not isinstance(digest, str) or not re.fullmatch('[0-9a-f]{64}' if new_ids else 'sha256:[0-9a-f]{64}', digest)):
         raise ValueError('Invalid installed Revision identity')
     if version == '1.0-alpha.1':
         return 'exact:'+package+'/'+digest
-    return package+':'+digest[7:]
+    return package+':'+(digest if new_ids else digest[7:])
+
+def install_revision_pack(flavor, source, label):
+    _, info = run([binary(flavor), '--format', 'json', '--version'], label+'-interface', json_output=True)
+    machine, _ = cli_result(info, 'version')
+    group = 'revision' if machine == '1.0-alpha.5' else 'pack'
+    return run([binary(flavor), '--format', 'json', group, 'install', source], label, json_output=True)
 
 def fixture_source_format(records, selected_versions):
     releases = {}
@@ -291,7 +301,7 @@ runtime_content:
 """
     (source/'pactrun.yaml').write_text(yaml,encoding='utf-8')
     for flavor in ['normal','test']:
-        _,out=run([binary(flavor),'--format','json','pack','install',source],'pack-install-'+flavor,json_output=True)
+        _,out=install_revision_pack(flavor, source, 'pack-install-'+flavor)
         revision=installed_reference(out)
         run([binary(flavor),'instance','create',flavor,'--revision',revision],'create-'+flavor)
     code,_=run([binary('test'),'instance','show','normal'],'test-root-isolation',required=False)
@@ -370,7 +380,7 @@ def upgraded_store_scenarios(before, content_before, test_before):
     text=source.read_text(encoding='utf-8')
     target=SOURCE_FORMAT if SOURCE_FORMAT in RELEASES[VERSIONS[1]]['supported_formats']['pack_source'] else RELEASES[VERSIONS[1]]['default_formats']['pack_source']
     source.write_text(text.replace("source_format: '"+SOURCE_FORMAT+"'", "source_format: '"+target+"'", 1),encoding='utf-8')
-    run([binary(),'--format','json','pack','install',source.parent],'same-revision-supported-source',json_output=True)
+    install_revision_pack('normal', source.parent, 'same-revision-supported-source')
     check('supported source format reinstalls the same immutable Revision',immutable_state()==after and runtime_bytes()==content_before)
 
     dump=store_dump()
@@ -443,7 +453,7 @@ def scenarios():
         return
     run([binary(),'instance','show','normal'],'existing-instance-after-upgrade')
     check('upgrade preserves existing identities and canonical bytes',immutable_state()==before)
-    run([binary(),'pack','install',DATA/'pack'],'pack-origin-independent-after-upgrade')
+    install_revision_pack('normal', DATA/'pack', 'pack-origin-independent-after-upgrade')
     check('newer software reuses exactly the same Pack identity',immutable_state()==before)
     check('test installation unaffected',observed('test')==VERSIONS[0])
     live(lambda:pm('cleanup',required=False),'cleanup')

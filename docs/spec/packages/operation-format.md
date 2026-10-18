@@ -6,6 +6,11 @@ title: Operation-scoped Revision Format
 
 ## Applicability
 
+Current Source `1.0-alpha.4` keeps the operation semantics on this page while
+grouping runtime content inside `revision` and using bare Revision IDs. See
+[Revision Packs](./revision-packs.md) for that authoring structure. The
+`1.0-alpha.3` Source reader described here remains supported.
+
 This contract defines Pack source `1.0-alpha.3` and Revision canonical
 `1.0-alpha.2`. The [support table](../storage/format-domains.md) lists their exact
 readers alongside the legacy contracts. Existing supported formats retain their
@@ -35,7 +40,7 @@ identity grammars, strict decoding and validation. The differences below are
 closed schema replacements, not permission for arbitrary extension fields.
 New Source Hook defaults select `1.0-alpha.2`; old Source defaults do not change.
 
-Pack distribution, Snapshot integrity and Snapshot bundle versions are not
+Revision Pack, Snapshot integrity and Snapshot bundle versions are not
 advanced by these operation formats. Supporting the new Core does not change the Pack
 envelope. Operation artifact persistence is defined separately by
 [operation artifact storage](../persistence/operation-artifacts.md) and uses the

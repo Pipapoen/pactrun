@@ -65,7 +65,10 @@ struct Descriptor {
     format_version: String,
     revision_format: String,
     package_id: String,
-    revision_digest: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    revision_digest: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    revision_id: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     portable_metadata: Option<crate::pack_metadata::Metadata>,
 }
@@ -325,10 +328,13 @@ pub(crate) fn acquire(
             crate::domain::VersionDomain::Revision
                 .require(&dto.revision_format)
                 .map_err(err)?;
-            let identity = RevisionIdentity::new(
-                dto.package_id.parse().map_err(err)?,
-                dto.revision_digest.parse().map_err(err)?,
-            );
+            let bare_ids = dto.format_version == "1.0-alpha.3";
+            let digest = match (bare_ids, dto.revision_id, dto.revision_digest) {
+                (true, Some(id), None) => RevisionContentDigest::from_revision_id(&id)?,
+                (false, None, Some(digest)) => digest.parse().map_err(err)?,
+                _ => return Err("Revision Pack ID field does not match its format version".into()),
+            };
+            let identity = RevisionIdentity::new(dto.package_id.parse().map_err(err)?, digest);
             let content = crate::revision_content::decode_canonical_revision_content(
                 &read_json(input.required(CORE)?)?,
                 &read_json(input.required(RUNTIME)?)?,
@@ -337,7 +343,7 @@ pub(crate) fn acquire(
             if crate::revision_content::calculate_revision_content_digest(&content).map_err(err)?
                 != identity.content_digest
             {
-                return Err("Pack Revision digest mismatch".into());
+                return Err("Revision Pack content digest mismatch".into());
             }
             let mut expected =
                 BTreeSet::from([DESCRIPTOR.to_owned(), CORE.to_owned(), RUNTIME.to_owned()]);
@@ -366,7 +372,7 @@ pub(crate) fn acquire(
                 content,
                 metadata: dto
                     .portable_metadata
-                    .map(|m| m.decode())
+                    .map(|m| m.decode_version(bare_ids))
                     .transpose()?
                     .unwrap_or_default(),
                 blobs,
@@ -471,9 +477,10 @@ pub(crate) fn encode(
             .into(),
         revision_format: pack.content.core.version().to_string(),
         package_id: pack.identity.package_id.to_string(),
-        revision_digest: pack.identity.content_digest.to_string(),
+        revision_digest: None,
+        revision_id: Some(pack.identity.content_digest.revision_id()),
         portable_metadata: include_metadata
-            .then(|| crate::pack_metadata::Metadata::encode(&pack.metadata)),
+            .then(|| crate::pack_metadata::Metadata::encode_version(&pack.metadata, true)),
     };
     let descriptor = serde_json::to_vec(&dto).map_err(err)?;
     if descriptor.len() as u64 > JSON_LIMIT {

@@ -1564,7 +1564,11 @@ fn service_association_commit_crashes_leave_only_complete_old_or_new_boundaries(
             .env("PACTRUN_SERVICE_MIGRATION_ROOT", &root)
             .env(
                 "PACTRUN_SERVICE_MIGRATION_TARGET",
-                format!("exact:{}/{}", path[1].package_id, path[1].content_digest),
+                format!(
+                    "{}:{}",
+                    path[1].package_id,
+                    path[1].content_digest.revision_id()
+                ),
             )
             .env("PACTRUN_OPERATION_TEST_FAULT", point)
             .env("PACTRUN_MIGRATION_FAULT_EDGE", "0")
@@ -1979,7 +1983,11 @@ fn transformation_owner_crashes_never_promote_a_proposal_or_rollback_service_byt
             .env("PACTRUN_SERVICE_MIGRATION_ROOT", &root)
             .env(
                 "PACTRUN_SERVICE_MIGRATION_TARGET",
-                format!("exact:{}/{}", target.package_id, target.content_digest),
+                format!(
+                    "{}:{}",
+                    target.package_id,
+                    target.content_digest.revision_id()
+                ),
             )
             .env("PACTRUN_OPERATION_TEST_FAULT", point)
             .env("PACTRUN_MIGRATION_FAULT_EDGE", "0")
@@ -2070,7 +2078,11 @@ fn committed_transform_output_and_service_boundary_survive_a_later_edge_crash() 
         .env("PACTRUN_SERVICE_MIGRATION_ROOT", &root)
         .env(
             "PACTRUN_SERVICE_MIGRATION_TARGET",
-            format!("exact:{}/{}", target.package_id, target.content_digest),
+            format!(
+                "{}:{}",
+                target.package_id,
+                target.content_digest.revision_id()
+            ),
         )
         .env(
             "PACTRUN_OPERATION_TEST_FAULT",
@@ -2347,7 +2359,11 @@ fn real_split_merge_chain_publishes_each_edge_and_preserves_a_failed_second_targ
             .unwrap();
         let original = directory(&root, allocation(&p, instance.id)).join("config.json");
         fs::write(&original, b"source bytes").unwrap();
-        let target = format!("exact:{}/{}", merged.package_id, merged.content_digest);
+        let target = format!(
+            "{}:{}",
+            merged.package_id,
+            merged.content_digest.revision_id()
+        );
         let result = service_cli(&root, &["instance", "migrate", "first", "--to", &target]);
         let succeeded = second_mode == "success";
         assert_eq!(result.0, if succeeded { 0 } else { 1 }, "{}", result.2);
@@ -2468,7 +2484,11 @@ fn declarative_resource_creation_checks_explicit_presence_without_adopting_or_co
             if present {
                 fs::write(&live, b"already service-owned").unwrap();
             }
-            let reference = format!("exact:{}/{}", target.package_id, target.content_digest);
+            let reference = format!(
+                "{}:{}",
+                target.package_id,
+                target.content_digest.revision_id()
+            );
             let planned = service_cli(
                 &root,
                 &["instance", "migrate", "first", "--to", &reference, "--plan"],
@@ -2527,7 +2547,11 @@ fn real_file_to_directory_transform_uses_explicit_nested_grants_without_implicit
         .unwrap();
     let original = directory(&root, allocation(&p, instance.id)).join("config.json");
     fs::write(&original, b"source bytes").unwrap();
-    let target_reference = format!("exact:{}/{}", target.package_id, target.content_digest);
+    let target_reference = format!(
+        "{}:{}",
+        target.package_id,
+        target.content_digest.revision_id()
+    );
     let result = service_cli(
         &root,
         &["instance", "migrate", "first", "--to", &target_reference],
@@ -2613,7 +2637,7 @@ fn public_source_version_dispatch_rejects_invalid_v2_before_durable_blob_or_revi
             &[
                 "--format",
                 "json",
-                "pack",
+                "revision",
                 "install",
                 source.to_str().unwrap(),
             ],
@@ -2648,7 +2672,7 @@ fn public_baseline_service_roundtrip_preserves_identity_live_storage_and_explici
             &[
                 "--format",
                 "json",
-                "pack",
+                "revision",
                 "install",
                 source.to_str().unwrap(),
             ],
@@ -2657,9 +2681,9 @@ fn public_baseline_service_roundtrip_preserves_identity_live_storage_and_explici
         let value: serde_json::Value = serde_json::from_str(&result.1).unwrap();
         let revision = &value["result"]["revision"];
         format!(
-            "exact:{}/{}",
+            "{}:{}",
             revision["package_id"].as_str().unwrap(),
-            revision["content_digest"].as_str().unwrap()
+            revision["revision_id"].as_str().unwrap()
         )
     };
     let without_service = install("  inputs: []");
@@ -2678,8 +2702,8 @@ fn public_baseline_service_roundtrip_preserves_identity_live_storage_and_explici
     let declarations = "  service_storages: [{id: state}]\n  service_resources:\n    - {id: config, storage_id: state, locator: config.json, kind: file, read_exposure: readable, user_mutation: {kind: direct}}";
     let input_mapping = "      transitions: []\n      requires_source: []\n      requires_target: []\n      produces_target: []";
     let service_revision = format!(
-        "{declarations}\n  migrations:\n    - source_revision_digest: {}\n{input_mapping}\n      storage_transitions: [{{kind: create, target_storage_id: state}}]\n      resource_transitions: [{{kind: create, target_resource_id: config, presence: absent}}]",
-        without_service.split_once('/').unwrap().1
+        "{declarations}\n  migrations:\n    - source_revision_digest: sha256:{}\n{input_mapping}\n      storage_transitions: [{{kind: create, target_storage_id: state}}]\n      resource_transitions: [{{kind: create, target_resource_id: config, presence: absent}}]",
+        without_service.split_once(':').unwrap().1
     );
     let with_service = install(&service_revision);
     assert_ne!(without_service, with_service);
@@ -2723,8 +2747,8 @@ fn public_baseline_service_roundtrip_preserves_identity_live_storage_and_explici
         "live bytes cannot affect Revision identity"
     );
     let service_free_target = install(&format!(
-        "  migrations:\n    - source_revision_digest: {}\n{input_mapping}",
-        with_service.split_once('/').unwrap().1
+        "  migrations:\n    - source_revision_digest: sha256:{}\n{input_mapping}",
+        with_service.split_once(':').unwrap().1
     ));
     migrate(&service_free_target);
     assert_eq!(
@@ -2737,8 +2761,8 @@ fn public_baseline_service_roundtrip_preserves_identity_live_storage_and_explici
     );
     assert_eq!(locate(true, "write").0, 1);
     let attached = install(&format!(
-        "{declarations}\n  migrations:\n    - source_revision_digest: {}\n{input_mapping}\n      storage_transitions: [{{kind: reattach, source: {{role: retained, storage_id: state}}, target_storage_id: state}}]\n      resource_transitions: [{{kind: reattach, source: {{role: retained, resource_id: config}}, target_resource_id: config}}]",
-        service_free_target.split_once('/').unwrap().1
+        "{declarations}\n  migrations:\n    - source_revision_digest: sha256:{}\n{input_mapping}\n      storage_transitions: [{{kind: reattach, source: {{role: retained, storage_id: state}}, target_storage_id: state}}]\n      resource_transitions: [{{kind: reattach, source: {{role: retained, resource_id: config}}, target_resource_id: config}}]",
+        service_free_target.split_once(':').unwrap().1
     ));
     migrate(&attached);
     assert_eq!(locate(false, "write"), path_result);

@@ -225,7 +225,7 @@ fn object_deletion_crashes_leave_atomic_retryable_commit_boundaries() {
             let mut args = vec![kind.to_owned(), "delete".to_owned()];
             args.push(match &target {
                 ObjectDeletion::Revision(r) => {
-                    format!("exact:{}/{}", r.package_id, r.content_digest)
+                    format!("{}:{}", r.package_id, r.content_digest.revision_id())
                 }
                 ObjectDeletion::Snapshot(s) => s.to_string(),
                 ObjectDeletion::Run { run, .. } => run.to_string(),
@@ -409,7 +409,11 @@ fn revision_cli_resolves_exact_intent_and_removes_installation_metadata() {
             &[
                 "revision",
                 "delete",
-                &format!("exact:{}/{}", first.package_id, first.content_digest)
+                &format!(
+                    "{}:{}",
+                    first.package_id,
+                    first.content_digest.revision_id()
+                )
             ]
         )
         .0,

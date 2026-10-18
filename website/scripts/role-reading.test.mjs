@@ -78,11 +78,12 @@ test('both reader roles explain exact invocation text', () => {
 test('author field guide exposes choices, omissions and meanings for common declarations', () => {
   const guide = bodies.get('package-authors/reference/pack-fields.md');
   const service = bodies.get('package-authors/reference/service-fields.md');
-  for (const word of ['required', 'protection', 'parameters', 'sensitive', 'default', 'protocol_version', 'launch', 'io.terminal', 'portable_metadata']) assert.ok(guide.includes('`' + word) || guide.includes('.' + word), word);
+  for (const word of ['inputs', 'protection', 'parameters', 'sensitive', 'default', 'protocol_version', 'launch', 'io.terminal', 'portable_metadata']) assert.ok(guide.includes('`' + word) || guide.includes('.' + word), word);
   for (const value of ['none', 'output', 'interactive', 'integer', 'float', 'boolean', 'string', 'normal', 'secret', 'direct', 'interpreter', 'shell_loader', 'powershell_7', 'windows_powershell_5_1']) assert.ok(guide.includes('`' + value + '`'), value);
-  for (const value of ['read_exposure', 'user_mutation', 'service_access', 'service_requires', 'source_revision_digest', 'storage_transitions', 'resource_transitions', 'reuse', 'reattach', 'transform', 'declassify']) assert.ok(service.includes(value), value);
-  const sourceMarker = bodies.get('spec/packages/source-format.md').match(/source_format: "([^"]+)"/)[1];
-  const hookMarker = bodies.get('spec/interfaces/hook-protocol.md').match(/the supported value is `([^`]+)`/)[1];
+  for (const value of ['read_exposure', 'user_mutation', 'service_access', 'service_requires', 'source_revision_id', 'source_inputs', 'target_inputs', 'storage_transitions', 'resource_transitions', 'reuse', 'reattach', 'transform', 'declassify']) assert.ok(service.includes(value), value);
+  const domains = bodies.get('spec/storage/format-domains.md');
+  const sourceMarker = domains.match(/\| Revision Pack Source \| `([^`]+)`/)[1];
+  const hookMarker = domains.match(/\| Hook Protocol \| `([^`]+)`/)[1];
   assert.ok(guide.split('| `source_format` |')[1].split('\n')[0].includes('"' + sourceMarker + '"'));
   assert.ok(guide.split('| `protocol_version` |')[1].split('\n')[0].includes('"' + hookMarker + '"'));
   assert.match(guide, /There is no default terminal mode/);

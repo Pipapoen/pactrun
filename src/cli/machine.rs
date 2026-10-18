@@ -3,84 +3,30 @@ use super::*;
 
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub(super) enum Version {
-    Legacy,
     #[default]
-    Operations,
+    RevisionIds,
 }
 impl Version {
-    pub(super) fn require_run(self, run: &crate::domain::ManagedRunView) -> Result<(), CliError> {
-        if let crate::domain::RunState::Finished(outcome) = &run.state {
-            if self == Self::Legacy
-                && outcome.primary_failure.as_ref().is_some_and(|failure| {
-                    matches!(
-                        failure.cause,
-                        Some(crate::domain::RunFailureCause::ServicePresenceRequirement(
-                            _
-                        ))
-                    )
-                })
-            {
-                return Err(CliError::operation(
-                    "machine interface 1.0-alpha.3 cannot represent service prerequisite failure facts; select --machine-version 1.0-alpha.4",
-                ));
-            }
-            self.require_artifacts(&outcome.artifacts)?;
-            if self == Self::Legacy
-                && !matches!(run.operation, crate::domain::ManagedRunIdentity::Action(_))
-                && !outcome.artifacts.is_empty()
-            {
-                return Err(CliError::operation(
-                    "machine interface 1.0-alpha.3 cannot represent this operation's artifacts; select --machine-version 1.0-alpha.4",
-                ));
-            }
-        }
-        Ok(())
-    }
-    pub(super) fn require_artifacts(
-        self,
-        artifacts: &[crate::domain::RunArtifactSummary],
-    ) -> Result<(), CliError> {
-        if self == Self::Legacy && artifacts.iter().any(|artifact| artifact.edge.is_some()) {
-            Err(CliError::operation(
-                "machine interface 1.0-alpha.3 cannot represent edge-scoped artifacts; select --machine-version 1.0-alpha.4",
-            ))
-        } else {
-            Ok(())
-        }
-    }
     pub(super) fn require_hook(
         self,
         protocol: crate::domain::FormatVersion,
     ) -> Result<(), CliError> {
-        if self == Self::Legacy && protocol == crate::domain::operation_hook_version() {
-            Err(CliError::operation(
-                "machine interface 1.0-alpha.3 cannot represent this operation; select --machine-version 1.0-alpha.4",
-            ))
-        } else {
-            Ok(())
-        }
+        crate::domain::VersionDomain::Hook
+            .require(&protocol.to_string())
+            .map(|_| ())
+            .map_err(CliError::operation)
     }
     pub(super) fn require_core(self, core: &crate::domain::RevisionCore) -> Result<(), CliError> {
-        if self == Self::Legacy && core.operation().is_some() {
-            Err(CliError::operation(
-                "machine interface 1.0-alpha.3 cannot represent this operation-scoped Revision; select --machine-version 1.0-alpha.4",
-            ))
-        } else {
-            Ok(())
-        }
+        crate::domain::VersionDomain::Revision
+            .require(&core.version().to_string())
+            .map(|_| ())
+            .map_err(CliError::operation)
     }
     pub(super) const fn text(self) -> &'static str {
-        match self {
-            Self::Legacy => "1.0-alpha.3",
-            Self::Operations => "1.0-alpha.4",
-        }
+        "1.0-alpha.5"
     }
     fn parse(text: &str) -> Option<Self> {
-        match text {
-            "1.0-alpha.3" => Some(Self::Legacy),
-            "1.0-alpha.4" => Some(Self::Operations),
-            _ => None,
-        }
+        (text == "1.0-alpha.5").then_some(Self::RevisionIds)
     }
 }
 
@@ -500,7 +446,7 @@ pub(super) fn select(mut args: Vec<OsString>) -> Result<(Selection, Vec<OsString
                     return Err(CliError::usage("duplicate --machine-version selector"));
                 }
                 selected.version=args.get(index+1).and_then(|value|value.to_str()).and_then(Version::parse)
-                    .ok_or_else(||CliError::usage("--machine-version requires 1.0-alpha.3 or 1.0-alpha.4 before the command"))?;
+                    .ok_or_else(||CliError::usage("this release uses --machine-version 1.0-alpha.5; select it before the command with --format json or jsonl"))?;
                 version_seen = true;
             }
             _ => break,

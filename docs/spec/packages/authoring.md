@@ -63,7 +63,7 @@ an empty local metadata batch. Requested Package and Revision names are separate
 installation inputs governed by PR-REQ-0372. Source syntax and installation
 publication are owned by PR-REQ-0258 through PR-REQ-0261; transport encoding is
 owned separately by the
-[Pack distribution contract](./distribution.md).
+[Revision Pack contract](./distribution.md).
 
 Source-stage locators, directory handles, acquisition evidence, and transient
 staging identities MUST be consumed before `NormalizedPackDefinition` is

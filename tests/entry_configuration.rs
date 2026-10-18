@@ -138,7 +138,7 @@ fn single_executable_entries_isolate_defaults_and_forward_the_selected_store_to_
             &[
                 "--format",
                 "json",
-                "pack",
+                "revision",
                 "install",
                 source.to_str().unwrap(),
             ],
@@ -148,11 +148,7 @@ fn single_executable_entries_isolate_defaults_and_forward_the_selected_store_to_
         let reference = format!(
             "{}:{}",
             revision["package_id"].as_str().unwrap(),
-            revision["content_digest"]
-                .as_str()
-                .unwrap()
-                .strip_prefix("sha256:")
-                .unwrap()
+            revision["revision_id"].as_str().unwrap()
         );
         success(
             command(binary, base),

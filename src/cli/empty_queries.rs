@@ -32,10 +32,10 @@ pub(super) fn collect_missing(
             label,
             &definitions::Related::new(definitions::Instances { items: vec![] }, &[], &[]),
         )?,
-        Command::Catalog(C::Revisions(_)) => empty(
+        Command::Catalog(C::Packages(_)) => empty(
             format,
             label,
-            &Page::<catalog_presentation::RevisionEntry> {
+            &Page::<catalog_presentation::PackageEntry> {
                 items: vec![],
                 next: None,
             },

@@ -29,6 +29,13 @@ pub(crate) struct RevisionCatalogEntry {
     pub(crate) reference: String,
 }
 
+#[derive(Clone, Debug)]
+pub(crate) struct PackageCatalogEntry {
+    pub(crate) id: PackageId,
+    pub(crate) name: Option<LocalName>,
+    pub(crate) revision_count: u64,
+}
+
 pub(crate) struct InstanceCatalog {
     pub(crate) items: Vec<InstanceView>,
     pub(crate) revisions: Vec<RevisionCatalogEntry>,

@@ -37,7 +37,10 @@ name or an ID, so `app:stable`, `<package-id>:stable`, `app:<revision-id>` and
 `<package-id>:<revision-id>` are supported. Names are local, case-sensitive and
 1 to 31 ASCII characters. Unique lowercase hexadecimal ID prefixes require at
 least eight digits. Full IDs remain usable even when names or short prefixes are
-ambiguous. Revision ID digits omit `sha256:` in this reference syntax.
+ambiguous. A Revision ID is the 64-digit content digest within its Package,
+without `sha256:`. Use `package list` to discover lineages, `package show` to
+inspect one, and `revision list <package>` to list its versions. `revision install`
+reads a Revision Pack; `package generate-id` only generates a lineage ID.
 State-version tokens and authored capability identifiers still require exact values.
 
 Where supported, lists use `--limit`, `--after`, and `--no-trunc`. Follow the

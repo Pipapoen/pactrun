@@ -39,12 +39,15 @@ fn reply_delivery_phase_does_not_confuse_operation_failure_with_output_failure()
                 TracePolicy::startup(),
                 TracePolicy::default(),
             );
-            let capture =
-                reply::Capture::new("pack generate-id", false, reply::DisplayOptions::default());
+            let capture = reply::Capture::new(
+                "package generate-id",
+                false,
+                reply::DisplayOptions::default(),
+            );
             if !operation_failed {
                 capture
                     .publish(
-                        "pack generate-id",
+                        "package generate-id",
                         presentation::Package {
                             package_id: "00000000000000000000000000000001".into(),
                         },

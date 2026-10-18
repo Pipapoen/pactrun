@@ -4,7 +4,7 @@ title: Service and Migration fields
 
 # Service and Migration fields
 
-Use ServiceStorage for service-owned live data. Use managed Inputs for detached
+This page uses Source `1.0-alpha.4`. Use ServiceStorage for service-owned live data. Use managed Inputs for detached
 configuration bytes. Neither a resource declaration nor a successful command
 means the service is healthy, stopped, backed up, or coherent.
 
@@ -19,9 +19,9 @@ sequences, empty when omitted.
 
 | Field | Values / omission | Meaning |
 | --- | --- | --- |
-| `service_storages[].id` | Required semantic ID | Storage lifetime and allocation identity; Instance creation allocates its root. |
+| `service_storages[].id` | Required semantic ID | Stable storage role within the Package; each Instance receives its own allocation for that role. |
 | `service_resources[].id` | Required semantic ID | Stable service-resource meaning; separate namespace from Storage IDs. |
-| `.storage_id` | Required declared Storage ID | Allocation containing the resource. |
+| `.storage_id` | Required declared Storage ID | The declared storage role containing this resource. |
 | `.locator` | Required relative service locator | Exact location beneath the allocation, not an arbitrary host path. |
 | `.kind` | Required `file` or `directory` | Expected filesystem kind; creation does not materialize the resource. |
 | `.read_exposure` | `hidden` or `readable`; default `hidden` | Whether an operator may obtain an allowed read location. It does not control Hook grants. |
@@ -90,10 +90,12 @@ The target Revision declares an edge from one exact source in the same Package.
 
 | Field | Type / omission | Meaning |
 | --- | --- | --- |
-| `source_revision_digest` | Required full `sha256:<64 lowercase hex>` | Exact source Revision; the Package is this Pack's lineage. |
+| `source_revision_id` | Required 64 lowercase hexadecimal digits | Source version within the same Package. |
 | `transitions` | Required sequence; `[]` is valid | Managed Input continuity/disposition below. |
-| `requires_source` | Required sequence of `{role, input_id}` | Active/retained source binding prerequisites. |
-| `requires_target` | Required sequence of Input IDs | Staged target bindings required before the Hook. |
+| `source_inputs` | Required/optional lists of `{role, input_id}`; empty when omitted | Active/retained source binding read grants and prerequisites. |
+| `target_inputs` | Required/optional lists of Input IDs; empty when omitted | Staged target bindings read by the Hook; required entries must be available. |
+| `parameters` | Sequence; empty when omitted | Invocation parameters for this Migration edge. |
+| `outputs` | Sequence; empty when omitted | Ordinary report output slots for this edge. |
 | `produces_target` | Required sequence of Input IDs | Mandatory Hook-produced target bindings before success. |
 | `hook` | Optional Hook | Omit for a supported declarative edge; use for required transformation. |
 | `storage_transitions` | Empty when omitted | One writer for each target Storage. |
@@ -116,7 +118,7 @@ edge commits separately; failure can leave an earlier edge committed.
 
 Every target Input has at most one writer: a transition, an operator file, a Hook
 output, or absence. Conflicts are errors; there is no overwrite precedence.
-`requires_target` and `produces_target` must not overlap. Every declared produced
+`target_inputs.required` and `produces_target` must not overlap. Every declared produced
 target must be registered before success. Transforming arbitrary Input bytes uses
 a Hook, not a declarative copy/merge primitive.
 
