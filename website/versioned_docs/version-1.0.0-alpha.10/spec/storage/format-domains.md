@@ -18,7 +18,7 @@ representation a particular interface supports.
 
 There is one product version and exactly eight independent format/protocol
 domains: Pack source, Revision canonical, Hook Protocol, Snapshot content/integrity,
-Snapshot bundle, Pack distribution, CLI machine interface and Persistence.
+Snapshot bundle, Revision Pack, CLI machine interface and Persistence.
 Results and event streams share the CLI version; runtime closure, Session subviews,
 error catalogs and selector discriminators do not create additional domains.
 
@@ -128,7 +128,7 @@ MUST be rejected rather than guessed. Packaging or compression changes MUST NOT
 change contained domain identity.
 
 For Revision transport, this envelope is the user-facing distribution Pack in
-[Pack distribution format](../packages/distribution.md), not a separately
+[Revision Pack format](../packages/distribution.md), not a separately
 managed Bundle object. Snapshot transport remains independent and unchanged.
 
 **Verification: PR-TEST-0538, PR-TEST-0540, PR-TEST-0542.**

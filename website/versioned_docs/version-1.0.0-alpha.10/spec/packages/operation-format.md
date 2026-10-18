@@ -40,7 +40,7 @@ identity grammars, strict decoding and validation. The differences below are
 closed schema replacements, not permission for arbitrary extension fields.
 New Source Hook defaults select `1.0-alpha.2`; old Source defaults do not change.
 
-Pack distribution, Snapshot integrity and Snapshot bundle versions are not
+Revision Pack, Snapshot integrity and Snapshot bundle versions are not
 advanced by these operation formats. Supporting the new Core does not change the Pack
 envelope. Operation artifact persistence is defined separately by
 [operation artifact storage](../persistence/operation-artifacts.md) and uses the

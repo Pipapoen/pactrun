@@ -152,7 +152,7 @@ and ambiguity MUST fail.
 
 **Verification: PR-TEST-0465, PR-TEST-0529, PR-TEST-0535, PR-TEST-0538, PR-TEST-0545.**
 
-The [Pack distribution contract](../packages/distribution.md) defines
+The [Revision Pack contract](../packages/distribution.md) defines
 `revision export` and import through `revision install`, without a second import
 command.
 

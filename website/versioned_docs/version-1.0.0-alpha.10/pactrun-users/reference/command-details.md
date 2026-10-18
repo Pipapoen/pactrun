@@ -146,7 +146,7 @@ The CLI MUST provide conceptual list, show, export, import, and delete
 operations for Revisions. Human references MUST be resolved to exact identity,
 and ambiguity MUST fail.
 
-The Pack distribution contract defines
+The Revision Pack contract defines
 `revision export` and import through `revision install`, without a second import
 command.
 
