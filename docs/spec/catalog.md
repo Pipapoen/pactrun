@@ -18,9 +18,10 @@ title: Specification Reference Index
 - [Local Names and References](./packages/local-names.md)
 - [Revision Format and Identity Encoding](./packages/revision-format.md)
 - [Operation-scoped Revision Format](./packages/operation-format.md)
+- [Revision Packs and Package Catalogs](./packages/revision-packs.md)
 - [Runtime Content](./packages/runtime-content.md)
 - [Descriptions and Provenance](./packages/metadata.md)
-- [Pack Distribution Format](./packages/distribution.md)
+- [Revision Pack Format](./packages/distribution.md)
 - [Identity and Metadata During Import](./packages/import-identity.md)
 
 ## Instances and Data

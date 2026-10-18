@@ -75,7 +75,7 @@ current metadata may change only through its explicit replacement semantics.
 Import MUST NOT infer a local name from author descriptions or publisher claims.
 Explicitly requested local names follow the atomic conflict rules in PR-REQ-0372.
 Repeat installation without requested names preserves existing user names and
-installation time. The [Pack distribution contract](./distribution.md) defines
+installation time. The [Revision Pack contract](./distribution.md) defines
 the bundle representation and import application policy.
 
 **Verification: PR-TEST-0538, PR-TEST-0539, PR-TEST-0540.**

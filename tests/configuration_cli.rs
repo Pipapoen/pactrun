@@ -65,7 +65,7 @@ fn real_entries_discover_separate_user_files_and_explicit_overrides_without_stor
     )
     .unwrap();
     let refused = isolated_command(cli, &config, &data)
-        .args(["--format", "json", "pack", "generate-id"])
+        .args(["--format", "json", "package", "generate-id"])
         .output()
         .unwrap();
     assert_eq!(refused.status.code(), Some(2));

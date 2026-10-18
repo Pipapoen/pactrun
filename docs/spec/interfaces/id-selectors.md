@@ -18,8 +18,8 @@ in this reference syntax. The complete reference must resolve uniquely under
 [PR-REQ-0371](../packages/local-names.md#pr-req-0371---local-names-and-two-part-identity-resolution).
 Migration paths accept `mp1-<8..63 hex digits>` as a fingerprint prefix; complete
 `mp1-` selectors retain their existing self-contained path semantics. Migration
-Input target digests retain `sha256:` and may be abbreviated within the Instance's
-installed Package lineage.
+Input target Revision IDs omit algorithm prefixes and may be abbreviated within
+the Instance's installed Package lineage.
 
 Parsing validates the entire command before resolving prefixes. Resolution is
 read-only and precedes staging, payload acquisition, acceptance, and mutation.

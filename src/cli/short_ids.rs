@@ -10,6 +10,12 @@ pub(super) trait Key: Clone + fmt::Display + FromStr {
     const WIDTH: usize = 32;
     const KIND: Option<Kind>;
     const SELECTOR_KIND: SelectorKind;
+    fn parse_full(text: &str) -> Option<Self> {
+        text.parse().ok()
+    }
+    fn display_full(&self) -> String {
+        self.to_string()
+    }
 }
 macro_rules! key {
     ($t:ty,$name:literal,$kind:ident) => {
@@ -32,11 +38,16 @@ impl Key for crate::domain::MigrationPathId {
     const SELECTOR_KIND: SelectorKind = SelectorKind::MigrationPath;
 }
 impl Key for crate::domain::RevisionContentDigest {
-    const NAME: &'static str = "Revision digest";
-    const TAG: &'static str = "sha256:";
+    const NAME: &'static str = "Revision";
     const WIDTH: usize = 64;
     const KIND: Option<Kind> = None;
     const SELECTOR_KIND: SelectorKind = SelectorKind::RevisionDigest;
+    fn parse_full(text: &str) -> Option<Self> {
+        Self::from_revision_id(text).ok()
+    }
+    fn display_full(&self) -> String {
+        self.revision_id()
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -47,7 +58,7 @@ pub(super) enum Selector<T> {
 impl<T: Key> FromStr for Selector<T> {
     type Err = CliError;
     fn from_str(text: &str) -> Result<Self, CliError> {
-        if let Ok(id) = text.parse::<T>() {
+        if let Some(id) = T::parse_full(text) {
             return Ok(Self::Full(id));
         }
         let hex = text
@@ -71,7 +82,7 @@ impl<T> From<T> for Selector<T> {
 impl<T: Key> fmt::Display for Selector<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Full(id) => id.fmt(f),
+            Self::Full(id) => f.write_str(&id.display_full()),
             Self::Prefix(p) => write!(f, "{}{p}", T::TAG),
         }
     }
@@ -117,6 +128,7 @@ pub(super) enum SelectorKind {
     Instance,
     Allocation,
     Revision,
+    #[serde(rename = "revision_id")]
     RevisionDigest,
     MigrationPath,
 }
@@ -128,7 +140,7 @@ impl fmt::Display for SelectorKind {
             Self::Instance => "Instance",
             Self::Allocation => "Allocation",
             Self::Revision => "Revision",
-            Self::RevisionDigest => "Revision digest",
+            Self::RevisionDigest => "Revision ID",
             Self::MigrationPath => "Migration path",
         })
     }
@@ -164,6 +176,12 @@ pub(super) fn unique(
         message.push_str("Enter a longer ID prefix.");
     }
     let mut error = CliError::operation(message);
+    if matches!(&kind, SelectorKind::Revision) && !matches.candidates.is_empty() {
+        error.reference = Some(presentation::ErrorReference {
+            owner: "resolution".into(),
+            code: "ambiguous_reference".into(),
+        });
+    }
     error.partial = Some(presentation::PartialResult::IdentityCandidates(Box::new(
         Candidates {
             selector_kind: kind,
@@ -204,20 +222,11 @@ impl<'a> Resolver<'a> {
     }
     pub(super) fn revision(&mut self, reference: &mut RevisionReference) -> Result<(), CliError> {
         if let RevisionReference::Named(named) = reference {
-            *reference = RevisionReference::Exact(
-                self.app()?
-                    .resolve_named_revision(named)
-                    .map_err(app_error)?,
-            );
-            return Ok(());
-        }
-        if let RevisionReference::Prefix { package, digest } = reference {
-            let text = format!("exact:{package}/sha256:{digest}");
-            let matches = self
-                .app()?
-                .revision_prefix(package, digest)
-                .map_err(app_error)?;
+            let (package, revision) = named.components();
+            let text = format!("{}:{}", package.as_str(), revision.as_str());
+            let matches = self.app()?.matching_revisions(named).map_err(app_error)?;
             *reference = parse_revision_reference(unique(SelectorKind::Revision, &text, matches)?)?;
+            return Ok(());
         }
         Ok(())
     }

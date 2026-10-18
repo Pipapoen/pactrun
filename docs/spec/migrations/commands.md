@@ -9,7 +9,7 @@ title: Migration Commands
 ```text
 pactrun instance migrate <instance> --to <revision-reference>
     [--path <path-id>]
-    [--input-file <target-digest>/<input-id>=<host-path>]...
+    [--input-file <target-revision-id>/<input-id>=<host-path>]...
     [--authorize-declassification]
     [--authorize-recovery-override]
     [--plan]
@@ -21,7 +21,7 @@ pactrun instance migrate <instance> --to <revision-reference>
 Instance names remain exact. Revision references, path fingerprints and
 Migration Input target digests accept the forms in the
 [ID selector contract](../interfaces/id-selectors.md). Resolution fixes complete
-identities before acquisition or execution. A complete target-digest uses
+identities before acquisition or execution. A complete target-revision-id uses
 `sha256:<digest>` for a target on the selected same-Package path; permitted unique
 prefixes resolve within that lineage. Split the first equals sign, preserving
 the remaining native path.
@@ -178,7 +178,7 @@ PR-TEST-0311, PR-TEST-0316, PR-TEST-0648.**
 ### PR-REQ-0315 - Target-qualified detached operator file acquisition
 
 Each repeated input-file option MUST resolve to a complete target Revision
-digest and declared Input on the exact selected path. Accepted target-digest
+digest and declared Input on the exact selected path. Accepted target-revision-id
 prefixes follow the ID selector contract and resolve before source acquisition.
 Parsing MUST split only the first
 equals sign and preserve the remaining host-native path, including additional

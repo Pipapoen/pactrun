@@ -24,12 +24,13 @@ They are not verified prerequisites, execution eligibility, or historical facts.
 
 Revision list/show and metadata show MUST expose installed exact identities and
 complete typed metadata sources without depending on source directories.
-Human summaries MAY truncate values explicitly; `--no-trunc` and detailed show
-MUST expose full values. Truncated identifiers MUST NOT become resolvable input.
+Human summaries MAY truncate descriptive values explicitly; `--no-trunc` and
+detailed show MUST expose full IDs. ID abbreviations used as selectors MUST be
+unique prefixes under the selector contract; arbitrary elision is not an ID.
 Text MUST be rendered without terminal-control injection. Machine-readable output follows the
 [CLI machine interface](./machine-output.md).
 
-`revision list`, `run list`, `instance history list` and `instance deletion list`
+`package list`, `revision list <package>`, `run list`, `instance history list` and `instance deletion list`
 MUST use exclusive keyset pagination, default 50 and `--limit` 1-500.
 `--after` need not identify a still-present row. Revision ordering uses local
 installation time and exact identity under
@@ -61,7 +62,9 @@ Closed command spelling (each listed catalog takes `--limit`, `--after` and
 `--no-trunc`; show and write commands do not):
 
 ```text
-pactrun revision list
+pactrun package list
+pactrun package show <package>
+pactrun revision list <package>
 pactrun revision show <revision-ref>
 pactrun revision metadata show <revision-ref>
 pactrun run list [<name> | --instance-id <id>]
@@ -88,7 +91,7 @@ PR-REQ-0371.
 
 ```text
 pactrun
-|- pack
+|- package
 |- revision
 |- instance
 |- input
@@ -143,8 +146,8 @@ The CLI MUST provide conceptual list, show, export, import, and delete
 operations for Revisions. Human references MUST be resolved to exact identity,
 and ambiguity MUST fail.
 
-The Pack distribution contract defines
-`revision export` and import through `pack install`, without a second import
+The Revision Pack contract defines
+`revision export` and import through `revision install`, without a second import
 command.
 
 ### Security-sensitive authorization spelling {#pr-req-0119---security-sensitive-authorization-spelling}
@@ -199,7 +202,7 @@ the fixed `database/`, `runtime-content/`, and `staging/` children remain owned 
 the storage layer. Invalid configuration MUST fail before data acquisition,
 schema migration or persistent side effects. There is no `--storage-root` option.
 
-`pack generate-id`, help queries and root `--version` do not need storage
+`package generate-id`, help queries and root `--version` do not need storage
 configuration. Selecting a path MUST NOT create a Store. The resolved Store root
 MUST be supplied explicitly to executed children without mutating global process
 environment, including when a Hook invokes a differently named Pactrun entry.
@@ -246,8 +249,8 @@ The create-and-restore option is specified separately by
 it composes Create with Restore rather than changing ordinary Create semantics.
 
 ```text
-pactrun pack generate-id
-pactrun pack install <source-root>
+pactrun package generate-id
+pactrun revision install <source-root>
 
 pactrun instance create <name> --revision <reference>
     [--input-file <input-id>=<host-path>]...
@@ -266,9 +269,9 @@ pactrun input delete <instance> <input-id>
     [--if-version <token>]
 ```
 
-Human command syntax is not an independent format-version domain. `pack generate-id` prints one
+Human command syntax is not an independent format-version domain. `package generate-id` prints one
 OS-CSPRNG-generated canonical `PackageId` and changes neither source nor
-repository state. `pack install` fails when exact `package_id` is missing and
+repository state. `revision install` fails when exact `package_id` is missing and
 applies only source-projected portable metadata. Duplicate initial Input
 identities and multiple stdin sources fail before acquisition. File and stdin
 sources preserve exact bytes.

@@ -23,6 +23,9 @@ node website/scripts/reader-references.mjs --patch-dir target/reader-reference-p
 ```
 
 Review and apply the patches rather than editing generated views independently.
+For an independently maintained release edition, append `--edition VERSION` to
+read that edition's Spec and emit patches only for its reader views. Development
+and release documents can keep different tutorial structures.
 The source-to-view mappings are in `website/scripts/reader-references.mjs`.
 The generator preserves code, schema bytes and anchors while adapting links to
 the reader's section. Tests reject stale views. An existing nonempty patch

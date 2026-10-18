@@ -12,6 +12,23 @@ pub(super) struct Page<T: Serialize> {
 
 #[derive(Clone, Serialize)]
 #[cfg_attr(test, derive(schemars::JsonSchema))]
+pub(super) struct PackageEntry {
+    package_id: String,
+    package_name: Option<String>,
+    revision_count: String,
+}
+impl From<&PackageCatalogEntry> for PackageEntry {
+    fn from(row: &PackageCatalogEntry) -> Self {
+        Self {
+            package_id: row.id.to_string(),
+            package_name: row.name.as_ref().map(|name| name.as_str().to_owned()),
+            revision_count: row.revision_count.to_string(),
+        }
+    }
+}
+
+#[derive(Clone, Serialize)]
+#[cfg_attr(test, derive(schemars::JsonSchema))]
 pub(super) struct History {
     unique_prefix_length: usize,
     instance_id: String,
@@ -103,7 +120,7 @@ pub(super) enum Target {
         parameter_id: String,
     },
     MigrationEdge {
-        source_digest: String,
+        source_revision_id: String,
     },
     Cleanup,
 }
@@ -135,7 +152,7 @@ impl From<&PresentationTargetV1> for Target {
                 parameter_id: id.as_str().into(),
             },
             PresentationTargetV1::MigrationEdge(id) => Self::MigrationEdge {
-                source_digest: id.to_string(),
+                source_revision_id: id.revision_id(),
             },
             PresentationTargetV1::Cleanup => Self::Cleanup,
         }

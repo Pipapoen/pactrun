@@ -605,11 +605,11 @@ fn shell_loader_plain_migration_and_missing_target_output_are_distinct() {
             let scenario = Scenario::new(705, &source(shell, executable, &[]));
             diagnostic_script(&scenario, "migration-evidence");
             let revision = scenario.install_and_create("sample");
-            let digest = revision.rsplit('/').next().unwrap();
+            let digest = revision.rsplit(':').next().unwrap();
             let base =
                 source(shell, executable, &[]).replace("{package_id}", &format!("{:032x}", 705));
             let migration = format!(
-                "  migrations:\n    - source_revision_digest: '{digest}'\n      transitions: []\n      requires_source: []\n      requires_target: []\n      produces_target: {}\n      hook:\n        protocol_version: 1.0-alpha.1\n        launch: {{kind: shell_loader, shell: {shell}, command: {executable}, script: script}}\n        args: []\n        io: {{terminal: none}}\n",
+                "  migrations:\n    - source_revision_digest: 'sha256:{digest}'\n      transitions: []\n      requires_source: []\n      requires_target: []\n      produces_target: {}\n      hook:\n        protocol_version: 1.0-alpha.1\n        launch: {{kind: shell_loader, shell: {shell}, command: {executable}, script: script}}\n        args: []\n        io: {{terminal: none}}\n",
                 if missing { "[data]" } else { "[]" }
             );
             let mut target =
@@ -779,11 +779,11 @@ fn service_migration_preview_is_readable_unobserved_and_machine_complete() {
     let scenario = Scenario::new(7651, &yaml);
     fs::write(scenario.source.join("script.txt"), "exit 99\n").unwrap();
     let old = scenario.install_and_create("sample");
-    let digest = old.rsplit('/').next().unwrap();
+    let digest = old.rsplit(':').next().unwrap();
     yaml = yaml.replace("{package_id}", &format!("{:032x}", 7651));
     let migration = format!(
         r#"  migrations:
-    - source_revision_digest: '{digest}'
+    - source_revision_digest: 'sha256:{digest}'
       transitions: []
       requires_source: []
       requires_target: []
@@ -860,11 +860,11 @@ fn shell_loader_transform_proposal_receipt_and_exit_preserve_target_boundary() {
             let scenario = Scenario::new(708, &yaml);
             fs::write(scenario.source.join("script.txt"), "exit 0\n").unwrap();
             let old = scenario.install_and_create("sample");
-            let digest = old.rsplit('/').next().unwrap();
+            let digest = old.rsplit(':').next().unwrap();
             yaml = yaml.replace("{package_id}", &format!("{:032x}", 708));
             let migration = format!(
                 r#"  migrations:
-    - source_revision_digest: '{digest}'
+    - source_revision_digest: 'sha256:{digest}'
       transitions: []
       requires_source: []
       requires_target: []
@@ -921,9 +921,9 @@ fn shell_loader_transform_proposal_receipt_and_exit_preserve_target_boundary() {
             let active = &shown["result"]["active_revision"];
             assert_eq!(
                 format!(
-                    "exact:{}/{}",
+                    "{}:{}",
                     active["package_id"].as_str().unwrap(),
-                    active["content_digest"].as_str().unwrap()
+                    active["revision_id"].as_str().unwrap()
                 ),
                 if code == 0 {
                     target.clone()
@@ -1268,9 +1268,9 @@ fn shell_loader_migration_reads_pinned_source_and_explicitly_registers_target_by
         );
         set.arg(initial);
         assert_success(&run_command(set));
-        let digest = old.rsplit('/').next().unwrap();
+        let digest = old.rsplit(':').next().unwrap();
         let migration = format!(
-            "  migrations:\n    - source_revision_digest: '{digest}'\n      transitions: []\n      requires_source: [{{role: active, input_id: data}}]\n      requires_target: []\n      produces_target: [result]\n      hook:\n        protocol_version: 1.0-alpha.1\n        launch: {{kind: shell_loader, shell: {shell}, command: {executable}, script: script}}\n        args: []\n        io: {{terminal: output}}\n"
+            "  migrations:\n    - source_revision_digest: 'sha256:{digest}'\n      transitions: []\n      requires_source: [{{role: active, input_id: data}}]\n      requires_target: []\n      produces_target: [result]\n      hook:\n        protocol_version: 1.0-alpha.1\n        launch: {{kind: shell_loader, shell: {shell}, command: {executable}, script: script}}\n        args: []\n        io: {{terminal: output}}\n"
         );
         let target_source = base
             .replace("inputs: [{id: data,", "inputs: [{id: result,")

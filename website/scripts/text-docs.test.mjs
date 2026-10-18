@@ -163,7 +163,7 @@ test('Pactrun home follows the README structure with explanatory diagrams, not a
   for (const text of ['Windows x86-64', 'glibc 2.36 or newer', 'Git',
     'scoop install pactrun/pactrun-preview', 'brew install pipapoen/pactrun/pactrun-preview',
     ':::warning Preview only', 'there is no Stable release yet']) assert.ok(install.includes(text), text);
-  const images = [...current.matchAll(/!\[([^\]]+)\]\((\/img\/intro-alpha9\/[^)]+)\)/g)];
+  const images = [...current.matchAll(/!\[([^\]]+)\]\((\/img\/intro-[^/]+\/[^)]+)\)/g)];
   assert.equal(images.length, 2);
   for (const [, alt, url] of images) {
     assert.ok(alt.length > 25, 'The explanation must also be available without the picture');

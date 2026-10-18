@@ -13,9 +13,10 @@ Pactrun is a command-line tool for managing local services on Windows and Linux.
 It brings together the instructions for operating a service, the configuration
 for each setup, and records of the operations performed.
 
-Service-specific instructions are supplied in a **Pack**: a versioned definition
-of the settings a service needs and the operations available to its users. You
-can use a Pack prepared by someone else, or write one for your own service.
+Service-specific instructions are supplied in a **Revision Pack**: an installable
+bundle of management definitions and related files. A **Package** is the product
+lineage; a **Revision** is one immutable version of its contents. You can use a
+Revision Pack prepared by someone else, or write one for your own service.
 Pactrun itself is a single executable; the service and any tools required by its
 Pack remain separate.
 
@@ -34,7 +35,7 @@ procedures differ. Pactrun provides a common way to manage them:
 - **Separate named setups.** An **Instance** represents one managed use of a
   Pack, with its own configuration and execution history. Multiple Instances
   can use the same Pack without sharing those settings.
-- **Known instruction versions.** An installed Pack version is a **Revision**.
+- **Known instruction versions.** Each installed version is a **Revision**.
   It is immutable, and installing another Revision does not automatically
   switch existing Instances to it.
 - **Defined operations and recorded results.** Packs expose operations with
@@ -122,7 +123,7 @@ service manager for stopping or restarting it. Another Pack might invoke Docker
 Compose. The integration belongs to the Pack; Docker and WSL are not universal
 prerequisites. Pactrun itself is not an always-on process supervisor.
 
-![Pactrun manages Pack versions, configuration and execution history. Pack Hooks can combine service commands, service managers and container tools; each tool retains its own runtime responsibilities.](/img/intro-alpha9/tooling.svg)
+![Pactrun manages Revisions, configuration and execution history. Pack Hooks can combine service commands, service managers and container tools; each tool retains its own runtime responsibilities.](/img/intro-alpha10/tooling.svg)
 
 ### Application management platforms
 
@@ -178,7 +179,7 @@ pactrun --version
 
 :::warning Preview only
 
-Only **Preview 1.0.0-alpha.9** is available; there is no Stable release yet.
+Only **Preview 1.0.0-alpha.10** is available; there is no Stable release yet.
 The executables are unsigned. Use isolated data while evaluating this release.
 
 :::

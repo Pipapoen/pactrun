@@ -5,8 +5,8 @@ title: Understanding a Pack
 # Understanding a Pack
 
 Before writing Hello Pack's first definition, we need to know what Pactrun
-will recognize: a Package with a lasting identity, a Pack that describes how
-to manage something, and Revisions that preserve its exact contents.
+will recognize: a Package with a lasting identity, Revisions that preserve each
+version's contents, and Revision Packs that carry those contents for installation.
 
 ## A Package has a continuing identity
 
@@ -21,16 +21,14 @@ The identity also survives moving the source directory, changing the display
 name, or sharing the Pack with someone else. If a fork becomes a separately
 maintained product lineage, give it a new Package ID.
 
-## A Pack is a kind of Package
+## A Revision Pack carries a version
 
-**Pack** is the only Package kind Pactrun currently supports. When you create
-Hello Pack, you are creating a Package of this kind.
+A **Revision Pack** is an installable bundle of a management definition and the
+files needed to carry it out, such as scripts. It also declares which Package
+the version belongs to. You can work with its source directory or share a
+portable `.pack` file. Installing a Revision Pack records that version in Pactrun.
 
-A Pack supplies management definitions and the files needed to carry them out,
-such as scripts. Those declarations tell Pactrun how to use the supplied
-implementation.
-
-![Pack is the supported Package kind. A Pack supplies management definitions and accompanying runtime files.](/img/pack-authors/pack-composition.svg)
+![A Revision Pack carries one version's management definition and runtime files, with its Package ID.](/img/pack-authors/pack-composition.svg)
 
 ## A Revision preserves exact contents
 
@@ -41,9 +39,10 @@ Package can have several Revisions.
 ![Hello Pack keeps one Package ID across three Revisions. Each Revision contains its own management definition and runtime content.](/img/pack-authors/package-lineage.svg)
 
 The letters A, B, and C in the diagram are examples. Pactrun calculates a
-**content digest**, a fingerprint of the operational meaning of the definition
-and its runtime content. The Package ID and this digest together identify an
-exact Revision.
+**Revision ID** from the operational meaning of the definition and its runtime
+content. This content digest is written as 64 lowercase hexadecimal characters.
+It identifies the version within its Package, so commands select both a Package
+and a Revision. The same contents in different Packages can have the same Revision ID.
 
 You do not assign a sequence number to a Revision. Changing a script's contents
 or the meaning of the management definition changes the digest. Editing YAML
@@ -69,9 +68,9 @@ pack/
 ├── pactrun.yaml
 │   ├── source_format      Source format to read
 │   ├── package_id         Package lineage
-│   ├── revision           Management definition
-│   └── runtime_content    Runtime file declarations
-└── Any files referenced by runtime_content
+│   └── revision           Complete version content declarations
+│       └── runtime_content  Runtime file declarations
+└── Any files referenced by revision.runtime_content
 ```
 
 The indented entries under `pactrun.yaml` above are fields inside the file.
@@ -97,7 +96,7 @@ Package identity and valid structure.
 Run the following command from your `hello-pack-tutorial` working directory:
 
 ```sh
-pactrun pack generate-id
+pactrun package generate-id
 ```
 
 It prints a new Package ID: 32 lowercase hexadecimal characters. The command
@@ -107,12 +106,11 @@ for this new Hello Pack and keep it as the Pack evolves.
 Create `pack/pactrun.yaml` in your editor with:
 
 ```yaml
-source_format: "1.0-alpha.3"
+source_format: "1.0-alpha.4"
 package_id: "<your generated Package ID>"
 
-revision: {}
-
-runtime_content: {}
+revision:
+  runtime_content: {}
 ```
 
 Replace `<your generated Package ID>` with the command's output, keeping the
@@ -122,15 +120,17 @@ quotes. Save the file as UTF-8.
 | --- | --- |
 | `source_format` | The rules Pactrun uses to read this source document. |
 | `package_id` | The Package lineage this source belongs to. |
-| `revision` | The management definition for these contents. |
-| `runtime_content` | The runtime files to include with the definition. |
+| `revision` | All management and runtime declarations for this version. |
+| `revision.runtime_content` | The runtime files to include with the definition. |
 
-`1.0-alpha.3` is the source format version. Hello Pack's exact Revision identity
-will be derived from its Package ID and contents.
+`1.0-alpha.4` is the source format version. The Revision ID will be calculated
+from the normalized declarations and acquired file contents. The Package ID
+keeps this version associated with the Hello product lineage.
 
 In YAML, `{}` means an empty object. Pactrun supplies empty collections for the
-omitted declarations here, so `revision: {}` provides an empty management
-definition and `runtime_content: {}` declares no runtime files.
+omitted declarations here. `runtime_content: {}` inside `revision` declares no
+runtime files; omitting it has the same meaning. `revision: {}` is also a valid
+empty starting point.
 
 With a valid generated ID, this is a complete minimal Pack source. You now have
 Hello Pack's identity and the source structure where its implementation will grow.

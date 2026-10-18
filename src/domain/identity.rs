@@ -55,6 +55,15 @@ opaque_id!(ServiceAllocationId);
 pub(crate) struct RevisionContentDigest([u8; SHA256_BYTES]);
 
 impl RevisionContentDigest {
+    /// Public Revision ID; legacy canonical contracts keep their prefixed codec.
+    pub(crate) fn revision_id(&self) -> String {
+        hex::encode(self.0)
+    }
+
+    pub(crate) fn from_revision_id(value: &str) -> Result<Self, String> {
+        parse_lower_hex::<SHA256_BYTES>(value, SHA256_HEX_LENGTH).map(Self)
+    }
+
     pub(crate) fn from_bytes(bytes: [u8; SHA256_BYTES]) -> Self {
         Self(bytes)
     }

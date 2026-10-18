@@ -116,7 +116,7 @@ fn revision_and_snapshot_exports_use_final_names_for_publication_and_import() {
         &[
             "--format".into(),
             "json".into(),
-            "pack".into(),
+            "revision".into(),
             "install".into(),
             source.into_os_string(),
         ],
@@ -196,7 +196,7 @@ fn revision_and_snapshot_exports_use_final_names_for_publication_and_import() {
             assert_eq!(code, 1);
             assert_eq!(fs::read(&output).unwrap(), bytes);
             let import = if kind == "revision" {
-                vec!["pack".into(), "install".into(), output.into_os_string()]
+                vec!["revision".into(), "install".into(), output.into_os_string()]
             } else {
                 vec!["snapshot".into(), "import".into(), output.into_os_string()]
             };

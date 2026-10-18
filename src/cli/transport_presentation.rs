@@ -23,7 +23,7 @@ pub(super) struct PackInstall {
 #[derive(Clone, Serialize)]
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 struct Relation {
-    source_digest: String,
+    source_revision_id: String,
     state: &'static str,
     explanation: Option<String>,
 }
@@ -52,7 +52,7 @@ impl From<&crate::application::InstallPackResult> for PackInstall {
                         }
                     };
                     Relation {
-                        source_digest: m.source_revision_digest.as_str().into(),
+                        source_revision_id: hex::encode(m.source_revision_digest.to_bytes()),
                         state,
                         explanation,
                     }
@@ -200,7 +200,7 @@ impl SnapshotPlan {
         version: machine::Version,
     ) -> Result<Self, CliError> {
         version.require_hook(plan.hook().protocol_version)?;
-        if version == machine::Version::Operations {
+        if version == machine::Version::RevisionIds {
             if let SnapshotPlanEligibility::Capture {
                 required_inputs_satisfied,
             } = &mut self.eligibility

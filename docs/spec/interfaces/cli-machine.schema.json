@@ -171,16 +171,18 @@
     },
     "ArtifactEdge": {
       "properties": {
-        "source_revision_digest": {
+        "source_revision_id": {
+          "pattern": "^[0-9a-f]{64}$",
           "type": "string"
         },
-        "target_revision_digest": {
+        "target_revision_id": {
+          "pattern": "^[0-9a-f]{64}$",
           "type": "string"
         }
       },
       "required": [
-        "source_revision_digest",
-        "target_revision_digest"
+        "source_revision_id",
+        "target_revision_id"
       ],
       "type": "object"
     },
@@ -2754,7 +2756,8 @@
             }
           ]
         },
-        "source_revision_digest": {
+        "source_revision_id": {
+          "pattern": "^[0-9a-f]{64}$",
           "type": "string"
         },
         "storage_transitions": {
@@ -2781,7 +2784,7 @@
         }
       },
       "required": [
-        "source_revision_digest",
+        "source_revision_id",
         "transitions",
         "produces_target",
         "hook",
@@ -2959,7 +2962,8 @@
         "package_id": {
           "type": "string"
         },
-        "revision_content_digest": {
+        "revision_id": {
+          "pattern": "^[0-9a-f]{64}$",
           "type": [
             "string",
             "null"
@@ -2968,7 +2972,7 @@
       },
       "required": [
         "package_id",
-        "revision_content_digest",
+        "revision_id",
         "name"
       ],
       "type": "object"
@@ -3363,11 +3367,33 @@
       ],
       "type": "object"
     },
+    "PackageEntry": {
+      "properties": {
+        "package_id": {
+          "type": "string"
+        },
+        "package_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "revision_count": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "package_id",
+        "package_name",
+        "revision_count"
+      ],
+      "type": "object"
+    },
     "Page": {
       "properties": {
         "items": {
           "items": {
-            "$ref": "#/$defs/RevisionEntry"
+            "$ref": "#/$defs/PackageEntry"
           },
           "type": "array"
         },
@@ -3388,7 +3414,7 @@
       "properties": {
         "items": {
           "items": {
-            "$ref": "#/$defs/History"
+            "$ref": "#/$defs/RevisionEntry"
           },
           "type": "array"
         },
@@ -3406,6 +3432,27 @@
       "type": "object"
     },
     "Page3": {
+      "properties": {
+        "items": {
+          "items": {
+            "$ref": "#/$defs/History"
+          },
+          "type": "array"
+        },
+        "next": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "items",
+        "next"
+      ],
+      "type": "object"
+    },
+    "Page4": {
       "properties": {
         "items": {
           "items": {
@@ -4500,7 +4547,7 @@
           "const": "pactrun.cli"
         },
         "format_version": {
-          "const": "1.0-alpha.4"
+          "const": "1.0-alpha.5"
         },
         "received_at_unix_ms": {
           "type": [
@@ -4972,7 +5019,8 @@
             "null"
           ]
         },
-        "source_digest": {
+        "source_revision_id": {
+          "pattern": "^[0-9a-f]{64}$",
           "type": "string"
         },
         "state": {
@@ -4980,7 +5028,7 @@
         }
       },
       "required": [
-        "source_digest",
+        "source_revision_id",
         "state",
         "explanation"
       ],
@@ -5215,31 +5263,33 @@
     },
     "Revision": {
       "properties": {
-        "content_digest": {
+        "package_id": {
           "type": "string"
         },
-        "package_id": {
+        "revision_id": {
+          "pattern": "^[0-9a-f]{64}$",
           "type": "string"
         }
       },
       "required": [
         "package_id",
-        "content_digest"
+        "revision_id"
       ],
       "type": "object"
     },
     "Revision2": {
       "properties": {
-        "content_digest": {
+        "package_id": {
           "type": "string"
         },
-        "package_id": {
+        "revision_id": {
+          "pattern": "^[0-9a-f]{64}$",
           "type": "string"
         }
       },
       "required": [
         "package_id",
-        "content_digest"
+        "revision_id"
       ],
       "type": "object"
     },
@@ -5378,7 +5428,7 @@
         "instance",
         "allocation",
         "revision",
-        "revision_digest",
+        "revision_id",
         "migration_path"
       ],
       "type": "string"
@@ -6136,13 +6186,14 @@
               "const": "migration_edge",
               "type": "string"
             },
-            "source_digest": {
+            "source_revision_id": {
+              "pattern": "^[0-9a-f]{64}$",
               "type": "string"
             }
           },
           "required": [
             "kind",
-            "source_digest"
+            "source_revision_id"
           ],
           "type": "object"
         },
@@ -6728,7 +6779,7 @@
       "if": {
         "properties": {
           "command": {
-            "const": "pack generate-id"
+            "const": "package generate-id"
           },
           "status": {
             "const": "success"
@@ -6747,7 +6798,45 @@
       "if": {
         "properties": {
           "command": {
-            "const": "pack install"
+            "const": "package list"
+          },
+          "status": {
+            "const": "success"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "$ref": "#/$defs/Page"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "command": {
+            "const": "package show"
+          },
+          "status": {
+            "const": "success"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "$ref": "#/$defs/PackageEntry"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "command": {
+            "const": "revision install"
           },
           "status": {
             "const": "success"
@@ -7265,7 +7354,7 @@
       "then": {
         "properties": {
           "result": {
-            "$ref": "#/$defs/Page"
+            "$ref": "#/$defs/Page2"
           }
         }
       }
@@ -7322,7 +7411,7 @@
       "then": {
         "properties": {
           "result": {
-            "$ref": "#/$defs/Page2"
+            "$ref": "#/$defs/Page3"
           }
         }
       }
@@ -7341,7 +7430,7 @@
       "then": {
         "properties": {
           "result": {
-            "$ref": "#/$defs/Page3"
+            "$ref": "#/$defs/Page4"
           }
         }
       }
@@ -8152,7 +8241,7 @@
       "if": {
         "properties": {
           "command": {
-            "const": "pack generate-id"
+            "const": "package generate-id"
           },
           "error": {
             "properties": {
@@ -8188,7 +8277,79 @@
       "if": {
         "properties": {
           "command": {
-            "const": "pack install"
+            "const": "package list"
+          },
+          "error": {
+            "properties": {
+              "kind": {
+                "const": "output"
+              }
+            }
+          },
+          "status": {
+            "const": "failure"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PartialResult"
+              },
+              {
+                "$ref": "#/$defs/Page"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "command": {
+            "const": "package show"
+          },
+          "error": {
+            "properties": {
+              "kind": {
+                "const": "output"
+              }
+            }
+          },
+          "status": {
+            "const": "failure"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PartialResult"
+              },
+              {
+                "$ref": "#/$defs/PackageEntry"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "command": {
+            "const": "revision install"
           },
           "error": {
             "properties": {
@@ -9160,7 +9321,7 @@
                 "$ref": "#/$defs/PartialResult"
               },
               {
-                "$ref": "#/$defs/Page"
+                "$ref": "#/$defs/Page2"
               },
               {
                 "type": "null"
@@ -9268,7 +9429,7 @@
                 "$ref": "#/$defs/PartialResult"
               },
               {
-                "$ref": "#/$defs/Page2"
+                "$ref": "#/$defs/Page3"
               },
               {
                 "type": "null"
@@ -9304,7 +9465,7 @@
                 "$ref": "#/$defs/PartialResult"
               },
               {
-                "$ref": "#/$defs/Page3"
+                "$ref": "#/$defs/Page4"
               },
               {
                 "type": "null"
@@ -10468,8 +10629,10 @@
             "diagnostic list",
             "diagnostic show",
             "version",
-            "pack generate-id",
-            "pack install",
+            "package generate-id",
+            "package list",
+            "package show",
+            "revision install",
             "revision export",
             "instance create",
             "instance show",
@@ -10598,7 +10761,7 @@
       "const": "pactrun.cli"
     },
     "format_version": {
-      "const": "1.0-alpha.4"
+      "const": "1.0-alpha.5"
     },
     "result": {
       "type": [
@@ -10621,6 +10784,6 @@
     "result",
     "error"
   ],
-  "title": "Pactrun CLI machine interface 1.0-alpha.4",
+  "title": "Pactrun CLI machine interface 1.0-alpha.5",
   "type": "object"
 }

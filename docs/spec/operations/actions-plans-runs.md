@@ -6,7 +6,7 @@ title: Actions, Plans, and Runs
 
 ## Actions
 
-An Action is a Package-defined operation such as `start`, `status`, `logs`, or
+An Action is an operation declared by a Revision, such as `start`, `status`, `logs`, or
 `vacuum`. Pactrun does not infer service semantics from the name. An Action named
 `backup`, for example, does not create a Pactrun Snapshot unless the Package
 also uses the Snapshot capability.

@@ -16,7 +16,7 @@ fn generic_confirmation_never_grants_disclosure_declassification_or_recovery_aut
     let (temporary, _, _) = cli_roots();
     let missing = temporary.path().join("must-not-open");
     let id = "00000000000000000000000000000001";
-    let revision = "exact:00000000000000000000000000000001/sha256:0000000000000000000000000000000000000000000000000000000000000001";
+    let revision = "00000000000000000000000000000001:0000000000000000000000000000000000000000000000000000000000000001";
     let export = temporary.path().join("must-not-export");
     for flag in ["--force", "--yes"] {
         for mut args in [
@@ -319,7 +319,7 @@ fn prepared_cli_hook_instance_with_terminal(
             vec![
                 "--format".into(),
                 "json".into(),
-                "pack".into(),
+                "revision".into(),
                 "install".into(),
                 source.into_os_string()
             ],
@@ -407,21 +407,14 @@ fn closed_cli_references_and_storage_root_boundary_are_exact() {
         assert_eq!(path.as_os_str().as_bytes(), b"non-unicode-\xff.bin");
     }
     assert!(parse_revision_reference("bare".to_owned()).is_err());
-    assert!(
-        parse_revision_reference(format!(
-            "exact:{}/sha256:{}",
-            "00".repeat(16),
-            "11".repeat(32)
-        ))
-        .is_ok()
-    );
+    assert!(parse_revision_reference(format!("{}:{}", "00".repeat(16), "11".repeat(32))).is_ok());
     assert!(
         parse_command(vec![
             "instance".into(),
             "create".into(),
             "node".into(),
             "--revision".into(),
-            format!("exact:{}/sha256:{}", "00".repeat(16), "11".repeat(32)).into(),
+            format!("{}:{}", "00".repeat(16), "11".repeat(32)).into(),
             "--input-file".into(),
             "config=missing-a".into(),
             "--input-file".into(),
@@ -434,7 +427,7 @@ fn closed_cli_references_and_storage_root_boundary_are_exact() {
     let mut stderr = Vec::new();
     assert_eq!(
         run(
-            vec!["pack".into(), "generate-id".into()],
+            vec!["package".into(), "generate-id".into()],
             None,
             &mut io::empty(),
             &mut stdout,
@@ -730,7 +723,7 @@ fn human_action_and_plan_commands_use_the_read_only_path() {
             vec![
                 "--format".into(),
                 "json".into(),
-                "pack".into(),
+                "revision".into(),
                 "install".into(),
                 source.into_os_string()
             ],
@@ -855,7 +848,7 @@ fn human_invoke_creates_and_finishes_a_managed_run() {
             vec![
                 "--format".into(),
                 "json".into(),
-                "pack".into(),
+                "revision".into(),
                 "install".into(),
                 source.into_os_string()
             ],
@@ -976,7 +969,7 @@ fn broken_final_diagnostic_writer_does_not_change_finished_run_ownership() {
             vec![
                 "--format".into(),
                 "json".into(),
-                "pack".into(),
+                "revision".into(),
                 "install".into(),
                 source.into_os_string()
             ],
@@ -1173,7 +1166,7 @@ fn cli_install_instance_secret_export_and_atomic_no_clobber_are_end_to_end() {
             vec![
                 "--format".into(),
                 "json".into(),
-                "pack".into(),
+                "revision".into(),
                 "install".into(),
                 source.into_os_string()
             ],
@@ -1187,7 +1180,11 @@ fn cli_install_instance_secret_export_and_atomic_no_clobber_are_end_to_end() {
         String::from_utf8_lossy(&stderr)
     );
     let revision = installed_reference(&stdout);
-    assert!(revision.starts_with("exact:"));
+    assert!(
+        revision
+            .split_once(':')
+            .is_some_and(|(package, id)| package.len() == 32 && id.len() == 64)
+    );
 
     let config_path = storage.parent().unwrap().join("config.bin");
     fs::write(&config_path, b"configuration").unwrap();

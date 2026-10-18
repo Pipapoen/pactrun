@@ -28,8 +28,17 @@ pub(super) fn parse_name(value: String) -> Result<LocalName, CliError> {
 }
 pub(super) fn parse_package(parser: &mut Parser) -> Result<Command, CliError> {
     let operation = required_value_string(parser, "Package command")?;
+    if operation == "generate-id" {
+        require_end(parser)?;
+        return Ok(Command::GeneratePackageId);
+    }
+    if matches!(operation.as_str(), "list" | "show") {
+        return catalog::parse_package(parser, &operation);
+    }
     if !matches!(operation.as_str(), "rename" | "unname") {
-        return Err(CliError::usage("Package command must be rename or unname"));
+        return Err(CliError::usage(
+            "Package command must be generate-id, list, show, rename or unname",
+        ));
     }
     let reference = LocalSelector::parse(required_value_string(parser, "Package reference")?)
         .map_err(|e| CliError::usage(e.to_string()))?;
@@ -57,7 +66,7 @@ pub(super) fn parse_revision(parser: &mut Parser, rename: bool) -> Result<Comman
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 pub(super) struct NameResult {
     package_id: String,
-    revision_content_digest: Option<String>,
+    revision_id: Option<String>,
     name: Option<String>,
 }
 pub(super) fn execute(
@@ -78,7 +87,7 @@ pub(super) fn execute(
                 .map_err(app_error)?;
             NameResult {
                 package_id: id.to_string(),
-                revision_content_digest: None,
+                revision_id: None,
                 name: name.map(|n| n.as_str().to_owned()),
             }
         }
@@ -92,7 +101,7 @@ pub(super) fn execute(
                 .map_err(app_error)?;
             NameResult {
                 package_id: id.package_id.to_string(),
-                revision_content_digest: Some(id.content_digest.to_string()),
+                revision_id: Some(id.content_digest.revision_id()),
                 name: name.map(|n| n.as_str().to_owned()),
             }
         }

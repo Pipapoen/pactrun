@@ -89,12 +89,8 @@ fn short_ids_cover_snapshot_artifact_migration_and_retirement_operations() {
     );
     query(&s, &["snapshot", "verify", short]);
     query(&s, &["snapshot", "restore", "sample", short]);
-    let (package, digest) = first
-        .strip_prefix("exact:")
-        .unwrap()
-        .split_once('/')
-        .unwrap();
-    let short_revision = format!("exact:{}/sha256:{}", &package[..8], &digest[7..15]);
+    let (package, digest) = first.split_once(':').unwrap();
+    let short_revision = format!("{}:{}", &package[..8], &digest[..8]);
     query(
         &s,
         &[
@@ -121,7 +117,7 @@ fn short_ids_cover_snapshot_artifact_migration_and_retirement_operations() {
     );
     let path = s.source.join("pactrun.yaml");
     let mut manifest: Value = serde_json::from_slice(&fs::read(&path).unwrap()).unwrap();
-    manifest["revision"]["migrations"] = json!([{"source_revision_digest":digest,"transitions":[],"requires_source":[],"requires_target":[],"produces_target":[]}]);
+    manifest["revision"]["migrations"] = json!([{"source_revision_digest":format!("sha256:{digest}"),"transitions":[],"requires_source":[],"requires_target":[],"produces_target":[]}]);
     fs::write(&path, manifest.to_string()).unwrap();
     let target = s.install();
     let paths = query(
@@ -279,7 +275,7 @@ fn machine_delivery_covers_shell_loader_lifecycle_and_each_migration_hook() {
         for (index, event) in events.iter().enumerate() {
             assert_eq!(event["sequence"], (index + 1).to_string());
             assert_eq!(event["format"], "pactrun.cli");
-            assert_eq!(event["format_version"], "1.0-alpha.4");
+            assert_eq!(event["format_version"], "1.0-alpha.5");
         }
         let result = events.pop().unwrap();
         assert_eq!(result["type"], "result");
@@ -344,8 +340,8 @@ fn machine_delivery_covers_shell_loader_lifecycle_and_each_migration_hook() {
     let mut manifest: Value = serde_json::from_slice(&fs::read(&file).unwrap()).unwrap();
     let mut previous = first;
     for _ in 0..2 {
-        let digest = previous.split('/').next_back().unwrap();
-        manifest["revision"]["migrations"] = json!([{"source_revision_digest":digest,"transitions":[],"requires_source":[],"requires_target":[],"produces_target":[],"hook":manifest["revision"]["actions"][0]["hook"].clone()}]);
+        let digest = previous.split(':').next_back().unwrap();
+        manifest["revision"]["migrations"] = json!([{"source_revision_digest":format!("sha256:{digest}"),"transitions":[],"requires_source":[],"requires_target":[],"produces_target":[],"hook":manifest["revision"]["actions"][0]["hook"].clone()}]);
         fs::write(&file, manifest.to_string()).unwrap();
         previous = s.install();
     }
@@ -432,7 +428,7 @@ fn capability_metadata_follows_exact_revisions_without_execution_or_history_muta
     let updated = s.run([
         "--format",
         "json",
-        "pack",
+        "revision",
         "install",
         s.source.to_str().unwrap(),
         "--metadata-conflict",
@@ -443,9 +439,9 @@ fn capability_metadata_follows_exact_revisions_without_execution_or_history_muta
     let identity = &updated["result"]["revision"];
     assert_eq!(
         format!(
-            "exact:{}/{}",
+            "{}:{}",
             identity["package_id"].as_str().unwrap(),
-            identity["content_digest"].as_str().unwrap()
+            identity["revision_id"].as_str().unwrap()
         ),
         first
     ); // Descriptions are not identity.
@@ -475,11 +471,11 @@ fn capability_metadata_follows_exact_revisions_without_execution_or_history_muta
     let before_migration = query(&s, &["run", "list"]);
     let mut previous = first.clone();
     for label in ["edge-one", "edge-two"] {
-        let digest = previous.split('/').next_back().unwrap();
-        manifest["revision"]["migrations"] = json!([{"source_revision_digest":digest,"transitions":[],"requires_source":[],"requires_target":[],"produces_target":[]}]);
+        let digest = previous.split(':').next_back().unwrap();
+        manifest["revision"]["migrations"] = json!([{"source_revision_digest":format!("sha256:{digest}"),"transitions":[],"requires_source":[],"requires_target":[],"produces_target":[]}]);
         manifest["portable_metadata"]["presentation"] = json!([
             explain(
-                json!({"kind":"migration","source_revision_digest":digest}),
+                json!({"kind":"migration","source_revision_digest":format!("sha256:{digest}")}),
                 label
             ),
             explain(json!({"kind":"action","action_id":"inspect"}), label)
@@ -571,8 +567,8 @@ fn long_tmpdir_fallback_preserves_child_environment_and_initialization_step_for_
     let missing = tmp.path().join("missing");
     let mut yaml: Value =
         serde_json::from_slice(&fs::read(s.source.join("pactrun.yaml")).unwrap()).unwrap();
-    let digest = first.split('/').next_back().unwrap();
-    yaml["revision"]["migrations"] = json!([{"source_revision_digest":digest,"transitions":[],"requires_source":[],"requires_target":[],"produces_target":[],"hook":yaml["revision"]["actions"][0]["hook"].clone()}]);
+    let digest = first.split(':').next_back().unwrap();
+    yaml["revision"]["migrations"] = json!([{"source_revision_digest":format!("sha256:{digest}"),"transitions":[],"requires_source":[],"requires_target":[],"produces_target":[],"hook":yaml["revision"]["actions"][0]["hook"].clone()}]);
     fs::write(s.source.join("pactrun.yaml"), yaml.to_string()).unwrap();
     let target = s.install();
     for args in [

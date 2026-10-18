@@ -32,10 +32,11 @@ class LinuxCompatibility(unittest.TestCase):
                 if command == ['--format','json','--version']: out = json.dumps({'result':part})
                 elif command == ['--format','json','--help']: out = json.dumps({'result':{'usage':'help\n'}})
                 elif command == ['--help']: out = 'help\n'
-                elif command[:4] == ['--format','json','pack','install']:
+                elif command[:4] in [['--format','json','pack','install'],['--format','json','revision','install']]:
+                    modern = command[2] == 'revision'
                     out = json.dumps({'result': {'revision': {
-                        'package_id': package_id, 'content_digest': 'sha256:' + digest}}})
-                elif command[:2] == ['pack','install']:
+                        'package_id': package_id, ('revision_id' if modern else 'content_digest'): digest if modern else 'sha256:' + digest}}})
+                elif command[:2] in [['pack','install'],['revision','install']]:
                     self.fail('Revision identity must come from JSON, not human installation text')
                 elif command[:2] == ['instance','create']:
                     self.assertEqual(command, ['instance','create','debian-ci','--revision',
@@ -45,8 +46,11 @@ class LinuxCompatibility(unittest.TestCase):
                 return subprocess.CompletedProcess(args, kwargs.get('code',0), out.encode(), b'')
             with patch.object(linux,'run',side_effect=respond):
                 result = linux.smoke(binary,root/'work',part)
+                part['default_formats']['cli_machine_interface'] = '1.0-alpha.5'
+                modern = linux.smoke(binary,root/'work-current',part)
             self.assertTrue(any(x['exit_code']==1 for x in result))
             self.assertTrue(any(x['command'][:4] == ['--format','json','pack','install'] for x in result))
+            self.assertTrue(any(x['command'][:4] == ['--format','json','revision','install'] for x in modern))
 
     @unittest.skipIf(os.name == 'nt', 'POSIX Homebrew entrypoint semantics')
     def test_homebrew_entrypoint_is_not_dereferenced_into_repository_prefix(self):

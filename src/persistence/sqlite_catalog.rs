@@ -105,28 +105,6 @@ impl PactrunPersistence {
         })
     }
 
-    pub(crate) fn revision_prefix(
-        &self,
-        package: &str,
-        digest: &str,
-    ) -> Result<IdentityMatches, PersistenceError> {
-        let db = self.open_read_connection()?;
-        let (pl, ph) = prefix_bounds(package, 32)?;
-        let (dl, dh) = prefix_bounds(digest, 64)?;
-        let mut stmt = db.prepare("SELECT 'exact:'||lower(hex(package_id))||'/sha256:'||lower(hex(revision_content_digest)) FROM revisions WHERE package_id>=?1 AND (?2 IS NULL OR package_id<?2) AND revision_content_digest>=?3 AND (?4 IS NULL OR revision_content_digest<?4) ORDER BY package_id,revision_content_digest LIMIT 21").map_err(sql)?;
-        let mut candidates = stmt
-            .query_map(params![pl, ph, dl, dh], |r| r.get::<_, String>(0))
-            .map_err(sql)?
-            .collect::<Result<Vec<_>, _>>()
-            .map_err(sql)?;
-        let has_more = candidates.len() > 20;
-        candidates.truncate(20);
-        Ok(IdentityMatches {
-            candidates,
-            has_more,
-        })
-    }
-
     pub(crate) fn identity_abbreviations(
         &self,
         kind: CatalogIdentityKind,
@@ -391,15 +369,94 @@ impl PactrunPersistence {
         revision(&tx, &identity)
     }
 
+    pub(crate) fn catalog_packages(
+        &self,
+        limit: usize,
+        after: Option<PackageId>,
+    ) -> Result<CatalogPage<PackageCatalogEntry, PackageId>, PersistenceError> {
+        let take = bound(limit)?;
+        let mut db = self.open_read_connection()?;
+        let tx = db.transaction().map_err(sql)?;
+        let mut query = tx.prepare("SELECT p.package_id,n.name,(SELECT count(*) FROM revision_installations i WHERE i.package_id=p.package_id) FROM packages p LEFT JOIN package_local_names n USING(package_id) WHERE ?1 IS NULL OR p.package_id>?1 ORDER BY p.package_id LIMIT ?2").map_err(sql)?;
+        let rows = query
+            .query_map(
+                params![after.as_ref().map(|id| id.as_bytes().as_slice()), take],
+                |row| {
+                    Ok((
+                        row.get::<_, Vec<u8>>(0)?,
+                        row.get::<_, Option<String>>(1)?,
+                        row.get::<_, i64>(2)?,
+                    ))
+                },
+            )
+            .map_err(sql)?;
+        let mut items = Vec::new();
+        for row in rows {
+            let (id, name, count) = row.map_err(sql)?;
+            items.push(PackageCatalogEntry {
+                id: PackageId::from_bytes(bytes(id)?),
+                name: name
+                    .map(LocalName::parse)
+                    .transpose()
+                    .map_err(|_| corrupt())?,
+                revision_count: u64::try_from(count).map_err(|_| corrupt())?,
+            });
+        }
+        Ok(page(items, limit, |item| item.id))
+    }
+
+    pub(crate) fn catalog_package(
+        &self,
+        id: PackageId,
+    ) -> Result<PackageCatalogEntry, PersistenceError> {
+        let db = self.open_read_connection()?;
+        let row = db.query_row("SELECT n.name,(SELECT count(*) FROM revision_installations i WHERE i.package_id=p.package_id) FROM packages p LEFT JOIN package_local_names n USING(package_id) WHERE p.package_id=?1", [id.as_bytes().as_slice()], |r| {
+            Ok((r.get::<_,Option<String>>(0)?, r.get::<_,i64>(1)?))
+        }).optional().map_err(sql)?.ok_or_else(|| PersistenceError::InvalidMetadata("Package does not exist".into()))?;
+        Ok(PackageCatalogEntry {
+            id,
+            name: row
+                .0
+                .map(LocalName::parse)
+                .transpose()
+                .map_err(|_| corrupt())?,
+            revision_count: u64::try_from(row.1).map_err(|_| corrupt())?,
+        })
+    }
+
+    pub(crate) fn catalog_package_revisions(
+        &self,
+        package: PackageId,
+        limit: usize,
+        after: Option<&RevisionCursor>,
+    ) -> Result<CatalogPage<RevisionCatalogEntry, RevisionCursor>, PersistenceError> {
+        if after.is_some_and(|cursor| cursor.identity.package_id != package) {
+            return Err(PersistenceError::InvalidMetadata(
+                "Revision cursor belongs to another Package".into(),
+            ));
+        }
+        self.catalog_revisions_in(Some(package), limit, after)
+    }
+
+    #[cfg(test)]
     pub(crate) fn catalog_revisions(
         &self,
+        limit: usize,
+        after: Option<&RevisionCursor>,
+    ) -> Result<CatalogPage<RevisionCatalogEntry, RevisionCursor>, PersistenceError> {
+        self.catalog_revisions_in(None, limit, after)
+    }
+
+    fn catalog_revisions_in(
+        &self,
+        package: Option<PackageId>,
         limit: usize,
         after: Option<&RevisionCursor>,
     ) -> Result<CatalogPage<RevisionCatalogEntry, RevisionCursor>, PersistenceError> {
         let take = bound(limit)?;
         let mut db = self.open_read_connection()?;
         let tx = db.transaction().map_err(sql)?;
-        let mut stmt = tx.prepare("SELECT r.package_id,r.revision_content_digest FROM revisions r JOIN revision_installations i USING(package_id,revision_content_digest) WHERE ?1=0 OR coalesce(i.installed_at_unix_ms,-1)<?2 OR (coalesce(i.installed_at_unix_ms,-1)=?2 AND (r.package_id,r.revision_content_digest)>(?3,?4)) ORDER BY coalesce(i.installed_at_unix_ms,-1) DESC,r.package_id,r.revision_content_digest LIMIT ?5").map_err(sql)?;
+        let mut stmt = tx.prepare("SELECT r.package_id,r.revision_content_digest FROM revisions r JOIN revision_installations i USING(package_id,revision_content_digest) WHERE (?6 IS NULL OR r.package_id=?6) AND (?1=0 OR coalesce(i.installed_at_unix_ms,-1)<?2 OR (coalesce(i.installed_at_unix_ms,-1)=?2 AND (r.package_id,r.revision_content_digest)>(?3,?4))) ORDER BY coalesce(i.installed_at_unix_ms,-1) DESC,r.package_id,r.revision_content_digest LIMIT ?5").map_err(sql)?;
         let ids = stmt
             .query_map(
                 params![
@@ -407,7 +464,8 @@ impl PactrunPersistence {
                     after.and_then(|v| v.installed_at_unix_ms).unwrap_or(-1),
                     after.map(|v| v.identity.package_id.as_bytes().as_slice()),
                     after.map(|v| v.identity.content_digest.as_bytes().as_slice()),
-                    take
+                    take,
+                    package.as_ref().map(|id| id.as_bytes().as_slice())
                 ],
                 |r| Ok((r.get::<_, Vec<u8>>(0)?, r.get::<_, Vec<u8>>(1)?)),
             )

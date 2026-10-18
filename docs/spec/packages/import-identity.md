@@ -14,7 +14,7 @@ MUST remain a distinct Revision identity. Export and import MUST also preserve
 the bundle-defined portable non-identity metadata required by
 [PR-REQ-0021](./metadata.md#pr-req-0021---portable-and-local-metadata).
 
-The [Pack distribution format](./distribution.md) determines
+The [Revision Pack format](./distribution.md) determines
 which portable metadata is carried and how import applies conflicts and merges.
 Being portable-capable alone does not require a field to be exported.
 
@@ -33,7 +33,7 @@ install timestamps, and source filesystem paths MUST be local-only.
 Portable-capable MUST NOT be equated with identity-bearing or automatically
 exported. Local persistence MUST NOT be treated as evidence that a kind is
 local-only. Export serialization, selection, carriage, import conflict and
-merge policy are owned by the [Pack distribution contract](./distribution.md)
+merge policy are owned by the [Revision Pack contract](./distribution.md)
 and MUST NOT alter Revision identity.
 
 **Verification: PR-TEST-0058.**

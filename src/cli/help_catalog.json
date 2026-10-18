@@ -1,5 +1,5 @@
 {
-  "description": "Manage installed Packs, long-lived Instances and Pack-defined operations.",
+  "description": "Manage Packages, installed Revisions, long-lived Instances and service operations.",
   "global_options": [
     {
       "name": "--config",
@@ -43,8 +43,8 @@
     },
     {
       "name": "--machine-version",
-      "value": "1.0-alpha.3|1.0-alpha.4",
-      "description": "Select a machine interface before the command; requires explicit --format json or jsonl. The default is 1.0-alpha.4."
+      "value": "1.0-alpha.5",
+      "description": "Select a machine interface before the command; requires explicit --format json or jsonl. The default is 1.0-alpha.5."
     }
   ],
   "options": {
@@ -319,7 +319,7 @@
     },
     "migration-input-file": {
       "name": "--input-file",
-      "value": "target-digest/input-id=path",
+      "value": "revision-id/input-id=path",
       "description": "Supply a declared Input for a specific target Revision on the selected path."
     },
     "hook-json-file": {
@@ -344,22 +344,22 @@
     },
     "migration-param": {
       "name": "--param",
-      "value": "target-digest/id=value",
+      "value": "target-revision-id/id=value",
       "description": "Supply a typed parameter for one exact edge of the selected Migration path."
     },
     "migration-param-file": {
       "name": "--param-file",
-      "value": "target-digest/id=path",
+      "value": "target-revision-id/id=path",
       "description": "Supply a typed parameter for one exact edge of the selected Migration path."
     },
     "migration-param-stdin": {
       "name": "--param-stdin",
-      "value": "target-digest/id",
+      "value": "target-revision-id/id",
       "description": "Supply a typed parameter for one exact edge of the selected Migration path."
     },
     "artifact-edge": {
       "name": "--edge",
-      "value": "source-digest/target-digest",
+      "value": "source-revision-id/target-revision-id",
       "description": "Select one exact Migration edge from the retained Run path; required for edge-scoped reports."
     }
   },
@@ -398,23 +398,13 @@
     },
     {
       "path": [
-        "pack"
-      ],
-      "description": "Install Packs or generate a Package ID.",
-      "forms": [],
-      "options": [],
-      "notes": [],
-      "examples": []
-    },
-    {
-      "path": [
-        "pack",
+        "package",
         "generate-id"
       ],
       "description": "Generate a new Package ID without opening managed storage.",
       "forms": [
         {
-          "usage": "pactrun pack generate-id",
+          "usage": "pactrun package generate-id",
           "description": "Generate a new Package ID without opening managed storage."
         }
       ],
@@ -424,14 +414,14 @@
     },
     {
       "path": [
-        "pack",
+        "revision",
         "install"
       ],
-      "description": "Validate and install immutable Pack content; does not start a service.",
+      "description": "Install a Revision from a Revision Pack; does not create an Instance or start a service.",
       "forms": [
         {
-          "usage": "pactrun pack install <directory-or-pack-file> [--package-name <name>] [--revision-name <name>] [--metadata-conflict overwrite|keep]",
-          "description": "Validate and install immutable Pack content; does not start a service."
+          "usage": "pactrun revision install <directory-or-pack-file> [--package-name <name>] [--revision-name <name>] [--metadata-conflict overwrite|keep]",
+          "description": "Validate the Revision Pack and install its version in the declared Package."
         }
       ],
       "options": [
@@ -441,18 +431,30 @@
       ],
       "notes": [],
       "examples": [
-        "pactrun pack install ./example.pack --package-name app --revision-name initial"
+        "pactrun revision install ./example.pack --package-name app --revision-name initial"
       ]
     },
     {
       "path": [
         "package"
       ],
-      "description": "Manage local Package names.",
+      "description": "Inspect product lineages, generate Package IDs and manage local names.",
       "forms": [],
       "options": [],
       "notes": [],
       "examples": []
+    },
+    {
+      "path": ["package", "list"],
+      "description": "List Packages in this Store once each, with local names and installed Revision counts.",
+      "forms": [{"usage": "pactrun package list [--limit <1..500>] [--after <package-id>] [--no-trunc]", "description": "List Packages in Package ID order; use the complete returned cursor to continue."}],
+      "options": ["--limit", "--after", "--no-trunc"], "notes": [], "examples": ["pactrun package list"]
+    },
+    {
+      "path": ["package", "show"],
+      "description": "Show a Package ID, local name and installed Revision count.",
+      "forms": [{"usage": "pactrun package show <package>", "description": "Select a Package by ID, unique ID prefix or local name."}],
+      "options": [], "notes": [], "examples": ["pactrun package show app"]
     },
     {
       "path": [
@@ -468,7 +470,7 @@
       ],
       "options": [],
       "notes": [
-        "Revision references use package:revision, with local names or IDs. Local names are case-sensitive and contain 1 to 31 ASCII characters."
+        "Select a Package by its ID, unique ID prefix or local name. Names are local to the Store."
       ],
       "examples": []
     },
@@ -486,7 +488,7 @@
       ],
       "options": [],
       "notes": [
-        "Revision references use package:revision, with local names or IDs. Local names are case-sensitive and contain 1 to 31 ASCII characters."
+        "Select a Package by its ID, unique ID prefix or local name. Names are local to the Store."
       ],
       "examples": []
     },
@@ -494,7 +496,7 @@
       "path": [
         "revision"
       ],
-      "description": "Inspect, name, export or delete installed Revisions.",
+      "description": "Install, inspect, name, export or delete versions within a Package.",
       "forms": [],
       "options": [],
       "notes": [],
@@ -505,11 +507,11 @@
         "revision",
         "list"
       ],
-      "description": "List Revisions newest-installed first; copy the returned cursor to continue.",
+      "description": "List one Package's Revisions newest-installed first; copy the returned cursor to continue.",
       "forms": [
         {
-          "usage": "pactrun revision list [--limit <1..500>] [--after <cursor>] [--no-trunc]",
-          "description": "List Revisions newest-installed first; copy the returned cursor to continue."
+          "usage": "pactrun revision list <package> [--limit <1..500>] [--after <cursor>] [--no-trunc]",
+          "description": "A Package ID or local name is required; the cursor is scoped to that Package."
         }
       ],
       "options": [
@@ -521,7 +523,7 @@
         "Object IDs accept unique lowercase hexadecimal prefixes of at least eight digits. --no-trunc shows full identifiers; pagination cursors are not object references."
       ],
       "examples": [
-        "pactrun revision list --limit 10"
+        "pactrun revision list app --limit 10"
       ]
     },
     {
@@ -538,7 +540,7 @@
       ],
       "options": [],
       "notes": [
-        "Revision references use package:revision, with local names or IDs. Local names are case-sensitive and contain 1 to 31 ASCII characters."
+        "Select a version as package:revision. Each part accepts its ID or local name; Revision IDs are bare hexadecimal values. Local names are case-sensitive and contain 1 to 31 ASCII characters."
       ],
       "examples": []
     },
@@ -568,7 +570,7 @@
       ],
       "options": [],
       "notes": [
-        "Revision references use package:revision, with local names or IDs. Local names are case-sensitive and contain 1 to 31 ASCII characters."
+        "Select a version as package:revision. Each part accepts its ID or local name; Revision IDs are bare hexadecimal values. Local names are case-sensitive and contain 1 to 31 ASCII characters."
       ],
       "examples": []
     },
@@ -586,7 +588,7 @@
       ],
       "options": [],
       "notes": [
-        "Revision references use package:revision, with local names or IDs. Local names are case-sensitive and contain 1 to 31 ASCII characters."
+        "Select a version as package:revision. Each part accepts its ID or local name; Revision IDs are bare hexadecimal values. Local names are case-sensitive and contain 1 to 31 ASCII characters."
       ],
       "examples": []
     },
@@ -604,7 +606,7 @@
       ],
       "options": [],
       "notes": [
-        "Revision references use package:revision, with local names or IDs. Local names are case-sensitive and contain 1 to 31 ASCII characters."
+        "Select a version as package:revision. Each part accepts its ID or local name; Revision IDs are bare hexadecimal values. Local names are case-sensitive and contain 1 to 31 ASCII characters."
       ],
       "examples": []
     },
@@ -626,7 +628,7 @@
       ],
       "notes": [
         "Always appends .pack: rv -> rv.pack; rv.pack -> rv.pack.pack.",
-        "Revision references use package:revision, with local names or IDs. Local names are case-sensitive and contain 1 to 31 ASCII characters."
+        "Select a version as package:revision. Each part accepts its ID or local name; Revision IDs are bare hexadecimal values. Local names are case-sensitive and contain 1 to 31 ASCII characters."
       ],
       "examples": []
     },
@@ -656,7 +658,7 @@
       ],
       "options": [],
       "notes": [
-        "Revision references use package:revision, with local names or IDs. Local names are case-sensitive and contain 1 to 31 ASCII characters."
+        "Select a version as package:revision. Each part accepts its ID or local name; Revision IDs are bare hexadecimal values. Local names are case-sensitive and contain 1 to 31 ASCII characters."
       ],
       "examples": []
     },
@@ -679,7 +681,7 @@
         "--expect"
       ],
       "notes": [
-        "Revision references use package:revision, with local names or IDs. Local names are case-sensitive and contain 1 to 31 ASCII characters."
+        "Select a version as package:revision. Each part accepts its ID or local name; Revision IDs are bare hexadecimal values. Local names are case-sensitive and contain 1 to 31 ASCII characters."
       ],
       "examples": []
     },
@@ -701,7 +703,7 @@
         "--expect"
       ],
       "notes": [
-        "Revision references use package:revision, with local names or IDs. Local names are case-sensitive and contain 1 to 31 ASCII characters."
+        "Select a version as package:revision. Each part accepts its ID or local name; Revision IDs are bare hexadecimal values. Local names are case-sensitive and contain 1 to 31 ASCII characters."
       ],
       "examples": []
     },
@@ -731,7 +733,7 @@
       ],
       "options": [],
       "notes": [
-        "Revision references use package:revision, with local names or IDs. Local names are case-sensitive and contain 1 to 31 ASCII characters."
+        "Select a version as package:revision. Each part accepts its ID or local name; Revision IDs are bare hexadecimal values. Local names are case-sensitive and contain 1 to 31 ASCII characters."
       ],
       "examples": []
     },
@@ -753,7 +755,7 @@
         "--expect"
       ],
       "notes": [
-        "Revision references use package:revision, with local names or IDs. Local names are case-sensitive and contain 1 to 31 ASCII characters."
+        "Select a version as package:revision. Each part accepts its ID or local name; Revision IDs are bare hexadecimal values. Local names are case-sensitive and contain 1 to 31 ASCII characters."
       ],
       "examples": []
     },
@@ -775,7 +777,7 @@
         "--expect"
       ],
       "notes": [
-        "Revision references use package:revision, with local names or IDs. Local names are case-sensitive and contain 1 to 31 ASCII characters."
+        "Select a version as package:revision. Each part accepts its ID or local name; Revision IDs are bare hexadecimal values. Local names are case-sensitive and contain 1 to 31 ASCII characters."
       ],
       "examples": []
     },
@@ -793,7 +795,7 @@
       ],
       "options": [],
       "notes": [
-        "Revision references use package:revision, with local names or IDs. Local names are case-sensitive and contain 1 to 31 ASCII characters."
+        "Select a version as package:revision. Each part accepts its ID or local name; Revision IDs are bare hexadecimal values. Local names are case-sensitive and contain 1 to 31 ASCII characters."
       ],
       "examples": []
     },
@@ -841,7 +843,7 @@
       ],
       "notes": [
         "Restore execution options require --restore-from and exclude --plan. Initial Input options cannot be combined with Restore.",
-        "Revision references use package:revision, with local names or IDs. Local names are case-sensitive and contain 1 to 31 ASCII characters."
+        "Select a version as package:revision. Each part accepts its ID or local name; Revision IDs are bare hexadecimal values. Local names are case-sensitive and contain 1 to 31 ASCII characters."
       ],
       "examples": [
         "pactrun instance create demo --revision app:initial"
@@ -899,7 +901,7 @@
       ],
       "notes": [
         "Object IDs accept unique lowercase hexadecimal prefixes of at least eight digits. --no-trunc shows full identifiers; pagination cursors are not object references.",
-        "Revision references use package:revision, with local names or IDs. Local names are case-sensitive and contain 1 to 31 ASCII characters."
+        "Select a version as package:revision. Each part accepts its ID or local name; Revision IDs are bare hexadecimal values. Local names are case-sensitive and contain 1 to 31 ASCII characters."
       ],
       "examples": []
     },
@@ -911,7 +913,7 @@
       "description": "Migrate along the selected declared path; --plan only previews the operation.",
       "forms": [
         {
-          "usage": "pactrun instance migrate <instance> --to <reference> [--plan] [--path <path-id>] [--input-file <target-digest>/<input-id>=<path>]... [--param <target-digest>/<parameter-id>=<value>]... [--param-file <target-digest>/<parameter-id>=<path>]... [--param-stdin <target-digest>/<parameter-id>] [--authorize-declassification] [--authorize-recovery-override] [--startup-timeout-ms <ms>] [--execution-timeout-ms <ms>] [--termination-grace-ms <ms>]",
+          "usage": "pactrun instance migrate <instance> --to <reference> [--plan] [--path <path-id>] [--input-file <target-revision-id>/<input-id>=<path>]... [--param <target-revision-id>/<parameter-id>=<value>]... [--param-file <target-revision-id>/<parameter-id>=<path>]... [--param-stdin <target-revision-id>/<parameter-id>] [--authorize-declassification] [--authorize-recovery-override] [--startup-timeout-ms <ms>] [--execution-timeout-ms <ms>] [--termination-grace-ms <ms>]",
           "description": "Migrate along the selected declared path; --plan only previews the operation."
         }
       ],
@@ -933,7 +935,7 @@
         "--cancel-on-output-close"
       ],
       "notes": [
-        "Revision references use package:revision, with local names or IDs. Local names are case-sensitive and contain 1 to 31 ASCII characters.",
+        "Select a version as package:revision. Each part accepts its ID or local name; Revision IDs are bare hexadecimal values. Local names are case-sensitive and contain 1 to 31 ASCII characters.",
         "Input files are target-qualified and acquired before execution. --plan does not acquire Input files or observe live services; it reads parameter sources to validate the entire selected path.",
         "Same-name parameters on different edges are independent. At most one parameter may read stdin; paths with interactive Hooks cannot use parameter stdin."
       ],
@@ -1406,7 +1408,7 @@
       "description": "Export a retained Run Artifact with explicit sensitive-export authorization.",
       "forms": [
         {
-          "usage": "pactrun run artifact export <run-id> <output-id> --output <path> --authorize-sensitive-export [--edge <source-digest>/<target-digest>]",
+          "usage": "pactrun run artifact export <run-id> <output-id> --output <path> --authorize-sensitive-export [--edge <source-revision-id>/<target-revision-id>]",
           "description": "Export a retained Run Artifact with explicit sensitive-export authorization."
         }
       ],
@@ -1416,7 +1418,7 @@
         "artifact-edge"
       ],
       "notes": [
-        "Edge prefixes resolve against this Run, even after Revision removal. Same-name reports on other edges are not a fallback. Scoped results require machine interface 1.0-alpha.4."
+        "Edge prefixes resolve against this Run, even after Revision removal. Same-name reports on other edges are not a fallback. Scoped results require machine interface 1.0-alpha.5."
       ],
       "examples": []
     },
@@ -1429,7 +1431,7 @@
       "description": "Delete the selected retained Run Artifact.",
       "forms": [
         {
-          "usage": "pactrun run artifact delete <run-id> <output-id> [--edge <source-digest>/<target-digest>]",
+          "usage": "pactrun run artifact delete <run-id> <output-id> [--edge <source-revision-id>/<target-revision-id>]",
           "description": "Delete the selected retained Run Artifact."
         }
       ],
@@ -1437,7 +1439,7 @@
         "artifact-edge"
       ],
       "notes": [
-        "Edge prefixes resolve against this Run, even after Revision removal. Same-name reports on other edges are not a fallback. Scoped results require machine interface 1.0-alpha.4."
+        "Edge prefixes resolve against this Run, even after Revision removal. Same-name reports on other edges are not a fallback. Scoped results require machine interface 1.0-alpha.5."
       ],
       "examples": []
     },

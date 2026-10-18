@@ -73,7 +73,10 @@ test('operation contracts select exact versions while preserving legacy ownershi
   assert.match(get('spec/packages/source-format.md'), /source marker for this contract is the string `source_format: "1\.0-alpha\.2"`/);
   assert.match(get('spec/packages/revision-format.md'), /canonical marker for this contract is the string `format_version: "1\.0-alpha\.1"`/);
   assert.match(get('spec/interfaces/hook-protocol.md'), /supported value is `1\.0-alpha\.1`/);
-  assert.match(get('spec/interfaces/machine-output.md'), /legacy machine interface `1\.0-alpha\.3`/);
+  assert.match(get('spec/interfaces/machine-output.md'), /machine interface\s+`1\.0-alpha\.5`/);
+  assert.match(get('spec/packages/revision-packs.md'), /Source `1\.0-alpha\.4`/);
+  assert.match(get('spec/packages/revision-packs.md'), /MUST NOT rehash old/);
+  assert.doesNotMatch(get('spec/packages/index.md') + get('spec/interfaces/index.md'), /specified, not implemented/);
 });
 
 test('new operation requirements have owners and linked executable evidence', () => {

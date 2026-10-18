@@ -548,7 +548,7 @@ mod tests {
             action_id: Some("inspect".into()),
             revision: delivery::Revision {
                 package_id: "0".repeat(32),
-                content_digest: format!("sha256:{}", "0".repeat(64)),
+                revision_id: "0".repeat(64),
             },
             source_revision: None,
             target_revision: None,
@@ -597,7 +597,7 @@ mod tests {
             action_id: Some("inspect".into()),
             revision: delivery::Revision {
                 package_id: "0".repeat(32),
-                content_digest: format!("sha256:{}", "0".repeat(64)),
+                revision_id: "0".repeat(64),
             },
             source_revision: None,
             target_revision: None,

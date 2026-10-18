@@ -160,8 +160,8 @@ fn machine_queries_include_public_definitions_without_mutating_execution_state()
     assert_eq!(before_staging, staging());
     let path = source.join("pactrun.yaml");
     fs::write(&path, fs::read_to_string(&path).unwrap().replace("Inspect the service", "Updated summary")).unwrap();
-    let installed = json_ok(&root, &["pack", "install", source.to_str().unwrap(), "--metadata-conflict", "overwrite"]);
-    assert_eq!(format!("exact:{}/{}", installed["revision"]["package_id"].as_str().unwrap(), installed["revision"]["content_digest"].as_str().unwrap()), revision);
+    let installed = json_ok(&root, &["revision", "install", source.to_str().unwrap(), "--metadata-conflict", "overwrite"]);
+    assert_eq!(format!("{}:{}", installed["revision"]["package_id"].as_str().unwrap(), installed["revision"]["revision_id"].as_str().unwrap()), revision);
     let mut updated = json_ok(&root, &["invoke", "node", "inspect", "--plan"]);
     let mut original = preview;
     assert_ne!(updated["presentation"], original["presentation"]);

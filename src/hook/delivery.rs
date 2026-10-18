@@ -87,12 +87,17 @@ pub(crate) struct Context {
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 pub(crate) struct Revision {
     pub(crate) package_id: String,
-    pub(crate) content_digest: String,
+    pub(crate) revision_id: String,
 }
 fn revision(value: &serde_json::Value) -> Option<Revision> {
     Some(Revision {
         package_id: value.get("package_id")?.as_str()?.into(),
-        content_digest: value.get("revision_content_digest")?.as_str()?.into(),
+        revision_id: value
+            .get("revision_content_digest")?
+            .as_str()?
+            .parse::<crate::domain::RevisionContentDigest>()
+            .ok()?
+            .revision_id(),
     })
 }
 
@@ -765,7 +770,7 @@ mod tests {
             action_id: Some("inspect".into()),
             revision: Revision {
                 package_id: "00000000000000000000000000000001".into(),
-                content_digest: format!("sha256:{}", "00".repeat(32)),
+                revision_id: "00".repeat(32),
             },
             source_revision: None,
             target_revision: None,

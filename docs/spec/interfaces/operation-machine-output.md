@@ -6,20 +6,21 @@ title: Operation-scoped Machine Output
 
 ## Applicability
 
-CLI machine interface `1.0-alpha.4` is the default JSON/JSONL contract.
-The [legacy machine interface](./machine-output.md), `1.0-alpha.3`, remains
-explicitly selectable. This is a separate output contract, not a reinterpretation
-of existing `1.0-alpha.3` results.
+CLI machine interface `1.0-alpha.5` is the JSON/JSONL contract. Its common
+envelopes and delivery rules are defined in [machine output](./machine-output.md).
+Earlier machine interfaces are refused with guidance to select `1.0-alpha.5`.
+Their archived schemas describe historical output, not an available selector.
 
 The [response schema](./cli-machine.schema.json) and
-[event schema](./cli-events.schema.json) describe this version. The legacy
-contract retains separate schemas; selecting it does not reinterpret its fields.
+[event schema](./cli-events.schema.json) describe this version. Public Revision
+objects contain `package_id` and bare `revision_id`; related migration fields
+use `source_revision_id` and `target_revision_id`. Frozen runtime contracts keep
+their original representations, as specified by [Revision Packs](../packages/revision-packs.md).
 
 ### PR-REQ-0388 - Operation requirements and machine compatibility
 
-JSON and JSONL MUST select `1.0-alpha.4` by default and MUST
-also accept leading `--machine-version 1.0-alpha.3` to preserve old automation
-for old-format objects. Explicit `--machine-version 1.0-alpha.4` is equivalent
+JSON and JSONL MUST select `1.0-alpha.5` by default. Explicit
+`--machine-version 1.0-alpha.5` is equivalent
 to the default. The selector MUST be usable only with explicit `--format json`
 or `--format jsonl`; human presentation, duplicate selectors and unsupported
 versions MUST be rejected before command side effects. Version selection MUST
@@ -31,12 +32,11 @@ The format and machine-version selectors may occur in either order, but both
 belong before the command. JSONL event envelopes and their final nested response
 MUST use the same selected version, including error and incomplete-delivery paths.
 
-Envelope and event framing, terminal delivery, partial results, object identity,
-error ownership and Secret disclosure remain governed by `1.0-alpha.3`, except
-that the selected `format_version` and the projections below change. Stored
-Run facts MUST NOT be rewritten to produce a new presentation.
+Envelope and event framing, terminal delivery, partial results, error ownership
+and Secret disclosure follow the common machine contract. Stored Run facts and
+Revision content MUST NOT be rewritten to produce this presentation.
 
-In `1.0-alpha.4`, Instance, Plan, initialization and Migration-boundary projections
+In `1.0-alpha.5`, Instance, Plan, initialization and Migration-boundary projections
 MUST NOT expose `required_inputs_satisfied`, `predicted_required_inputs_satisfied`
 or a global `missing_input_ids` as if the new Core had global readiness. New-Core
 Input declarations and active binding roles MUST NOT carry a global `required`
@@ -88,22 +88,18 @@ Input satisfaction MUST NOT imply full execution eligibility. Other admission
 refusals and diagnostics remain separate. Human output follows the same
 distinction without making its layout part of this machine contract.
 
-For old-Core objects projected in `1.0-alpha.4`, the Instance projection MUST
+For old-Core objects projected in `1.0-alpha.5`, the Instance projection MUST
 add `legacy_required_inputs: {satisfied: boolean, missing_input_ids: InputIdentity[]}`;
 for new-Core objects this field MUST be absent. Old Action/Capture assessments
 derive from their old global requirements; old Restore, Migration and Cleanup
 continue using their original operation contracts. Old Input declarations may
 retain `required` because it remains a real fact about that old format.
 
-When explicitly selecting `1.0-alpha.3`, supported old-format result fields,
-requiredness, values and meaning MUST remain unchanged. Commands whose result
-requires new-Core semantics MUST be refused before mutation or Hook launch,
-not projected with a fabricated global boolean or silently upgraded envelope.
-Read-only mixed collections MUST refuse rather than omit incompatible objects.
-Commands independent of the new semantics remain usable in either version.
-Predictable output-contract incompatibility is a preflight refusal, not an
-output failure discovered after successful execution. Concurrent invalidation
-continues to follow existing admission and output-failure rules.
+Selecting an unsupported machine interface MUST fail before command mutation
+or Hook launch. Current output MUST preserve the meaning of supported old-Core
+objects and MUST NOT fabricate global readiness for operation-scoped objects.
+Changing the presentation contract does not change runtime admission policy.
+Concurrent invalidation follows the existing admission and output-failure rules.
 
 #### Ordinary artifacts and common capability views
 
@@ -116,15 +112,15 @@ retain their genuine legacy requirement fields rather than inventing read grants
 Run inspection adds `published_artifacts`, including artifacts committed by an
 earlier Migration edge or by Cleanup before final retirement. Finished Run artifact
 entries and Artifact command results include an `edge` object only for Migration:
-`{source_revision_digest, target_revision_digest}`. Both digests identify one
+`{source_revision_id, target_revision_id}`. Both IDs identify one
 exact edge in the retained Run path. Singleton-operation artifacts omit `edge`.
 
 `run artifact export` and `run artifact delete` accept
-`--edge <source-digest>/<target-digest>`. Unique prefixes are resolved jointly
+`--edge <source-revision-id>/<target-revision-id>`. Unique prefixes are resolved jointly
 against the retained Run's edges, never against current installations or display
 ordinals. Absence or ambiguity refuses the operation. A same-name report on
 another edge MUST NOT be exported or deleted as a fallback. Scoped results require
-machine `1.0-alpha.4`; incompatible legacy requests fail before file publication
+machine `1.0-alpha.5`; incompatible legacy requests fail before file publication
 or artifact deletion. Existing unscoped byte export retains its explicit
 sensitive-export authorization and destination-publication rules.
 

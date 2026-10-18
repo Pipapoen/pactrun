@@ -4,7 +4,7 @@ title: Pactrun Specification
 
 # Pactrun Specification
 
-Pactrun installs immutable Pack Revisions and manages long-lived Instances.
+Pactrun installs immutable Revisions and manages long-lived Instances.
 The specification describes their definitions, behavior, interfaces, and data
 boundaries for the selected documentation version.
 
@@ -17,7 +17,7 @@ Understand the objects Pactrun manages and the boundaries between installation, 
 
 ## [Packages and Revisions](./packages/index.md)
 
-Define, install, identify, and distribute immutable Pack Revisions. Descriptive metadata remains separate from operational identity.
+Define, install, identify, and distribute immutable Revisions. Descriptive metadata remains separate from operational identity.
 
 ## [Instances and Data](./instances/index.md)
 

@@ -32,14 +32,15 @@ fn set_input(scenario: &Scenario, instance: &str, input: &str, value: &[u8]) {
 }
 
 fn instance_revision(scenario: &Scenario, instance: &str) -> String {
-    let shown = scenario.run(["instance", "show", instance]);
+    let shown = scenario.run(["--format", "json", "instance", "show", instance]);
     assert_success(&shown);
-    String::from_utf8(shown.stdout)
-        .unwrap()
-        .lines()
-        .find_map(|line| line.trim_start().strip_prefix("Revision: "))
-        .expect("instance show must render active revision")
-        .to_owned()
+    let response: serde_json::Value = serde_json::from_slice(&shown.stdout).unwrap();
+    let revision = &response["result"]["active_revision"];
+    format!(
+        "{}:{}",
+        revision["package_id"].as_str().unwrap(),
+        revision["revision_id"].as_str().unwrap()
+    )
 }
 
 fn parameter_arguments(file: &std::path::Path) -> Vec<OsString> {

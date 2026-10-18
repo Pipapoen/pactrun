@@ -63,11 +63,6 @@ pub(super) fn execute(
     format: reply::OutputContext,
     capture: &std::sync::Arc<crate::trace::Trace>,
 ) -> Result<(), CliError> {
-    if format.version() == machine::Version::Legacy {
-        return Err(CliError::operation(
-            "run export requires machine interface 1.0-alpha.4",
-        ));
-    }
     request.options.validate().map_err(CliError::operation)?;
     let run = request.run.full();
     let application = PactrunApplication::open(root).map_err(app_error)?;

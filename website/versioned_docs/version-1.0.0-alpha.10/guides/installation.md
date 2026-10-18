@@ -1,0 +1,102 @@
+---
+title: Install Pactrun
+---
+
+# Install Pactrun
+
+Install through **Scoop on Windows** or **Homebrew on Linux**. The current product
+is `1.0.0-alpha.10`, available through the Preview entry. There is no Stable release
+yet: `pactrun` is reserved for Major 1 stable and does not silently install alpha.
+The package you install is named `pactrun-preview`; the command you run is `pactrun`.
+
+Pactrun is pre-release software. Use isolated data for evaluation. Preview does
+not automatically isolate data from an existing normal installation. Read
+[version management](./version-management.md) before replacing an existing package.
+
+## Before you start
+
+- Use an x86-64 Windows or Linux host. Release qualification requires native Windows
+  CI, Debian 12 userland with glibc 2.36, and native Homebrew operation on Ubuntu
+  24.04. Container tests share a hosted kernel; not every
+  kernel, filesystem or service is certified. No macOS, ARM64 or musl build is included.
+- Use glibc 2.36 or newer for the supported Linux qualification baseline.
+  Older alpha.1/alpha.2/alpha.3
+  Linux downloads retain their glibc 2.39 requirement; update Pactrun rather than
+  replacing the system libc or setting a global LD_LIBRARY_PATH.
+- Homebrew may still install its own glibc, GCC and related dependencies. That
+  does not automatically change which libc an arbitrary prebuilt program loads.
+  Release qualification checks system glibc 2.36 directly as well as Homebrew installation.
+- Install and verify [Scoop](https://scoop.sh/) or
+  [Homebrew](https://brew.sh/) first, following its own prerequisites. Do not run
+  these instructions as administrator/root merely to bypass an error.
+- Git must be available for source setup. If Scoop reports that Git is missing,
+  install it with `scoop install git` before adding the Pactrun bucket.
+- The project-owned source is `https://github.com/Pipapoen/pactrun`. It is not a
+  claim of endorsement or inclusion in either manager's official package catalog.
+- Packages download versioned Release assets and verify their SHA-256. The alpha
+  executables are not represented as platform-signed binaries. Obtain the source
+  from the intended owner; a checksum alone does not establish publisher trust.
+
+## Windows: Scoop
+
+In a terminal where Scoop works, add the source once and install:
+
+```powershell
+scoop bucket add pactrun https://github.com/Pipapoen/pactrun
+scoop install pactrun/pactrun-preview
+pactrun --version
+pactrun --help
+```
+
+If the bucket already exists, check `scoop bucket list` and continue only when it
+points to the intended repository. Do not remove someone else's similarly named
+source blindly. `Get-Command pactrun` should resolve to the Scoop installation,
+not an old standalone executable or shell alias.
+
+## Linux: Homebrew
+
+In a terminal where Homebrew works, add the source once and install:
+
+```sh
+brew tap pipapoen/pactrun https://github.com/Pipapoen/pactrun
+brew install pipapoen/pactrun/pactrun-preview
+pactrun --version
+pactrun --help
+```
+
+Use `brew tap-info pipapoen/pactrun` to inspect an existing source. `command -v
+pactrun` should resolve to the Homebrew installation. Let the manager maintain
+that executable; use the standalone archive for a separate unmanaged copy.
+
+## Existing installations from Doner357
+
+If you already use the `pactrun` Scoop bucket or `doner357/pactrun` Homebrew tap,
+do not add a duplicate source. GitHub redirects the old repository URL.
+For Homebrew, you can update the remote while keeping the local tap name:
+
+```sh
+brew tap --custom-remote doner357/pactrun https://github.com/Pipapoen/pactrun
+brew tap-info doner357/pactrun
+```
+
+Continue using the `doner357/pactrun/` prefix in package commands for that
+existing tap. This does not uninstall Pactrun or migrate its data. Historical
+exact-version definitions retain their original release URLs.
+
+## Verify and continue
+
+Both version and help commands must succeed. Expect the installed package's
+version, `1.0.0-alpha.10` for this edition. These checks do not require a managed store.
+If command resolution, download, checksum or launch fails, stop and inspect the
+error; do not delete service data or disable checksum verification to proceed.
+
+No Git branch switch or Pactrun-specific source helper is required. The manager
+owns download, extraction, activation and program inventory. These steps do not
+create an Instance, choose a service data location, or migrate existing data.
+
+- **New user:** [Create your first Instance](../introduction.md), using its isolated store.
+- **Pack author:** [Prepare an authoring workspace](../package-authors/setup.md).
+- **Real service data:** [Choose a data location](./data-location.md), then
+  [install a supplied Pack](./use-pack.md).
+- **Updates and channel changes:** [Manage versions](./version-management.md).
+- **Offline/engineering fallback:** [Install a supplied standalone archive](./standalone-installation.md).

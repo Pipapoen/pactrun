@@ -6,6 +6,10 @@ title: Pack Source Format
 
 ## Supported baseline
 
+Current authoring uses Source `1.0-alpha.4`, whose complete `revision` section
+includes runtime content; see [Revision Packs](./revision-packs.md). This page
+documents the supported legacy Source `1.0-alpha.2` schema.
+
 The separate [operation-scoped Source contract](./operation-format.md) defines
 `1.0-alpha.3`. This page defines `1.0-alpha.2` only;
 its defaults and global required semantics remain unchanged.
@@ -249,7 +253,7 @@ installation MUST fail before content staging rather than use weaker pathname
 traversal.
 
 These opened-object rules govern the directory form. For a ZIP-based source Pack,
-[Pack Distribution V1](./distribution.md) instead establishes the privately
+[Revision Pack container rules](./distribution.md) instead establish the privately
 staged archive as the immutable acquisition anchor. Exact validated member names
 form its root-relative namespace; the same SourceRelativePathV1 spelling rules
 apply. Archive paths are never extracted into a host namespace. Both forms converge

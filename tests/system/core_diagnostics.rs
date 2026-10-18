@@ -107,10 +107,10 @@ fn migration_core_facts_match_history_on_success_and_failure() {
             let scenario = Scenario::new(796, &source(shell, executable, &[]));
             fs::write(scenario.source.join("script.txt"), "exit 0\n").unwrap();
             let initial = scenario.install_and_create("sample");
-            let digest = initial.rsplit('/').next().unwrap();
+            let digest = initial.rsplit(':').next().unwrap();
             let yaml = fs::read_to_string(scenario.source.join("pactrun.yaml")).unwrap();
             let migration = format!(
-                "  migrations:\n    - source_revision_digest: '{digest}'\n      transitions: []\n      requires_source: []\n      requires_target: []\n      produces_target: []\n      hook:\n        protocol_version: 1.0-alpha.1\n        launch: {{kind: shell_loader, shell: {shell}, command: {executable}, script: script}}\n        args: []\n        io: {{terminal: none}}\n"
+                "  migrations:\n    - source_revision_digest: 'sha256:{digest}'\n      transitions: []\n      requires_source: []\n      requires_target: []\n      produces_target: []\n      hook:\n        protocol_version: 1.0-alpha.1\n        launch: {{kind: shell_loader, shell: {shell}, command: {executable}, script: script}}\n        args: []\n        io: {{terminal: none}}\n"
             );
             fs::write(
                 scenario.source.join("pactrun.yaml"),

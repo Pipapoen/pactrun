@@ -179,7 +179,6 @@ impl Command {
 enum RevisionReference {
     Named(crate::domain::LocalRevisionReference),
     Exact(RevisionIdentity),
-    Prefix { package: String, digest: String },
 }
 
 enum InitialInputSpec {
@@ -619,21 +618,6 @@ fn run_configured(
         cancellation.trace.suppress();
         selected.diagnostic_id = None;
     }
-    if selected.version == machine::Version::Legacy
-        && matches!(
-            &command,
-            Command::Configuration(_) | Command::Diagnostics(_)
-        )
-    {
-        return report_cli_failure(
-            selected,
-            None,
-            false,
-            CliError::usage("this command requires machine interface 1.0-alpha.4"),
-            stdout,
-            stderr,
-        );
-    }
     let command_name = presentation::command_name(&command);
     let raw = matches!(&command, Command::ExportInput { output, .. } if output == "-");
     let (executing, cancel_on_close) = streaming::execution_options(&command);
@@ -911,7 +895,7 @@ fn report_cli_failure(
         if let Some(id) = selected.diagnostic_id {
             let _ = writeln!(
                 stderr,
-                "Diagnostic record: {id} (inspect retained availability with diagnostic show)"
+                "Diagnostic ID: {id} (use diagnostic show; add --startup for commands without a Run)"
             );
         }
     }
@@ -978,53 +962,56 @@ fn parse_command(args: Vec<OsString>) -> Result<Command, CliError> {
 
 fn parse_pack(parser: &mut Parser) -> Result<Command, CliError> {
     match required_value_string(parser, "pack command")?.as_str() {
-        "generate-id" => {
-            require_end(parser)?;
-            Ok(Command::GeneratePackageId)
-        }
-        "install" => {
-            let source_root = PathBuf::from(required_value(parser, "source root")?);
-            if source_root == Path::new("-") {
-                return Err(CliError::usage(
-                    "Pack stdin is not supported; specify a filesystem path",
-                ));
-            }
-            let mut policy = None;
-            let mut names = crate::domain::InstallNames::default();
-            while let Some(arg) = parser.next().map_err(lex_error)? {
-                match arg {
-                    Arg::Long("package-name") if names.package.is_none() => {
-                        names.package =
-                            Some(names::parse_name(value_string(parser, "Package name")?)?);
-                    }
-                    Arg::Long("revision-name") if names.revision.is_none() => {
-                        names.revision =
-                            Some(names::parse_name(value_string(parser, "Revision name")?)?);
-                    }
-                    Arg::Long("metadata-conflict") if policy.is_none() => {
-                        policy = Some(
-                            match value_string(parser, "metadata conflict policy")?.as_str() {
-                                "overwrite" => crate::domain::PackMetadataConflict::Overwrite,
-                                "keep" => crate::domain::PackMetadataConflict::Keep,
-                                _ => {
-                                    return Err(CliError::usage(
-                                        "--metadata-conflict must be overwrite or keep",
-                                    ));
-                                }
-                            },
-                        )
-                    }
-                    _ => return Err(CliError::usage("unsupported or duplicate Pack option")),
-                }
-            }
-            Ok(Command::Install {
-                source_root,
-                metadata_conflict: policy.unwrap_or_default(),
-                names,
-            })
-        }
-        other => Err(CliError::usage(format!("unknown pack command {other:?}"))),
+        "generate-id" => Err(CliError::usage(
+            "pack generate-id was replaced by package generate-id",
+        )),
+        "install" => Err(CliError::usage(
+            "pack install was replaced by revision install",
+        )),
+        _ => Err(CliError::usage(
+            "the pack command group was removed; use package or revision --help",
+        )),
     }
+}
+
+fn parse_install(parser: &mut Parser) -> Result<Command, CliError> {
+    let source_root = PathBuf::from(required_value(parser, "source root")?);
+    if source_root == Path::new("-") {
+        return Err(CliError::usage(
+            "Pack stdin is not supported; specify a filesystem path",
+        ));
+    }
+    let mut policy = None;
+    let mut names = crate::domain::InstallNames::default();
+    while let Some(arg) = parser.next().map_err(lex_error)? {
+        match arg {
+            Arg::Long("package-name") if names.package.is_none() => {
+                names.package = Some(names::parse_name(value_string(parser, "Package name")?)?);
+            }
+            Arg::Long("revision-name") if names.revision.is_none() => {
+                names.revision = Some(names::parse_name(value_string(parser, "Revision name")?)?);
+            }
+            Arg::Long("metadata-conflict") if policy.is_none() => {
+                policy = Some(
+                    match value_string(parser, "metadata conflict policy")?.as_str() {
+                        "overwrite" => crate::domain::PackMetadataConflict::Overwrite,
+                        "keep" => crate::domain::PackMetadataConflict::Keep,
+                        _ => {
+                            return Err(CliError::usage(
+                                "--metadata-conflict must be overwrite or keep",
+                            ));
+                        }
+                    },
+                )
+            }
+            _ => return Err(CliError::usage("unsupported or duplicate Pack option")),
+        }
+    }
+    Ok(Command::Install {
+        source_root,
+        metadata_conflict: policy.unwrap_or_default(),
+        names,
+    })
 }
 
 fn parse_instance(parser: &mut Parser) -> Result<Command, CliError> {
@@ -1431,7 +1418,7 @@ fn execute(
                 .map_err(|error| CliError::operation(format!("CSPRNG failed: {error}")))?;
             return emit_result(
                 format,
-                "pack generate-id",
+                "package generate-id",
                 &presentation::Package {
                     package_id: id.to_string(),
                 },
@@ -1551,7 +1538,7 @@ fn execute(
                 .map_err(app_error)?;
             emit_result(
                 format,
-                "pack install",
+                "revision install",
                 &transport_presentation::PackInstall::from(&installed),
             )?;
         }
@@ -1853,13 +1840,6 @@ fn execute(
                     application.compile_action(&intent, &launcher_directories)
                 })
                 .map_err(app_error)?;
-            if format.version() == machine::Version::Legacy
-                && compiled.protocol_version() == crate::domain::operation_hook_version()
-            {
-                return Err(CliError::operation(
-                    "machine interface 1.0-alpha.3 cannot represent this operation; select --machine-version 1.0-alpha.4",
-                ));
-            }
             if cancellation.is_requested() {
                 return Err(CliError::operation(
                     "invoke cancelled before Run acceptance; no Run was created",
@@ -2146,7 +2126,6 @@ fn resolve_revision(
         RevisionReference::Named(reference) => application
             .resolve_named_revision(&reference)
             .map_err(app_error),
-        RevisionReference::Prefix { .. } => unreachable!("resolved CLI selector"),
         RevisionReference::Exact(identity) => {
             if application.revision_exists(&identity).map_err(app_error)? {
                 Ok(identity)
@@ -2647,30 +2626,10 @@ fn resolve_instance(
 }
 
 fn parse_revision_reference(value: String) -> Result<RevisionReference, CliError> {
-    if let Some(exact) = value.strip_prefix("exact:").filter(|v| v.contains('/')) {
-        let (package, digest) = exact.split_once('/').ok_or_else(|| {
-            CliError::usage("exact Revision requires <PackageId>/sha256:<digest>")
-        })?;
-        let digits = digest
-            .strip_prefix("sha256:")
-            .ok_or_else(|| CliError::usage("Revision digest requires sha256:"))?;
-        if !short_ids::valid_hex(package, 32) || !short_ids::valid_hex(digits, 64) {
-            return Err(CliError::usage(
-                "Revision requires full IDs or lowercase hexadecimal prefixes of at least 8 digits",
-            ));
-        }
-        if package.len() != 32 || digits.len() != 64 {
-            return Ok(RevisionReference::Prefix {
-                package: package.into(),
-                digest: digits.into(),
-            });
-        }
-        let package_id = PackageId::from_str(package).map_err(CliError::usage)?;
-        let content_digest = RevisionContentDigest::from_str(digest).map_err(CliError::usage)?;
-        return Ok(RevisionReference::Exact(RevisionIdentity::new(
-            package_id,
-            content_digest,
-        )));
+    if value.starts_with("exact:") {
+        return Err(CliError::usage(
+            "use <package>:<revision> with bare IDs or local names; omit exact: and sha256:",
+        ));
     }
     let reference = crate::domain::LocalRevisionReference::parse(&value)
         .map_err(|e| CliError::usage(e.to_string()))?;
@@ -2680,8 +2639,7 @@ fn parse_revision_reference(value: String) -> Result<RevisionReference, CliError
         // including idempotent deletion after the installed row is gone.
         return Ok(RevisionReference::Exact(RevisionIdentity::new(
             PackageId::from_str(package.as_str()).map_err(CliError::usage)?,
-            RevisionContentDigest::from_str(&format!("sha256:{}", revision.as_str()))
-                .map_err(CliError::usage)?,
+            RevisionContentDigest::from_revision_id(revision.as_str()).map_err(CliError::usage)?,
         )));
     }
     Ok(RevisionReference::Named(reference))
@@ -2745,7 +2703,11 @@ fn parse_state_version(value: String) -> Result<InstanceStateVersion, CliError> 
 }
 
 fn format_revision(identity: &RevisionIdentity) -> String {
-    format!("exact:{}/{}", identity.package_id, identity.content_digest)
+    format!(
+        "{}:{}",
+        identity.package_id,
+        identity.content_digest.revision_id()
+    )
 }
 
 fn required_value(parser: &mut Parser, name: &str) -> Result<OsString, CliError> {

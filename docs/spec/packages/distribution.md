@@ -1,23 +1,29 @@
 ---
-title: Pack Distribution Format
+title: Revision Pack Format
 ---
 
-# Pack Distribution Format
+# Revision Pack Format
 
 ## Supported baseline
 
-The closed distribution descriptor has kind pactrun_distribution, string
-format_version `1.0-alpha.2`, required string revision_format `1.0-alpha.1` or `1.0-alpha.2`,
-package_id, revision_digest and optional portable_metadata. The declared
+The closed Revision Pack descriptor retains the marker kind `pactrun_distribution`,
+string `format_version: "1.0-alpha.3"`, required string `revision_format`
+`1.0-alpha.1` or `1.0-alpha.2`, `package_id`, bare `revision_id` and optional
+`portable_metadata`. The declared
 Revision format and inner canonical component are independently checked before
-publication. Source/distribution selection is exact, without parse-error fallback.
+publication. Source/serialized-Pack selection is exact, without parse-error fallback.
+
+The supported `1.0-alpha.2` reader keeps its original `revision_digest` field
+with the `sha256:` prefix. New exports use `1.0-alpha.3`; readers reject an ID
+field or spelling from the wrong version. Canonical Core and runtime bytes
+remain unchanged, including their frozen internal digest encodings.
 
 Format changes and existing-object compatibility follow the
 [compatibility contract](../storage/compatibility.md).
 
 ### PR-REQ-0354 - Pack containers and exact Revision transport
 
-`pack install <path>` MUST accept source or distribution content in a directory
+`revision install <path>` MUST accept source or serialized content in a directory
 or ZIP file. The conventional extension is `.pack`; extensions MUST NOT select
 or validate content. Source has root `pactrun.yaml`; distribution has root
 `pactrun-distribution.json`. Both markers together MUST fail, without parse-failure
@@ -27,9 +33,9 @@ versions and projection. Distribution never reruns authoring or executes Hooks.
 Distribution regular members are exactly `pactrun-distribution.json`,
 `revision-core.json`, `runtime-content.json`, and `blobs/sha256/<64 lowercase hex>`.
 Safe directory entries are permitted. The descriptor is strict JSON with exactly
-`kind: "pactrun_distribution"`, string `format_version: "1.0-alpha.2"`, required string
+`kind: "pactrun_distribution"`, string `format_version: "1.0-alpha.3"`, required string
 `revision_format` selecting exactly `1.0-alpha.1` or `1.0-alpha.2`, canonical `package_id`,
-`revision_digest` (`sha256:` plus 64 lowercase hex), and optional
+`revision_id` (64 lowercase hexadecimal digits), and optional
 `portable_metadata`. Components MUST be exact canonical bytes under their own
 independent codec versions. The runtime closure determines the complete distinct
 blob set, including empty blobs. Every byte and computed identity MUST be verified
@@ -51,7 +57,9 @@ ASCII case aliases and file/directory collisions are rejected. These are structu
 limits, not runtime-content byte ceilings. Resource exhaustion remains an I/O
 failure. Optional JSON members are omitted rather than null. Portable metadata
 arrays default to empty, reject duplicate semantic keys and use the exact closed
-target, field and provenance variants of PackSourceYaml.
+target, field and provenance variants of PackSourceYaml. In the new descriptor,
+migration presentation targets use a bare `source_revision_id`; the legacy
+reader retains its prefixed `source_revision_digest` field.
 
 The common installation boundary uses crate-private typed content, owned staged
 bytes and metadata plans. Frontend/container types do not become Domain contracts.

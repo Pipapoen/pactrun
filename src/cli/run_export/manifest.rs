@@ -68,7 +68,7 @@ impl Report {
     ) -> Self {
         Self {
             format: "pactrun.run-report",
-            format_version: "1.0-alpha.1",
+            format_version: "1.0-alpha.2",
             run_id: run.to_string(),
             exporter_version: env!("CARGO_PKG_VERSION"),
             warning: "Review before sharing. Selected content is not redacted and may contain secrets. Metadata may also be sensitive. This report is not a backup or replay plan.",

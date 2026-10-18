@@ -328,7 +328,7 @@ pub(super) fn execute(
                 };
                 {
                     let result = RetirementPlan {
-                        input_requirements: (format.version() == machine::Version::Operations)
+                        input_requirements: (format.version() == machine::Version::RevisionIds)
                             .then(|| {
                                 if matches!(plan.work, DeletionWork::Cleanup(_)) {
                                     vec![machine::Assessment::satisfied(
@@ -338,8 +338,8 @@ pub(super) fn execute(
                                     vec![]
                                 }
                             }),
-                        parameters: (format.version() == machine::Version::Operations).then(|| {
-                            match &plan.work {
+                        parameters: (format.version() == machine::Version::RevisionIds).then(
+                            || match &plan.work {
                                 DeletionWork::Cleanup(cleanup) => cleanup
                                     .parameters
                                     .iter()
@@ -349,18 +349,18 @@ pub(super) fn execute(
                                     })
                                     .collect(),
                                 _ => vec![],
-                            }
-                        }),
-                        output_ids: (format.version() == machine::Version::Operations).then(|| {
-                            match &plan.work {
+                            },
+                        ),
+                        output_ids: (format.version() == machine::Version::RevisionIds).then(
+                            || match &plan.work {
                                 DeletionWork::Cleanup(cleanup) => cleanup
                                     .outputs
                                     .iter()
                                     .map(|output| output.as_str().into())
                                     .collect(),
                                 _ => vec![],
-                            }
-                        }),
+                            },
+                        ),
                         instance_id: plan.instance.to_string(),
                         expected_state_version: plan.expected.to_string(),
                         revision: (&plan.revision).into(),
@@ -451,9 +451,6 @@ pub(super) fn execute(
         RetirementCommand::Show(id) => {
             let id = id.full();
             let entry = app.inspect_retirement(id).map_err(safe_error)?;
-            for run in &entry.runs {
-                format.version().require_run(run)?;
-            }
             {
                 presentation::emit_result(
                     format,
