@@ -27,7 +27,8 @@ def compare_files(root, generated):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--xtask', type=Path, default=Path('target/debug/xtask'))
+    parser.add_argument('--xtask', type=Path,
+                        help='Use an explicitly built xtask executable; otherwise build and run it with Cargo')
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     target = root / 'target'
@@ -40,7 +41,9 @@ def main():
             raise ValueError('Published catalog must use its versioned public Release assets')
     with tempfile.TemporaryDirectory(prefix='catalog-check-', dir=target) as directory:
         work = Path(directory)
-        command = [str(args.xtask.resolve()), 'release-catalog', str(catalog), str(work / 'generated')]
+        runner = ([str(args.xtask.resolve())] if args.xtask else
+                  ['cargo', 'run', '--locked', '--quiet', '-p', 'xtask', '--'])
+        command = runner + ['release-catalog', str(catalog), str(work / 'generated')]
         event_path = os.environ.get('GITHUB_EVENT_PATH')
         if event_path:
             event = json.loads(Path(event_path).read_text(encoding='utf-8'))
