@@ -10,9 +10,10 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-475569?style=flat-square)](./LICENSE)
 [![AI Disclosure: AGAIN](https://img.shields.io/badge/AI%20Disclosure-AGAIN-8055CC?style=flat-square)](https://github.com/Doner357/AGAIN)
 
-Pactrun is a command-line tool for managing local services using a **Pack**: a
-versioned set of instructions that describes the service's settings and how to
-operate it. Use a Pack someone has prepared, or write one for your own service.
+Pactrun is a command-line tool for managing local services using **Revision Packs**:
+installable bundles of management definitions and related files. A **Package**
+identifies the product lineage; each immutable version is a **Revision**. Use a
+Revision Pack someone has prepared, or write one for your own service.
 Pactrun runs as a single executable on Windows and Linux.
 
 ## Why Pactrun?
@@ -24,7 +25,7 @@ and what needs to be preserved when it changes.
 Pactrun gives those recurring tasks a common place:
 
 - **Keep each setup identifiable.** Create a named **Instance**, a managed use of
-  an installed Pack version, with its own configuration.
+  an installed Revision, with its own configuration.
 - **Discover operations instead of remembering commands.** List what the Pack
   provides, inspect an operation's plan, then decide whether to run it.
 - **Understand what happened.** Inspect execution results and diagnostics rather
@@ -54,16 +55,16 @@ Packs execute code on your machine. Use Packs and Hooks you trust; Pactrun is
 ## Where it fits
 
 **Pactrun manages how you operate a service, not just how you start it.** It keeps
-the Pack version, configuration and execution history together for each Instance.
+the Revision, configuration and execution history together for each Instance.
 The service-specific work still belongs to the Pack and the tools it uses.
 
 | Existing approach | What it already does | What Pactrun adds |
 | --- | --- | --- |
-| **Service CLI, Shell or PowerShell scripts** | Run the service's commands and automate the steps you need. | Package those procedures with declared configuration and named operations. Keep each Instance's selected Pack version, settings and execution results without rebuilding that management layer in every script collection. |
+| **Service CLI, Shell or PowerShell scripts** | Run the service's commands and automate the steps you need. | Package those procedures with declared configuration and named operations. Keep each Instance's selected Revision, settings and execution results without rebuilding that management layer in every script collection. |
 | **Service managers, such as systemd** | Start and stop services, manage startup dependencies and supervise processes. | Manage the configuration and maintenance operations around a service. A Pack can call the service manager; ongoing supervision stays with that manager. |
 | **Docker / Compose** | Run containers and describe an application's services, networks and volumes; manage their lifecycle and inspect logs. | Expose service-specific operations through a Pack, with configuration and execution history per Instance. The same management model also applies to native services, without requiring containers. |
 
-![Pactrun keeps Pack versions, configuration and execution history. Pack Hooks provide service-specific procedures and can combine service commands, service managers and container tools. Existing tools retain their own execution and supervision responsibilities.](./.github/assets/readme-tooling.svg)
+![Pactrun keeps Revisions, configuration and execution history. Pack Hooks provide service-specific procedures and can combine service commands, service managers and container tools. Existing tools retain their own execution and supervision responsibilities.](./.github/assets/readme-tooling.svg)
 
 These are complementary responsibilities, not mutually exclusive choices. One
 Pack might call a service's backup command and use a service manager to stop and
@@ -133,13 +134,13 @@ example, replace `./supplied.pack` with the actual file. Choose unused local nam
 instead of reusing `app`, `initial` or `demo` if they already identify other work.
 
 ```text
-pactrun pack install ./supplied.pack --package-name app --revision-name initial
+pactrun revision install ./supplied.pack --package-name app --revision-name initial
 pactrun revision show app:initial
 pactrun instance create demo --revision app:initial
 pactrun action list demo
 ```
 
-Here, `app:initial` names the installed Pack version; `demo` is the Instance you
+Here, `app:initial` names the installed Revision; `demo` is the Instance you
 will manage. Installing the Pack and creating the Instance do **not** automatically
 start a service. Creation may allocate declared service storage.
 
@@ -153,7 +154,7 @@ and [invocation reference](./docs/pactrun-users/operations/invoke-reference.md).
 
 Use `--format json` for one complete response, or `--format jsonl` for streamed
 events followed by a result. Both default to `format: "pactrun.cli"` and
-`format_version: "1.0-alpha.4"`. See the
+`format_version: "1.0-alpha.5"`. Revision IDs are complete bare hexadecimal values. See the
 [machine-output reference](./docs/pactrun-users/reference/operation-output.md)
 for schemas, compatibility and output-handling details.
 

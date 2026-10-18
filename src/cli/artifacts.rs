@@ -16,10 +16,7 @@ impl EdgeSelector {
         let matches = |selector: &Selector<RevisionContentDigest>, value: RevisionContentDigest| {
             match selector {
                 Selector::Full(id) => *id == value,
-                Selector::Prefix(prefix) => value
-                    .to_string()
-                    .trim_start_matches("sha256:")
-                    .starts_with(prefix),
+                Selector::Prefix(prefix) => value.revision_id().starts_with(prefix),
             }
         };
         matches(&self.source, source) && matches(&self.target, target)
@@ -87,7 +84,7 @@ pub(super) fn parse(parser: &mut Parser) -> Result<ArtifactCommand, CliError> {
     while let Some(argument) = parser.next().map_err(lex_error)? {
         match argument {
             Arg::Long("edge") => {
-                let value = value_string(parser, "source/target Revision digests")?;
+                let value = value_string(parser, "source/target Revision IDs")?;
                 let (source, target) = value.split_once('/').ok_or_else(|| {
                     CliError::usage("--edge requires <source-digest>/<target-digest>")
                 })?;
@@ -137,16 +134,6 @@ pub(super) fn execute(
     format: reply::OutputContext,
     trace: &std::sync::Arc<crate::trace::Trace>,
 ) -> Result<(), CliError> {
-    let scoped = match &command {
-        ArtifactCommand::Export { edge, .. } | ArtifactCommand::Delete { edge, .. } => {
-            edge.is_some()
-        }
-    };
-    if scoped && format.version() == machine::Version::Legacy {
-        return Err(CliError::operation(
-            "machine interface 1.0-alpha.3 cannot represent edge-scoped artifacts; select --machine-version 1.0-alpha.4",
-        ));
-    }
     if matches!(
         command,
         ArtifactCommand::Export {

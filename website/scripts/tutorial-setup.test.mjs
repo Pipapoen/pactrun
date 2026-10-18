@@ -24,7 +24,7 @@ for (const directory of ['docs']) {
       'package-authors/reference/service-fields.md', 'package-authors/reference/shell-loader.md',
       'pactrun-users/reference/index.md', ...exceptions]) assert.ok(documents.has(name), name);
     const intro = documents.get('package-authors/tutorial/first-hello-pack/intro.md');
-    assert.match(intro, /Service Storage/);
+    assert.match(intro, /ServiceStorage/);
     assert.match(intro, /Gitea/);
   });
 }
@@ -43,10 +43,10 @@ test('tutorial Pack source examples use a format supported by their edition', as
     const tutorial = [...documents].filter(([name]) => name.startsWith('package-authors/tutorial/'));
     if (tutorial.length === 0) continue;
 
-    const formats = documents.get('spec/storage/format-domains.md')
-      ?.match(/Pack source writes `([^`]+)` and also reads `([^`]+)`/);
-    assert.ok(formats, `${edition.id}: Pack source support must be stated in format-domains.md`);
-    const supported = new Set(formats.slice(1));
+    const support = documents.get('spec/storage/format-domains.md')
+      ?.split('\n').find(line => line.startsWith('| Revision Pack Source |'));
+    assert.ok(support, `${edition.id}: Source support must be stated in the format-domain table`);
+    const supported = new Set([...support.matchAll(/`([^`]+)`/g)].map(match => match[1]));
     let examples = 0;
     for (const [name, body] of tutorial) {
       for (const block of body.matchAll(/^```(?:yaml|yml)[^\n]*\n([\s\S]*?)^```/gm)) {

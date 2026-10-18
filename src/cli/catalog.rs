@@ -13,7 +13,9 @@ pub(super) struct PageOptions<K> {
 }
 
 pub(super) enum CatalogCommand {
-    Revisions(PageOptions<RevisionCursor>),
+    Packages(PageOptions<PackageId>),
+    Package(LocalSelector),
+    Revisions(LocalSelector, PageOptions<RevisionCursor>),
     Revision(RevisionReference, bool),
     History(PageOptions<Selector<InstanceId>>, bool),
     Instance(Selector<InstanceId>),
@@ -34,7 +36,12 @@ pub(super) enum RunSelector {
 impl CatalogCommand {
     pub(super) fn resolve_ids(&mut self, r: &mut short_ids::Resolver<'_>) -> Result<(), CliError> {
         match self {
-            Self::Revisions(_) => {}
+            Self::Packages(_) => {}
+            Self::Package(package) | Self::Revisions(package, _) => {
+                let id = r.app()?.resolve_named_package(package).map_err(app_error)?;
+                *package = LocalSelector::parse(id.to_string())
+                    .map_err(|e| CliError::usage(e.to_string()))?;
+            }
             Self::Revision(id, _) | Self::Local(id, _) | Self::Mutation { revision: id, .. } => {
                 r.revision(id)?
             }
@@ -124,6 +131,7 @@ pub(super) fn parse_revision(parser: &mut Parser) -> Result<Command, CliError> {
         return names::parse_revision(parser, operation == "rename");
     }
     let command = match operation.as_str() {
+        "install" => return parse_install(parser),
         "export" => {
             let revision =
                 parse_revision_reference(required_value_string(parser, "Revision reference")?)?;
@@ -155,11 +163,21 @@ pub(super) fn parse_revision(parser: &mut Parser) -> Result<Command, CliError> {
                 include_metadata,
             });
         }
-        "list" => CatalogCommand::Revisions(paging(parser, |text| {
-            text.parse::<RevisionCursor>().map_err(|_| {
-                CliError::usage("--after requires the complete cursor from revision list")
-            })
-        })?),
+        "list" => {
+            let package = LocalSelector::parse(required_value_string(
+                parser,
+                "Package ID or name; use revision list <package>",
+            )?)
+            .map_err(|e| CliError::usage(e.to_string()))?;
+            CatalogCommand::Revisions(
+                package,
+                paging(parser, |text| {
+                    text.parse::<RevisionCursor>().map_err(|_| {
+                        CliError::usage("--after requires the complete cursor from revision list")
+                    })
+                })?,
+            )
+        }
         "show" => {
             let reference =
                 parse_revision_reference(required_value_string(parser, "Revision reference")?)?;
@@ -191,6 +209,21 @@ pub(super) fn parse_revision(parser: &mut Parser) -> Result<Command, CliError> {
         "note" => parse_local(parser, LocalKind::Note)?,
         "trust" => parse_local(parser, LocalKind::Trust)?,
         _ => return Err(CliError::usage("unknown Revision command")),
+    };
+    Ok(Command::Catalog(command))
+}
+
+pub(super) fn parse_package(parser: &mut Parser, operation: &str) -> Result<Command, CliError> {
+    let command = match operation {
+        "list" => CatalogCommand::Packages(paging(parser, id)?),
+        "show" => {
+            let reference =
+                LocalSelector::parse(required_value_string(parser, "Package ID or name")?)
+                    .map_err(|e| CliError::usage(e.to_string()))?;
+            require_end(parser)?;
+            CatalogCommand::Package(reference)
+        }
+        _ => return Err(CliError::usage("unknown Package query")),
     };
     Ok(Command::Catalog(command))
 }
@@ -339,7 +372,6 @@ fn parse_local(parser: &mut Parser, kind: LocalKind) -> Result<CatalogCommand, C
 
 fn selector(reference: RevisionReference) -> CatalogRevisionSelector {
     match reference {
-        RevisionReference::Prefix { .. } => unreachable!("resolved CLI selector"),
         RevisionReference::Named(_) => unreachable!("resolved local reference"),
         RevisionReference::Exact(id) => CatalogRevisionSelector::Exact(id),
     }
@@ -366,9 +398,33 @@ pub(super) fn execute(
     }
     .map_err(app_error)?;
     match command {
-        CatalogCommand::Revisions(options) => {
+        CatalogCommand::Packages(options) => {
             let page = app
-                .catalog_revisions(options.limit, options.after.as_ref())
+                .catalog_packages(options.limit, options.after)
+                .map_err(app_error)?;
+            let result = catalog_presentation::Page {
+                items: page
+                    .items
+                    .iter()
+                    .map(catalog_presentation::PackageEntry::from)
+                    .collect(),
+                next: page.next.map(|id| id.to_string()),
+            };
+            presentation::emit_result(format, "package list", &result)
+        }
+        CatalogCommand::Package(reference) => {
+            let id = reference.as_str().parse().map_err(CliError::operation)?;
+            let row = app.catalog_package(id).map_err(app_error)?;
+            presentation::emit_result(
+                format,
+                "package show",
+                &catalog_presentation::PackageEntry::from(&row),
+            )
+        }
+        CatalogCommand::Revisions(package, options) => {
+            let package = package.as_str().parse().map_err(CliError::operation)?;
+            let page = app
+                .catalog_package_revisions(package, options.limit, options.after.as_ref())
                 .map_err(app_error)?;
             format.require_revisions(&page.items)?;
             let result = catalog_presentation::Page {
@@ -416,11 +472,6 @@ pub(super) fn execute(
                 let page = app
                     .inspect_retirements(options.limit, after)
                     .map_err(app_error)?;
-                for entry in &page.items {
-                    for run in &entry.runs {
-                        format.version().require_run(run)?;
-                    }
-                }
                 let result = catalog_presentation::Page {
                     items: page
                         .items

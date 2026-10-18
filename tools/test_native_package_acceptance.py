@@ -85,11 +85,28 @@ class NativePackageAcceptance(unittest.TestCase):
         for fmt, expected in [('1.0-alpha.1', 'exact:'+PACKAGE+'/'+DIGEST),
                               ('1.0-alpha.2', PACKAGE+':'+DIGEST[7:]),
                               ('1.0-alpha.3', PACKAGE+':'+DIGEST[7:]),
-                              ('1.0-alpha.4', PACKAGE+':'+DIGEST[7:])]:
+                              ('1.0-alpha.4', PACKAGE+':'+DIGEST[7:]),
+                              ('1.0-alpha.5', PACKAGE+':'+DIGEST[7:])]:
             with self.subTest(format=fmt):
-                result = dict(revision=dict(package_id=PACKAGE, content_digest=DIGEST),
+                identity = dict(package_id=PACKAGE, revision_id=DIGEST[7:]) if fmt == '1.0-alpha.5' else dict(package_id=PACKAGE, content_digest=DIGEST)
+                result = dict(revision=identity,
                               reference='a-name:another-name', newly_installed=True)
-                self.assertEqual(self.tool.installed_reference(response('pack install',result,fmt)),expected)
+                command = 'revision install' if fmt == '1.0-alpha.5' else 'pack install'
+                self.assertEqual(self.tool.installed_reference(response(command,result,fmt)),expected)
+
+    def test_install_command_follows_actual_binary_machine_contract(self):
+        for fmt, group in [('1.0-alpha.4','pack'),('1.0-alpha.5','revision')]:
+            calls=[]
+            def run(cmd,label,**kwargs):
+                calls.append(cmd)
+                self.assertTrue(kwargs['json_output'])
+                return (0,response('version',{},fmt)) if cmd[-1]=='--version' else (0,'installed')
+            with patch.object(self.tool,'run',side_effect=run), patch.object(self.tool,'binary',return_value='selected-binary'):
+                self.assertEqual(self.tool.install_revision_pack('normal','source','install'),(0,'installed'))
+            self.assertEqual(calls[1],['selected-binary','--format','json',group,'install','source'])
+        for key, value in [('revision_id',DIGEST),('content_digest',DIGEST)]:
+            with self.assertRaises(ValueError):
+                self.tool.installed_reference(response('revision install',{'revision':{'package_id':PACKAGE,key:value}},'1.0-alpha.5'))
 
     def test_install_reference_refuses_invalid_envelopes_and_identities(self):
         valid = json.loads(response('pack install',dict(revision=dict(package_id=PACKAGE,content_digest=DIGEST))))
@@ -175,6 +192,8 @@ class NativePackageAcceptance(unittest.TestCase):
             rejected=False
             def run(cmd,label,**kwargs):
                 nonlocal rejected
+                if label.endswith('-interface'):
+                    return 0,response('version',{},records['candidate']['default_formats']['cli_machine_interface'])
                 if label=='old-binary-refuses-upgraded-store':
                     rejected=True
                     return (0 if defect=='old-reader-success' else 1),json.dumps({'status':'failure','error':{'kind':'operation'}})
@@ -208,6 +227,8 @@ class NativePackageAcceptance(unittest.TestCase):
         records={'baseline':release('baseline','1.0-alpha.2','1.0-alpha.3','1.0-alpha.4'),'candidate':candidate}
         states=iter([before])
         def run(cmd,label,**kwargs):
+            if label.endswith('-interface'):
+                return 0,response('version',{},candidate['default_formats']['cli_machine_interface'])
             if label=='same-revision-supported-source':
                 self.assertEqual(source.read_text(),original)
             if label=='old-binary-refuses-upgraded-store':
@@ -287,6 +308,8 @@ class NativePackageAcceptance(unittest.TestCase):
         created=[]
         def fake_run(cmd,label,**kwargs):
             args=list(map(str,cmd)); flavor=Path(args[0]).name
+            if args[1:]==['--format','json','--version']:
+                return 0,response('version',{},formats[flavor])
             if args[1:5]==['--format','json','pack','install']:
                 self.assertTrue(kwargs['json_output'])
                 self.assertIn("source_format: '1.0-alpha.1'",(data/'pack/pactrun.yaml').read_text())

@@ -2613,7 +2613,7 @@ fn public_source_version_dispatch_rejects_invalid_v2_before_durable_blob_or_revi
             &[
                 "--format",
                 "json",
-                "pack",
+                "revision",
                 "install",
                 source.to_str().unwrap(),
             ],
@@ -2648,7 +2648,7 @@ fn public_baseline_service_roundtrip_preserves_identity_live_storage_and_explici
             &[
                 "--format",
                 "json",
-                "pack",
+                "revision",
                 "install",
                 source.to_str().unwrap(),
             ],

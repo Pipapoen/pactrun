@@ -32,14 +32,22 @@ suffixes do not select a format. Reader selection uses the explicit version stri
 
 Each domain owns its implemented readers and writers. A matching Major or an
 ordered newer identifier MUST NOT be interpreted as automatic support. Format
-Minor does not imply minimum product Minor. Pack source writes `1.0-alpha.3` and also reads `1.0-alpha.2`. Pack distribution
-remains `1.0-alpha.2`. The CLI machine interface defaults to `1.0-alpha.4` and
-also supports explicit `1.0-alpha.3` selection. Persistence
-writes `1.0-alpha.6` and accepts the exact `1.0-alpha.1`, `1.0-alpha.2`,
-`1.0-alpha.3`, `1.0-alpha.4` and `1.0-alpha.5` Store schemas
-through its supported upgrade path.
-Revision and Hook default to `1.0-alpha.2` and retain their exact `1.0-alpha.1`
-contracts. Snapshot integrity and Snapshot bundle remain `1.0-alpha.1`.
+Minor does not imply minimum product Minor. Supported contracts are:
+
+| Contract | Current writer | Accepted versions |
+| --- | --- | --- |
+| Revision Pack Source | `1.0-alpha.4` | `1.0-alpha.2`, `1.0-alpha.3`, `1.0-alpha.4` |
+| Revision Core | `1.0-alpha.2` | `1.0-alpha.1`, `1.0-alpha.2` |
+| Hook Protocol | `1.0-alpha.2` | `1.0-alpha.1`, `1.0-alpha.2` |
+| Snapshot integrity | `1.0-alpha.1` | `1.0-alpha.1` |
+| Snapshot bundle | `1.0-alpha.1` | `1.0-alpha.1` |
+| Revision Pack serialization | `1.0-alpha.3` | `1.0-alpha.2`, `1.0-alpha.3` |
+| CLI machine interface | `1.0-alpha.5` | `1.0-alpha.5` |
+| Persistence | `1.0-alpha.6` | `1.0-alpha.6`; `1.0-alpha.1` through `1.0-alpha.5` via supported upgrades |
+
+The established Revision Pack serialization domain key remains
+`pack_distribution`. Earlier machine interfaces are refused with replacement
+guidance. Format changes do not rewrite immutable Core or Snapshot content.
 Changes follow the owning contract rather than synchronizing
 unrelated domains. Unsupported formats are refused in their necessary scope.
 

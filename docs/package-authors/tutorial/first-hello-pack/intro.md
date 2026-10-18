@@ -5,9 +5,9 @@ title: Getting Ready
 # Getting Ready
 
 In this chapter, you will build a small Pack that checks its environment,
-installs Python into Service Storage, and uses that Python to print a hello
-message. Service Storage is where this Pack keeps the Python installation that
-its later operations need.
+installs Python into ServiceStorage, and uses that Python to print a hello
+message. ServiceStorage is persistent storage allocated for one service Instance;
+here it holds the Python installation that the later operations need.
 
 You will start with a working Pack and see how its actions depend on one
 another. This gives us a small, concrete example before we build a Pack for

@@ -41,9 +41,17 @@ fn catalog_cli_discovers_installed_content_and_retired_history_without_install_r
     let tool = if cfg!(windows) { "tool.exe" } else { "tool" };
     fs::copy(std::env::current_exe().unwrap(), source.join(tool)).unwrap();
     fs::write(source.join("pactrun.yaml"), format!("source_format: 1.0-alpha.2\npackage_id: 00000000000000000000000000000089\nrevision:\n  inputs: []\n  actions:\n    - id: inspect\n      access: observe\n      parameters: []\n      hook:\n        protocol_version: 1.0-alpha.1\n        launch: {{ kind: direct, executable: tool }}\n        args: ['--exact', 'catalog_hook_without_protocol', '--nocapture']\n        io: {{ terminal: none }}\n      outputs: []\n  migrations: []\nruntime_content:\n  files:\n    - {{ id: tool, source: {tool}, path: bin/{tool}, executable: true }}\n")).unwrap();
-    success(&root, &["pack", "install", source.to_str().unwrap()]);
+    success(&root, &["revision", "install", source.to_str().unwrap()]);
     // Discard installation output; discover using only the catalog.
-    let listing = success(&root, &["revision", "list", "--no-trunc"]);
+    let packages = success(&root, &["package", "list"]);
+    let package = packages
+        .lines()
+        .nth(1)
+        .unwrap()
+        .split_whitespace()
+        .next()
+        .unwrap();
+    let listing = success(&root, &["revision", "list", package, "--no-trunc"]);
     let columns: Vec<_> = listing.lines().nth(1).unwrap().split_whitespace().collect();
     let reference = columns[0].to_owned();
     assert!(success(&root, &["revision", "show", &reference]).contains("Action ID: inspect"));

@@ -443,16 +443,16 @@ fn public_v2_journey_preserves_identity_and_restores_real_service_content_across
     );
     assert_eq!(show["result"]["target_eligibility"], "target_not_specified");
     assert_success(&b.run(["snapshot", "import", bundle.to_str().unwrap()]));
-    let installed = json_run(&b, &["pack", "install", a.source.to_str().unwrap()]);
+    let installed = json_run(&b, &["revision", "install", a.source.to_str().unwrap()]);
     assert_success(&installed);
     let installed: Value = serde_json::from_slice(&installed.stdout).unwrap();
     assert_eq!(
         format!(
-            "exact:{}/{}",
+            "{}:{}",
             installed["result"]["revision"]["package_id"]
                 .as_str()
                 .unwrap(),
-            installed["result"]["revision"]["content_digest"]
+            installed["result"]["revision"]["revision_id"]
                 .as_str()
                 .unwrap()
         ),
@@ -510,15 +510,11 @@ fn public_v2_journey_preserves_identity_and_restores_real_service_content_across
 }
 
 fn baseline_bundle(path: &Path, revision: &str) -> String {
-    let (package, digest) = revision
-        .strip_prefix("exact:")
-        .unwrap()
-        .split_once('/')
-        .unwrap();
+    let (package, digest) = revision.split_once(':').unwrap();
     let id = "00000000000000000000000000000072";
     let secret = format!("sha256:{}", hex::encode(Sha256::digest(SECRET)));
     let service = format!("sha256:{}", hex::encode(Sha256::digest(SERVICE)));
-    let manifest = json!({"format_version":"1.0-alpha.1","snapshot_id":id,"producer":{"package_id":package,"revision_content_digest":digest},"origin_instance_id":"00000000000000000000000000000073","captured_at":{"unix_seconds":0,"nanoseconds":0},"managed_bindings":[{"input_id":"optional","role":"active","state":"absent","protection":"normal"},{"input_id":"secret","role":"active","state":"bound","protection":"secret","blob_digest":secret}],"service_content":[{"role":"database","path":"state/main","blob_digest":service}]});
+    let manifest = json!({"format_version":"1.0-alpha.1","snapshot_id":id,"producer":{"package_id":package,"revision_content_digest":format!("sha256:{digest}")},"origin_instance_id":"00000000000000000000000000000073","captured_at":{"unix_seconds":0,"nanoseconds":0},"managed_bindings":[{"input_id":"optional","role":"active","state":"absent","protection":"normal"},{"input_id":"secret","role":"active","state":"bound","protection":"secret","blob_digest":secret}],"service_content":[{"role":"database","path":"state/main","blob_digest":service}]});
     let canonical = serde_jcs::to_vec(&manifest).unwrap();
     let mut hash = Sha256::new();
     hash.update(b"pactrun.snapshot-integrity-digest\0");
@@ -709,7 +705,11 @@ fn snapshot_plans_access_readiness_parameters_and_parser_are_safe_and_read_only(
             sessions,
             fs::read_dir(s.storage.join("staging")).unwrap().count()
         );
-        assert!(revision.starts_with("exact:"));
+        assert!(
+            revision
+                .split_once(':')
+                .is_some_and(|(package, id)| package.len() == 32 && id.len() == 64)
+        );
     }
 }
 

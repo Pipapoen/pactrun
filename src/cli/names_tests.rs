@@ -30,7 +30,7 @@ fn names_call(root: &Path, args: &[&str]) -> (i32, serde_json::Value) {
 fn local_names_install_rename_and_unname_preserve_instance_identity_and_time() {
     let (_temp, root, source) = cli_roots();
     let install = [
-        "pack",
+        "revision",
         "install",
         source.to_str().unwrap(),
         "--package-name",
@@ -46,11 +46,7 @@ fn local_names_install_rename_and_unname_preserve_instance_identity_and_time() {
             .unwrap()
             .parse()
             .unwrap(),
-        response["result"]["revision"]["content_digest"]
-            .as_str()
-            .unwrap()
-            .parse()
-            .unwrap(),
+        RevisionContentDigest::from_revision_id(response["result"]["revision"]["revision_id"].as_str().unwrap()).unwrap(),
     );
     let app = PactrunApplication::open_read_only(&root).unwrap();
     let before = app.local_revision_facts(&id).unwrap();
@@ -122,7 +118,7 @@ fn local_names_install_rename_and_unname_preserve_instance_identity_and_time() {
 fn local_names_install_conflict_rolls_back_revision_and_name_changes() {
     let (_temp, root, source) = cli_roots();
     let args = [
-        "pack",
+        "revision",
         "install",
         source.to_str().unwrap(),
         "--package-name",
@@ -164,7 +160,7 @@ fn local_names_install_conflict_rolls_back_revision_and_name_changes() {
         .unwrap();
     assert_eq!(count, 1);
     let args = [
-        "pack",
+        "revision",
         "install",
         source.to_str().unwrap(),
         "--package-name",
@@ -186,7 +182,7 @@ fn local_names_reject_long_names_but_accept_complete_ids() {
     let (_temp, root, source) = cli_roots();
     let a = "00000000000000000000000000000021";
     for option in ["--package-name", "--revision-name"] {
-        let args = ["pack", "install", source.to_str().unwrap(), option, a];
+        let args = ["revision", "install", source.to_str().unwrap(), option, a];
         let (code, response) = names_call(&root, &args);
         assert_eq!(code, 2, "{response}");
         assert!(
@@ -199,7 +195,7 @@ fn local_names_reject_long_names_but_accept_complete_ids() {
     }
     let boundary = "a".repeat(31);
     let args = [
-        "pack",
+        "revision",
         "install",
         source.to_str().unwrap(),
         "--package-name",
@@ -209,10 +205,8 @@ fn local_names_reject_long_names_but_accept_complete_ids() {
     ];
     let (code, response) = names_call(&root, &args);
     assert_eq!(code, 0, "{response}");
-    let digest = response["result"]["revision"]["content_digest"]
+    let digest = response["result"]["revision"]["revision_id"]
         .as_str()
-        .unwrap()
-        .strip_prefix("sha256:")
         .unwrap();
     let reference = format!("{a}:{digest}");
     assert_eq!(
@@ -259,7 +253,7 @@ fn human_revision_inspection_shows_each_author_explanation_once_without_empty_me
 #[test]
 fn all_output_formats_use_the_same_complete_query_and_refuse_invalid_metadata() {
     let (_temp, root, source) = cli_roots();
-    let installed = json_ok(&root, &["pack", "install", source.to_str().unwrap()]);
+    let installed = json_ok(&root, &["revision", "install", source.to_str().unwrap()]);
     let reference = installed["reference"].as_str().unwrap();
     json_ok(
         &root,
@@ -267,7 +261,7 @@ fn all_output_formats_use_the_same_complete_query_and_refuse_invalid_metadata() 
     );
     let path = root.join("database/pactrun.sqlite3");
     let db = rusqlite::Connection::open(&path).unwrap();
-    db.execute("INSERT INTO revision_action_presentation_current(package_id,revision_content_digest,action_id_utf8,summary_utf8) VALUES (?1,?2,?3,?4)",rusqlite::params![hex::decode(installed["revision"]["package_id"].as_str().unwrap()).unwrap(),hex::decode(installed["revision"]["content_digest"].as_str().unwrap().strip_prefix("sha256:").unwrap()).unwrap(),b"undeclared".as_slice(),b"invalid".as_slice()]).unwrap();
+    db.execute("INSERT INTO revision_action_presentation_current(package_id,revision_content_digest,action_id_utf8,summary_utf8) VALUES (?1,?2,?3,?4)",rusqlite::params![hex::decode(installed["revision"]["package_id"].as_str().unwrap()).unwrap(),hex::decode(installed["revision"]["revision_id"].as_str().unwrap()).unwrap(),b"undeclared".as_slice(),b"invalid".as_slice()]).unwrap();
     drop(db);
     let before = fs::read(&path).unwrap();
     for format in ["human", "json", "jsonl"] {
@@ -354,7 +348,7 @@ fn first_install_creates_unicode_store_path_and_applies_local_names() {
     let (code, response) = names_call(
         &root,
         &[
-            "pack",
+            "revision",
             "install",
             source.to_str().unwrap(),
             "--package-name",
@@ -397,7 +391,7 @@ fn missing_store_global_queries_are_empty_without_creating_directories() {
     let root = temp.path().join("missing-store");
     for args in [
         vec!["instance", "list"],
-        vec!["revision", "list"],
+        vec!["package", "list"],
         vec!["run", "list"],
         vec!["snapshot", "list"],
         vec!["instance", "history", "list"],
@@ -449,7 +443,7 @@ fn local_names_invalid_names_are_refused_before_store_access() {
     let (_temp, root, _source) = cli_roots();
     for args in [
         vec![
-            "pack",
+            "revision",
             "install",
             "missing",
             "--package-name",

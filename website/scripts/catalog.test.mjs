@@ -182,7 +182,10 @@ test('document routes preserve index and explicit slug semantics, rejecting dupl
 });
 test('CLI reference derives its version and command text from executable declarations', async () => {
   const help = await commandHelp(root);
-  assert.match(help.text, /pactrun pack install/);
+  assert.match(help.text, /pactrun revision install/);
+  assert.match(help.text, /pactrun package generate-id/);
+  assert.match(help.text, /pactrun revision list <package>/);
+  assert.doesNotMatch(help.text, /pactrun pack install/);
   assert.match(help.text, /pactrun snapshot restore/);
   assert.match(help.text, /pactrun storage gc/);
   assert.ok(help.text.startsWith('Pactrun ' + help.version));

@@ -33,6 +33,7 @@ const sidebars: SidebarsConfig = {
           ]},
           {type: 'category', label: 'Reference', collapsed: false, items: [
             'package-authors/reference/pack-fields', 'package-authors/reference/service-fields',
+            'package-authors/reference/revision-packs',
             'package-authors/reference/shell-loader', 'package-authors/reference/hook-protocol',
             'package-authors/reference/source-format', 'package-authors/reference/revision-format',
             'package-authors/reference/snapshot-limits',
@@ -52,6 +53,7 @@ const sidebars: SidebarsConfig = {
         ]},
         {type: 'category', label: 'Packages and Revisions', items: [
           'spec/packages/index',
+          'spec/packages/revision-packs',
           'spec/packages/authoring',
           'spec/packages/source-format',
           'spec/packages/identity',

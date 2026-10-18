@@ -164,7 +164,7 @@ fn help_does_not_swallow_operands_or_invalid_requests() {
         }
     }
     let parsed = parse_command(
-        ["pack", "install", "--", "--help"]
+        ["revision", "install", "--", "--help"]
             .map(OsString::from)
             .to_vec(),
     )

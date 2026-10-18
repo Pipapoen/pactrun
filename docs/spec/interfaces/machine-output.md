@@ -4,11 +4,13 @@ title: CLI Machine Interface
 
 # CLI Machine Interface
 
-This page defines legacy machine interface `1.0-alpha.3`. Select it explicitly
-with leading `--format json --machine-version 1.0-alpha.3` (or `jsonl`). The
-[operation-scoped output contract](./operation-machine-output.md), `1.0-alpha.4`,
-is the current default. The rules and examples below describe the selected
-legacy contract; they do not change the newer contract.
+This page defines the common envelopes and delivery rules for machine interface
+`1.0-alpha.5`. Select JSON or JSONL with a leading `--format` option; an explicit
+`--machine-version 1.0-alpha.5` is optional. The
+[operation output contract](./operation-machine-output.md) defines operation
+assessments and current Revision ID fields. Earlier machine interface selectors
+are refused; supported historical runtime objects remain inspectable through
+the current interface.
 
 Object-ID operands follow the [CLI selector contract](./id-selectors.md).
 Machine responses always retain full identities.
@@ -42,7 +44,7 @@ no valid presentation was selected. Existing exit codes retain their meanings.
 
 An ordinary JSON response MUST be a single UTF-8 JSON object followed by a newline
 on stdout, with `format` equal to `pactrun.cli`, `format_version` equal to the string
-`1.0-alpha.3`, `command` (canonical command
+`1.0-alpha.5`, `command` (canonical command
 name, or null before dispatch including parsing/startup failures), `status`
 (`success` or `failure`), `result` (a
 command-specific typed object or null) and `error` (a typed error or null).
@@ -128,7 +130,8 @@ categories are not new Pactrun error-owner/code identities or retry authority.
 Unclassified I/O remains `io_error`; unavailable staging reasons must not expose
 arbitrary internal text. IDs may identify Secret Inputs but no value, host path,
 actual byte length, payload digest or raw OS message may be disclosed. Target
-Revision digests identify Pack code, not acquired Input values.
+Revision IDs identify the normalized management definition and owned runtime
+content; they do not identify acquired Input values.
 
 The diagnostic is omitted for other failures and older responses may omit it.
 Absence does not imply no Run, safe retry, or a particular reason. A guard refusal
@@ -290,8 +293,8 @@ replay or compensation. Interactive execution is outside this contract.
 ### PR-REQ-0367 - CLI event stream
 
 `--format jsonl` selects the same `pactrun.cli` interface and string
-`format_version: "1.0-alpha.3"` as ordinary results, not another version domain. Each physical LF-terminated
-line follows the [legacy event schema](./cli-events-alpha3.schema.json). Each
+`format_version: "1.0-alpha.5"` as ordinary results, not another version domain. Each physical LF-terminated
+line follows the [event schema](./cli-events.schema.json). Each
 UTF-8 line contains one compact JSON object with format, format_version, sequence, receipt time,
 command and a typed event. Sequence is a decimal string and orders observation
 within this invocation. Events are acceptance_pending, run_accepted, core_progress,
@@ -386,19 +389,20 @@ detail but MUST apply the same disclosure rules and observe the same command fac
 
 ## Existing representation conventions
 
-The checked-in [legacy JSON Schema](./cli-machine-alpha3.schema.json) defines the shape
+The checked-in [JSON Schema](./cli-machine.schema.json) defines the shape
 inventory for the canonical commands. Its generation test compares explicit
 CLI projections to the checked-in contract; tests write a candidate only under
 target/, never silently update this specification. The following meanings apply:
 
 - Identity/digest strings and state tokens retain their owning canonical spellings.
-  Revision objects contain `package_id` and `content_digest`; text reference
+  Revision objects contain `package_id` and a bare `revision_id`; command
   arguments use `<package>:<revision>` as defined by
   [local references](../packages/local-names.md). Revision pagination cursors are
   opaque continuation tokens, not resource references.
 - State versions, potentially large counters, byte lengths, epoch seconds and
   milliseconds use decimal strings, avoiding loss in consumers with binary64
-  numbers. Bounded counts, format versions and nanoseconds use JSON integers.
+  numbers. Bounded counts and nanoseconds use JSON integers. Format versions
+  use their explicit string representation.
 - Optional members are emitted explicitly as null. Array fields are arrays,
   including when empty. `required: null` on a retained Input is not an active
   optional declaration. Null guards do not assert unconditional execution safety.
@@ -446,11 +450,11 @@ interface or an event stream. A completed JSON document never contains that text
 ## Examples {#examples-informative}
 
 ```json
-{"format":"pactrun.cli","format_version":"1.0-alpha.3","command":"version","status":"success","result":{"product_version":"0.1.0"},"error":null}
+{"format":"pactrun.cli","format_version":"1.0-alpha.5","command":"package generate-id","status":"success","result":{"package_id":"0123456789abcdef0123456789abcdef"},"error":null}
 ```
 
 ```json
-{"format":"pactrun.cli","format_version":"1.0-alpha.3","command":null,"status":"failure","result":null,"error":{"kind":"usage","message":"unknown command","reference":null}}
+{"format":"pactrun.cli","format_version":"1.0-alpha.5","command":null,"status":"failure","result":null,"error":{"kind":"usage","message":"unknown command","reference":null}}
 ```
 
 A missing `format`, an unknown interface version, a numeric `product_version`,

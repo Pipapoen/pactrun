@@ -368,8 +368,8 @@ fn run_summary(value: &Value, out: &mut dyn Write, details: bool) -> Result<(), 
                         out,
                         format!(
                             "  Edge: {}/{}",
-                            text(&artifact["edge"], "source_revision_digest"),
-                            text(&artifact["edge"], "target_revision_digest")
+                            text(&artifact["edge"], "source_revision_id"),
+                            text(&artifact["edge"], "target_revision_id")
                         ),
                     )?;
                 }
@@ -533,7 +533,7 @@ fn migration_summary(value: &Value, source: &Value, target: &Value) -> String {
         .and_then(|entries| {
             entries.iter().find(|entry| {
                 entry["target"]["kind"] == "migration_edge"
-                    && entry["target"]["source_digest"] == source["content_digest"]
+                    && entry["target"]["source_revision_id"] == source["revision_id"]
             })
         })
         .map(summary_cell)
@@ -706,9 +706,9 @@ fn instance(value: &Value, out: &mut dyn Write) -> Result<(), CliError> {
         write(
             out,
             format!(
-                "  Revision: {}:{}",
+                "  Package ID: {}\n  Revision ID: {}",
                 text(revision, "package_id"),
-                text(revision, "content_digest").trim_start_matches("sha256:")
+                text(revision, "revision_id")
             ),
         )?;
     }
@@ -764,12 +764,12 @@ pub(super) fn render(
             return Ok(());
         }
         "version" => return write(out, format!("pactrun {}", text(value, "product_version"))),
-        "pack generate-id" => return write(out, text(value, "package_id")),
-        "pack install" => {
+        "package generate-id" => return write(out, text(value, "package_id")),
+        "revision install" => {
             write(
                 out,
                 if value["newly_installed"].as_bool() == Some(true) {
-                    "Pack installed."
+                    "Revision installed."
                 } else {
                     "Revision already installed."
                 },
@@ -777,7 +777,7 @@ pub(super) fn render(
             write(
                 out,
                 format!(
-                    "\nRevision: {}\nInstalled: {}",
+                    "\nPackage:Revision: {}\nInstalled: {}",
                     text(value, "reference"),
                     installation_time(value)
                 ),
@@ -868,6 +868,29 @@ pub(super) fn render(
                 tree(restore, out, 2)?;
             }
             return Ok(());
+        }
+        "package list" => {
+            let items = value["items"]
+                .as_array()
+                .ok_or_else(|| CliError::operation("invalid Package list result"))?;
+            if items.is_empty() {
+                return write(out, "No Packages in this Store.");
+            }
+            table(
+                &["PACKAGE ID", "NAME", "REVISIONS"],
+                items
+                    .iter()
+                    .map(|item| {
+                        vec![
+                            text(item, "package_id"),
+                            text(item, "package_name"),
+                            text(item, "revision_count"),
+                        ]
+                    })
+                    .collect(),
+                out,
+            )?;
+            return page_footer(value, display, out);
         }
         "package rename" | "revision rename" => {
             return write(out, format!("Name set: {}", text(value, "name")));
@@ -1246,9 +1269,9 @@ pub(super) fn render(
             write(
                 out,
                 format!(
-                    "Revision: {}:{}",
+                    "Package ID: {}\nRevision ID: {}",
                     text(revision, "package_id"),
-                    text(revision, "content_digest").trim_start_matches("sha256:")
+                    text(revision, "revision_id")
                 ),
             )?;
             if let Some(launch) = value.get("launch") {
@@ -1315,7 +1338,7 @@ pub(super) fn render(
             write(
                 out,
                 format!(
-                    "Revision: {}\nInstalled: {}\nCore format: {}",
+                    "Package:Revision: {}\nInstalled: {}\nCore format: {}",
                     text(value, "reference"),
                     installation_time(value),
                     text(value, "core_version")
@@ -1324,9 +1347,9 @@ pub(super) fn render(
             write(
                 out,
                 format!(
-                    "Identity: {}:{}",
+                    "Package ID: {}\nRevision ID: {}",
                     text(&value["revision"], "package_id"),
-                    text(&value["revision"], "content_digest").trim_start_matches("sha256:")
+                    text(&value["revision"], "revision_id")
                 ),
             )?;
             if command == "revision metadata show" {
@@ -1395,7 +1418,7 @@ pub(super) fn render(
                 return write(out, "No installed Revisions.");
             }
             table(
-                &["REVISION", "INSTALLED (UTC)", "SUMMARY"],
+                &["PACKAGE:REVISION", "INSTALLED (UTC)", "SUMMARY"],
                 items
                     .iter()
                     .map(|item| {
@@ -1404,8 +1427,7 @@ pub(super) fn render(
                                 format!(
                                     "{}:{}",
                                     text(&item["revision"], "package_id"),
-                                    text(&item["revision"], "content_digest")
-                                        .trim_start_matches("sha256:")
+                                    text(&item["revision"], "revision_id")
                                 )
                             } else {
                                 text(item, "reference")

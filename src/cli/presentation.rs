@@ -18,9 +18,9 @@ pub(super) fn command_name(command: &Command) -> &'static str {
         Command::Configuration(request) => request.command_name(),
         Command::Help(_) => "help",
         Command::Version => "version",
-        Command::GeneratePackageId => "pack generate-id",
+        Command::GeneratePackageId => "package generate-id",
         Command::Name(command) => command.command_name(),
-        Command::Install { .. } => "pack install",
+        Command::Install { .. } => "revision install",
         Command::ExportRevision { .. } => "revision export",
         Command::CreateInstance { .. } | Command::CreateAndRestore(_) => "instance create",
         Command::ListInstances => "instance list",
@@ -63,7 +63,9 @@ pub(super) fn command_name(command: &Command) -> &'static str {
         Command::Snapshot(S::Import(_)) => "snapshot import",
         Command::Snapshot(S::Export { .. }) => "snapshot export",
         Command::ServiceStorage(command) => command.presentation_name(),
-        Command::Catalog(C::Revisions(_)) => "revision list",
+        Command::Catalog(C::Packages(_)) => "package list",
+        Command::Catalog(C::Package(_)) => "package show",
+        Command::Catalog(C::Revisions(..)) => "revision list",
         Command::Catalog(C::Revision(_, true)) => "revision metadata show",
         Command::Catalog(C::Revision(_, false)) => "revision show",
         Command::Catalog(C::History(_, true)) => "instance deletion list",
@@ -568,14 +570,14 @@ pub(super) struct ArtifactResult {
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 pub(super) struct Revision {
     package_id: String,
-    content_digest: String,
+    revision_id: String,
 }
 
 impl From<&RevisionIdentity> for Revision {
     fn from(id: &RevisionIdentity) -> Self {
         Self {
             package_id: id.package_id.to_string(),
-            content_digest: id.content_digest.to_string(),
+            revision_id: id.content_digest.revision_id(),
         }
     }
 }
@@ -668,7 +670,7 @@ impl Instance {
     ) -> Result<Self, CliError> {
         version.require_core(core)?;
         let mut result = Self::from(view);
-        if version == machine::Version::Operations {
+        if version == machine::Version::RevisionIds {
             result.required_inputs_satisfied = None;
             result.input_requirements = Some(machine::requirements(view, core));
             result.legacy_required_inputs = machine::legacy_required(view, core);

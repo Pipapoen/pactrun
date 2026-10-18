@@ -175,8 +175,10 @@ runtime_content:
   files: [{id: script, source: inspect.sh, path: inspect.sh, executable: false}]
 ''')
     (pack / 'inspect.sh').write_text('"$PACTRUN_EXECUTABLE" hook session >/dev/null || exit 1\nprintf "debian12-hook-ok\\n"\n')
-    installed = json.loads(cli('--format', 'json', 'pack', 'install', pack))['result']['revision']
-    revision = installed['package_id'] + ':' + installed['content_digest'].removeprefix('sha256:')
+    new_ids = part['default_formats'].get('cli_machine_interface') == '1.0-alpha.5'
+    installed = json.loads(cli('--format', 'json', 'revision' if new_ids else 'pack', 'install', pack))['result']['revision']
+    revision_id = installed['revision_id'] if new_ids else installed['content_digest'].removeprefix('sha256:')
+    revision = installed['package_id'] + ':' + revision_id
     cli('instance', 'create', 'debian-ci', '--revision', revision)
     cli('input', 'set', 'debian-ci', 'secret', '--stdin', stdin=b'ci-only-secret-value')
     denied = work / 'denied-secret'

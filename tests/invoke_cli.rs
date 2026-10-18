@@ -328,7 +328,7 @@ fn real_cli_interpreter_launch_preserves_non_utf8_launcher_directory() {
         &[
             "--format",
             "json",
-            "pack",
+            "revision",
             "install",
             source.to_str().unwrap(),
         ],
@@ -344,10 +344,8 @@ fn real_cli_interpreter_launch_preserves_non_utf8_launcher_directory() {
         installed["result"]["revision"]["package_id"]
             .as_str()
             .unwrap(),
-        installed["result"]["revision"]["content_digest"]
+        installed["result"]["revision"]["revision_id"]
             .as_str()
-            .unwrap()
-            .strip_prefix("sha256:")
             .unwrap()
     );
     let created = run_cli(
@@ -541,7 +539,7 @@ fn install_instance(cli: &std::path::Path, storage: &std::path::Path, source: &s
         &[
             "--format",
             "json",
-            "pack",
+            "revision",
             "install",
             source.to_str().unwrap(),
         ],
@@ -557,10 +555,8 @@ fn install_instance(cli: &std::path::Path, storage: &std::path::Path, source: &s
         installed["result"]["revision"]["package_id"]
             .as_str()
             .unwrap(),
-        installed["result"]["revision"]["content_digest"]
+        installed["result"]["revision"]["revision_id"]
             .as_str()
-            .unwrap()
-            .strip_prefix("sha256:")
             .unwrap()
     );
     let created = run_cli(
@@ -647,7 +643,7 @@ fn real_cli_interactive_invoke_reopens_a_durable_run() {
         &[
             "--format",
             "json",
-            "pack",
+            "revision",
             "install",
             source.to_str().unwrap(),
         ],
@@ -663,10 +659,8 @@ fn real_cli_interactive_invoke_reopens_a_durable_run() {
         installed["result"]["revision"]["package_id"]
             .as_str()
             .unwrap(),
-        installed["result"]["revision"]["content_digest"]
+        installed["result"]["revision"]["revision_id"]
             .as_str()
-            .unwrap()
-            .strip_prefix("sha256:")
             .unwrap()
     );
     let created = run_cli(
@@ -786,7 +780,7 @@ fn real_cli_invoke_reopens_a_durable_run() {
         &[
             "--format",
             "json",
-            "pack",
+            "revision",
             "install",
             source.to_str().unwrap(),
         ],
@@ -802,10 +796,8 @@ fn real_cli_invoke_reopens_a_durable_run() {
         installed["result"]["revision"]["package_id"]
             .as_str()
             .unwrap(),
-        installed["result"]["revision"]["content_digest"]
+        installed["result"]["revision"]["revision_id"]
             .as_str()
-            .unwrap()
-            .strip_prefix("sha256:")
             .unwrap()
     );
     let created = run_cli(

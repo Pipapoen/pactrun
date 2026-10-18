@@ -1,0 +1,98 @@
+---
+title: Revision Packs and Package Catalogs
+---
+
+# Revision Packs and Package Catalogs
+
+A Package is a service-management product lineage. A Revision is one immutable
+version of its management definition and owned runtime content. A Revision Pack
+is the installable bundle carrying one Revision's content, its Package ID and
+optional descriptive metadata. Pack is not a Package kind or a separate managed
+object with its own ID.
+
+### PR-REQ-0407 - Package-scoped Revision IDs
+
+A Package ID remains 32 lowercase hexadecimal digits. A Revision ID is the
+64 lowercase hexadecimal digits of the existing Revision content digest, without
+an algorithm prefix. It identifies a version within a Package. Equal Revision
+IDs in different Packages remain separately managed versions. Resolving a version
+requires both its Package and Revision; local names and unique prefixes remain
+selectors for those values. Changing names or presentation MUST NOT change IDs.
+
+Canonical Core, runtime framing, digest bytes and persisted associations retain
+their owning contracts. This naming and presentation change MUST NOT rehash old
+content. Supported historical Hook and Snapshot contracts retain their original
+versioned digest spellings; they are not reinterpreted as a new wire version.
+
+**Verification: PR-TEST-0809, PR-TEST-0810.**
+
+### PR-REQ-0408 - Revision Pack Source structure
+
+Source `1.0-alpha.4` has required `source_format`, `package_id` and `revision`
+root fields and optional `portable_metadata`. Management declarations and
+`runtime_content` belong inside `revision`. Omitted `revision.runtime_content`
+means an empty runtime file collection. A root `runtime_content` is invalid.
+All operation Input and capability semantics remain those of Source
+`1.0-alpha.3`; projection still produces canonical Core `1.0-alpha.2`.
+
+Migration declarations and migration presentation targets use
+`source_revision_id` with a complete bare Revision ID. Their frozen Core and
+metadata projections retain the original typed meaning. Old digest field names
+and prefixed IDs MUST be rejected in the new Source. Supported Source
+`1.0-alpha.2` and `1.0-alpha.3` retain their original schemas and meanings.
+
+The Revision ID is calculated from normalized declarations and acquired file
+content, not YAML spelling. Comments, formatting and equivalent defaults do not
+create a new version. Source acquisition paths remain outside content identity;
+logical runtime paths, roles and executable attributes retain their existing
+identity meaning. Live service data and descriptive metadata remain outside it.
+Invalid Package IDs MUST identify the `package_id` field in the source error.
+
+**Verification: PR-TEST-0809.**
+
+### PR-REQ-0409 - Revision Pack representation
+
+Revision Pack `1.0-alpha.3` carries complete bare `revision_id` and `package_id`
+fields. Readers MUST verify both declared content format and computed Revision
+ID before publication. Export uses the new Pack contract; supported Pack
+`1.0-alpha.2` retains its original descriptor and prefixed digest representation.
+Repacking identical operational content or changing portable descriptions MUST
+NOT manufacture a new Revision ID. Container timestamps and compression do not
+enter it. Existing no-overwrite, acquisition and publication rules still apply.
+
+**Verification: PR-TEST-0810.**
+
+### PR-REQ-0410 - Package and Revision command ownership
+
+`package generate-id` generates a Package ID without registering a Package.
+`revision install <path>` installs the Revision Pack and atomically creates or
+reuses its declared Package. `pack generate-id` and `pack install` MUST refuse
+with their replacement command; they are not aliases.
+
+`package list` returns a bounded Package-ID-ordered page with one row per Package
+present in the Store. `package show <package>` resolves one Package by ID, unique
+prefix or local name and shows its full ID, local name and installed Revision
+count. It MUST NOT borrow a chosen Revision's descriptions as Package metadata.
+These queries MUST NOT create a missing Store.
+
+`revision list <package>` requires one Package selector and returns only that
+Package's installed Revisions, retaining newest-installed ordering. Its cursor
+MUST belong to the resolved Package; another Package's cursor is invalid.
+The remaining single-Revision commands use `<package>:<revision>`. Human output
+distinguishes a copyable selector from a full Package ID and Revision ID.
+
+**Verification: PR-TEST-0811, PR-TEST-0812.**
+
+### PR-REQ-0411 - Versioned public Revision ID output
+
+CLI machine interface `1.0-alpha.5` uses full bare Revision IDs and explicit
+`revision_id` names wherever a Revision ID is exposed. Package and Revision
+components remain structured values. Other digests, payload hashes, arbitrary
+author text and terminal bytes MUST NOT be rewritten as Revision IDs.
+Failures, partial results and JSONL events follow the same selected contract.
+The exported Run report layout advances to `1.0-alpha.2` because its embedded
+inspection uses these Revision ID fields; historical report bytes are unchanged.
+Unsupported machine interface versions MUST fail with replacement guidance.
+Human labels identify Package ID, Revision ID and version selectors separately.
+
+**Verification: PR-TEST-0813.**

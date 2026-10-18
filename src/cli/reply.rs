@@ -350,9 +350,18 @@ impl DisplayOptions {
                 no_trunc: command.no_trunc(),
                 ..Self::default()
             },
-            Command::Catalog(C::Revisions(o)) => Self {
+            Command::Catalog(C::Packages(o)) => Self {
                 no_trunc: o.no_trunc,
-                continuation: Some(("revision list".into(), o.limit, vec![])),
+                continuation: Some(("package list".into(), o.limit, vec![])),
+                ..Self::default()
+            },
+            Command::Catalog(C::Revisions(package, o)) => Self {
+                no_trunc: o.no_trunc,
+                continuation: Some((
+                    format!("revision list {}", quote(package.as_str())),
+                    o.limit,
+                    vec![],
+                )),
                 ..Self::default()
             },
             Command::Catalog(C::History(o, deletion)) => Self {
@@ -431,7 +440,6 @@ fn revision_reference(reference: &RevisionReference) -> String {
             id.package_id,
             hex::encode(id.content_digest.as_bytes())
         ),
-        RevisionReference::Prefix { package, digest } => format!("{package}:{digest}"),
     }
 }
 fn quote(text: &str) -> String {
@@ -517,10 +525,10 @@ mod tests {
             presentation::Format::Json,
             presentation::Format::Jsonl,
         ] {
-            let capture = Capture::new("pack generate-id", false, DisplayOptions::default());
+            let capture = Capture::new("package generate-id", false, DisplayOptions::default());
             capture
                 .publish(
-                    "pack generate-id",
+                    "package generate-id",
                     presentation::Package {
                         package_id: "00000000000000000000000000000001".into(),
                     },

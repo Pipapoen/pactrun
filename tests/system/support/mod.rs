@@ -75,7 +75,7 @@ impl Scenario {
         let installed = self.run([
             OsStr::new("--format"),
             OsStr::new("json"),
-            OsStr::new("pack"),
+            OsStr::new("revision"),
             OsStr::new("install"),
             self.source.as_os_str(),
         ]);
@@ -83,9 +83,9 @@ impl Scenario {
         let value: serde_json::Value = serde_json::from_slice(&installed.stdout).unwrap();
         let revision = &value["result"]["revision"];
         format!(
-            "exact:{}/{}",
+            "{}:{}",
             revision["package_id"].as_str().unwrap(),
-            revision["content_digest"].as_str().unwrap()
+            revision["revision_id"].as_str().unwrap()
         )
     }
 
@@ -474,7 +474,7 @@ pub(crate) fn assert_empty_json_result(output: &Output, field: &str) {
     assert_success(output);
     let response: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
     assert_eq!(response["format"], "pactrun.cli");
-    assert_eq!(response["format_version"], "1.0-alpha.4");
+    assert_eq!(response["format_version"], "1.0-alpha.5");
     assert_eq!(response["status"], "success");
     assert!(response["error"].is_null());
     assert!(
@@ -540,7 +540,7 @@ pub(crate) fn instance_projection(output: &Output) -> InstanceProjection {
 pub(crate) fn instance_list_projections(output: &Output) -> Vec<InstanceListProjection> {
     let response: Value = serde_json::from_slice(&output.stdout).unwrap();
     assert_eq!(response["format"], "pactrun.cli");
-    assert_eq!(response["format_version"], "1.0-alpha.4");
+    assert_eq!(response["format_version"], "1.0-alpha.5");
     assert_eq!(response["status"], "success");
     response["result"]["items"]
         .as_array()

@@ -219,14 +219,14 @@ pub(super) struct Artifact {
 #[derive(Clone, Serialize)]
 #[cfg_attr(test, derive(schemars::JsonSchema))]
 pub(super) struct ArtifactEdge {
-    source_revision_digest: String,
-    target_revision_digest: String,
+    source_revision_id: String,
+    target_revision_id: String,
 }
 impl From<&crate::domain::MigrationEdgeIdentity> for ArtifactEdge {
     fn from(edge: &crate::domain::MigrationEdgeIdentity) -> Self {
         Self {
-            source_revision_digest: edge.source.to_string(),
-            target_revision_digest: edge.target.to_string(),
+            source_revision_id: edge.source.revision_id(),
+            target_revision_id: edge.target.revision_id(),
         }
     }
 }
@@ -287,8 +287,8 @@ impl From<&RunState> for State {
                                 expected: facts.expected,
                                 observed: facts.observed,
                                 edge: facts.edge.as_ref().map(|edge| ArtifactEdge {
-                                    source_revision_digest: edge.source.to_string(),
-                                    target_revision_digest: edge.target.to_string(),
+                                    source_revision_id: edge.source.revision_id(),
+                                    target_revision_id: edge.target.revision_id(),
                                 }),
                             }
                         }
@@ -563,16 +563,16 @@ impl InputHistory {
                     edge: context.edge_index.and_then(|index| {
                         if let ManagedRunIdentity::Migration(invocation) = &view.run.operation {
                             Some(ArtifactEdge {
-                                source_revision_digest: invocation
+                                source_revision_id: invocation
                                     .path()
                                     .get(index)?
                                     .content_digest
-                                    .to_string(),
-                                target_revision_digest: invocation
+                                    .revision_id(),
+                                target_revision_id: invocation
                                     .path()
                                     .get(index + 1)?
                                     .content_digest
-                                    .to_string(),
+                                    .revision_id(),
                             })
                         } else {
                             None
@@ -638,21 +638,8 @@ impl Inspection {
         view: &crate::domain::ManagedRunInspectionData,
         version: machine::Version,
     ) -> Result<Self, CliError> {
-        version.require_run(&view.run)?;
-        version.require_artifacts(&view.published_artifacts)?;
-        if version == machine::Version::Legacy
-            && !matches!(
-                view.run.operation,
-                crate::domain::ManagedRunIdentity::Action(_)
-            )
-            && !view.published_artifacts.is_empty()
-        {
-            return Err(CliError::operation(
-                "machine interface 1.0-alpha.3 cannot represent this operation's artifacts; select --machine-version 1.0-alpha.4",
-            ));
-        }
         let mut result = Self::from(view);
-        if version == machine::Version::Operations {
+        if version == machine::Version::RevisionIds {
             result.published_artifacts =
                 Some(view.published_artifacts.iter().map(Into::into).collect());
         }
@@ -945,7 +932,7 @@ impl Plan {
         version: machine::Version,
     ) -> Result<Self, CliError> {
         version.require_hook(plan.protocol_version())?;
-        if version == machine::Version::Operations {
+        if version == machine::Version::RevisionIds {
             self.required_inputs_satisfied = None;
             self.missing_input_ids = None;
             self.input_requirements = Some(vec![machine::Assessment::action(plan)]);

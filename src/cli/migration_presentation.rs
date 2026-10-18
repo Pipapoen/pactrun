@@ -144,12 +144,7 @@ impl Plan {
         version: machine::Version,
     ) -> Result<Self, CliError> {
         for (index, (value, edge)) in self.edges.iter_mut().zip(plan.edges()).enumerate() {
-            if version == machine::Version::Legacy && edge.source_inputs.is_some() {
-                return Err(CliError::operation(
-                    "machine interface 1.0-alpha.3 cannot represent this Migration; select --machine-version 1.0-alpha.4",
-                ));
-            }
-            if version == machine::Version::Operations {
+            if version == machine::Version::RevisionIds {
                 value.predicted_required_inputs_satisfied = None;
                 value.input_requirements =
                     Some(vec![machine::Assessment::migration(edge, index > 0)]);

@@ -56,7 +56,7 @@ ordinary I/O failure is not itself a corruption verdict.
 The report contains `report.json` and generated relative `inputs/*.bin` and
 `artifacts/*.bin` members for copied content. Member paths are not derived from
 Hook-supplied filenames or Input identities. The JSON identifies
-`format: pactrun.run-report`, `format_version: 1.0-alpha.1`, the full Run ID,
+`format: pactrun.run-report`, `format_version: 1.0-alpha.2`, the full Run ID,
 selection, observed inspection, independently observed Core trace, and per-item
 provenance, state and member path. This is an inspection document, not an
 authoritative persisted Run representation.

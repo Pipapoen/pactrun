@@ -23,7 +23,10 @@ fn cli_startup_commands_do_not_require_or_create_storage() {
         assert!(!temporary.path().join("startup-config").exists());
     }
     // An ordinary command can retain diagnostics, but cannot provision a Store.
-    let output = run_command(startup_command(temporary.path(), ["pack", "generate-id"]));
+    let output = run_command(startup_command(
+        temporary.path(),
+        ["package", "generate-id"],
+    ));
     assert_success(&output);
     assert!(!absent_storage.exists());
     assert!(!temporary.path().join(".pactrun").exists());

@@ -46,7 +46,7 @@ fn lifecycle_cli_deletes_history_and_installation_before_explicit_collection() {
         &[
             "--format",
             "json",
-            "pack",
+            "revision",
             "install",
             source.to_str().unwrap(),
         ],
@@ -56,11 +56,7 @@ fn lifecycle_cli_deletes_history_and_installation_before_explicit_collection() {
     let reference = format!(
         "{}:{}",
         identity["package_id"].as_str().unwrap(),
-        identity["content_digest"]
-            .as_str()
-            .unwrap()
-            .strip_prefix("sha256:")
-            .unwrap()
+        identity["revision_id"].as_str().unwrap()
     );
     success(
         &root,

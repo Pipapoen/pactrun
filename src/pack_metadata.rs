@@ -58,7 +58,10 @@ enum Target {
         parameter_id: String,
     },
     Migration {
-        source_revision_digest: String,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        source_revision_digest: Option<String>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        source_revision_id: Option<String>,
     },
     Cleanup,
 }
@@ -83,7 +86,12 @@ enum Claim {
 }
 
 impl Metadata {
+    #[cfg(test)]
     pub(crate) fn decode(self) -> Result<PortableMetadataTemplate> {
+        self.decode_version(false)
+    }
+
+    pub(crate) fn decode_version(self, bare_ids: bool) -> Result<PortableMetadataTemplate> {
         let mut result = PortableMetadataTemplate::default();
         let mut keys = BTreeSet::new();
         for p in self.presentation {
@@ -123,7 +131,18 @@ impl Metadata {
                 }
                 Target::Migration {
                     source_revision_digest,
-                } => PresentationTargetV1::MigrationEdge(source_revision_digest.parse()?),
+                    source_revision_id,
+                } => PresentationTargetV1::MigrationEdge(
+                    match (bare_ids, source_revision_id, source_revision_digest) {
+                        (true, Some(id), None) => RevisionContentDigest::from_revision_id(&id)?,
+                        (false, None, Some(digest)) => digest.parse()?,
+                        _ => {
+                            return Err(
+                                "migration Revision ID field does not match Pack format".into()
+                            );
+                        }
+                    },
+                ),
                 Target::Cleanup => PresentationTargetV1::Cleanup,
             };
             let field = match p.field {
@@ -183,7 +202,12 @@ impl Metadata {
         result.provenance = claims.into_iter().collect();
         Ok(result)
     }
+    #[cfg(test)]
     pub(crate) fn encode(value: &PortableMetadataTemplate) -> Self {
+        Self::encode_version(value, false)
+    }
+
+    pub(crate) fn encode_version(value: &PortableMetadataTemplate, bare_ids: bool) -> Self {
         Self {
             presentation: value
                 .presentation
@@ -226,7 +250,8 @@ impl Metadata {
                             }
                         }
                         PresentationTargetV1::MigrationEdge(id) => Target::Migration {
-                            source_revision_digest: id.to_string(),
+                            source_revision_digest: (!bare_ids).then(|| id.to_string()),
+                            source_revision_id: bare_ids.then(|| id.revision_id()),
                         },
                         PresentationTargetV1::Cleanup => Target::Cleanup,
                     },

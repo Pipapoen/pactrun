@@ -6,19 +6,23 @@ title: User vocabulary
 
 | Term | What it means when operating Pactrun |
 | --- | --- |
-| Pack / Package | A service's authored definition and stable lineage. Run only Packs whose Hooks you trust. |
+| Package | A service-management product lineage with a stable Package ID, whose versions are Revisions. |
+| Revision Pack | A bundle you install or share, containing one version's definition and files. Run only content whose Hooks you trust. |
 | Revision | One exact immutable installed definition and its runtime files. Installing another Revision does not switch an existing Instance. |
+| Revision ID | A content-derived 64-digit lowercase hexadecimal ID identifying the version within its Package. |
 | Instance | A long-lived managed object with a name, identity, active Revision, configuration, and recovery state. |
 | Input | A detached, Pactrun-owned copy of opaque configuration bytes. Changing the original file does not update the binding. |
-| Required Input | An ordinary Action/Capture readiness requirement. An incomplete Instance may exist; once bound, an active required Input cannot be ordinarily deleted. |
+| Required Input | An Input needed by a particular operation. With current-format Revisions, removing its binding makes that operation's requirements unsatisfied. Legacy Core `1.0-alpha.1` instead has global required declarations and prevents ordinary removal of an active required binding once bound. |
 | Secret | Protected handling/disclosure rules. Not an encrypted vault, sandbox, or guarantee that a trusted Hook cannot disclose it. |
 | Parameter | A typed value for one invocation. It is not persistent Instance configuration. |
-| Action | A Pack-defined operation whose prerequisites and effects you should inspect before running. |
+| Action | An operation declared by a Revision; inspect its prerequisites and effects before running it. |
 | Hook | Trusted host code that implements an operation. Names such as inspect or backup do not prove what its code does. |
 | Plan | Read-only preview of an operation. It reserves nothing and does not guarantee later execution will be accepted. |
 | Run | Durable record of an accepted execution attempt. Progress or child-process exit alone does not prove a successful terminal outcome. |
 | State-version token | Exact observed Instance state used for conditional writes. Do not abbreviate it or automatically replace a stale expectation. |
-| ServiceStorage / resource | Allocated storage and declared service-owned live files/directories. These are not copied Inputs or automatic backups. |
+| Store | Pactrun's management data location for installed versions, Instances and retained records. |
+| ServiceStorage | Persistent storage allocated for one Instance and made available to its service or Hooks. |
+| Managed Service Resource | A separately declared service-owned live file or directory within ServiceStorage. Declaring it does not create it or automatically back it up. |
 | Workspace | Execution-scoped scratch. Do not keep its path as durable service state. |
 | Artifact | Explicitly registered managed output retained separately from Workspace; export before deliberate deletion. |
 | Snapshot | Immutable recovery representation with complete managed bindings and authored service content. Not every host resource or executable Pack is included. |

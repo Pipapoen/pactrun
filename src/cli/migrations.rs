@@ -144,21 +144,24 @@ impl MigrationCommand {
                         .revisions
                         .iter()
                         .filter(|r| r.identity.package_id == observation.active_revision.package_id)
-                        .map(|r| r.identity.content_digest.to_string())
-                        .filter(|s| s[7..].starts_with(prefix.as_str()))
+                        .map(|r| r.identity.content_digest.revision_id())
+                        .filter(|s| s.starts_with(prefix.as_str()))
                         .take(21)
                         .collect();
                     let has_more = candidates.len() > 20;
                     candidates.truncate(20);
                     let selected = short_ids::unique(
                         short_ids::SelectorKind::RevisionDigest,
-                        &format!("sha256:{prefix}"),
+                        prefix,
                         IdentityMatches {
                             candidates,
                             has_more,
                         },
                     )?;
-                    *revision = Selector::Full(selected.parse().map_err(CliError::usage)?);
+                    *revision = Selector::Full(
+                        RevisionContentDigest::from_revision_id(&selected)
+                            .map_err(CliError::usage)?,
+                    );
                 }
             }
             let mut seen = std::collections::BTreeSet::new();
@@ -782,8 +785,8 @@ mod tests {
     // Verifies: PR-REQ-0390
     #[test]
     fn migration_parameter_sources_are_edge_scoped_and_stdin_is_single_use() {
-        let a = format!("sha256:{}", "1".repeat(64));
-        let b = format!("sha256:{}", "2".repeat(64));
+        let a = "1".repeat(64);
+        let b = "2".repeat(64);
         let run = |args: Vec<String>| {
             let mut parser = Parser::from_args(
                 ["demo".to_owned(), "--to".to_owned(), "app:next".to_owned()]
@@ -834,7 +837,7 @@ mod tests {
     // Verifies: PR-REQ-0315, PR-REQ-0307
     #[test]
     fn migration_file_selector_preserves_non_unicode_native_path_units() {
-        let prefix = format!("sha256:{}/config=", "ab".repeat(32));
+        let prefix = format!("{}/config=", "ab".repeat(32));
         #[cfg(unix)]
         let (argument, expected) = {
             use std::os::unix::ffi::OsStringExt;

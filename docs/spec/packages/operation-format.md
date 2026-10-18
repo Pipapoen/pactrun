@@ -6,6 +6,11 @@ title: Operation-scoped Revision Format
 
 ## Applicability
 
+Current Source `1.0-alpha.4` keeps the operation semantics on this page while
+grouping runtime content inside `revision` and using bare Revision IDs. See
+[Revision Packs](./revision-packs.md) for that authoring structure. The
+`1.0-alpha.3` Source reader described here remains supported.
+
 This contract defines Pack source `1.0-alpha.3` and Revision canonical
 `1.0-alpha.2`. The [support table](../storage/format-domains.md) lists their exact
 readers alongside the legacy contracts. Existing supported formats retain their

@@ -13,7 +13,8 @@ Hooks perform the service-specific work.
 
 | Object | Meaning |
 | --- | --- |
-| Package | A stable product lineage. Pack is the supported Package kind. |
+| Package | A stable service-management product lineage. |
+| Revision Pack | An installable bundle for one version, with its Package ID and optional descriptions. |
 | Source | Mutable authoring files used to produce a Revision. |
 | Revision | An immutable operational definition and its owned runtime content. |
 | Instance | A long-lived managed object with its own identity, one active Revision, and persistent data. |
@@ -29,7 +30,9 @@ for resolution, installation, and inspection rules.
 ### PR-REQ-0001 - Product boundary
 
 Pactrun MUST remain a local-first, install-managed, command-driven,
-single-executable modular monolith. It MUST NOT require a daemon and MUST NOT
+single-executable modular monolith centered on long-lived service Instances.
+Packages describe service management products; Instances identify the concrete
+managed uses of their versions. It MUST NOT require a daemon and MUST NOT
 act as a scheduler, remote orchestrator, web platform, secret vault, or
 replacement for service-specific tools.
 
@@ -37,8 +40,9 @@ replacement for service-specific tools.
 
 ### PR-REQ-0002 - Package taxonomy
 
-`Package` MUST be the core package abstraction, and `Pack` MUST be the only
-supported Package kind. Pactrun MUST NOT infer Package, Revision, Instance,
+`Package` MUST identify a service-management product lineage. A Revision Pack
+MUST mean an installable bundle for one Revision, not a Package kind. Pactrun
+MUST NOT infer Package, Revision, Instance,
 Action, Snapshot, Migration, persistence, compiler, or CLI semantics for a
 `Stack` concept.
 

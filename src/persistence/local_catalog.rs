@@ -1,8 +1,8 @@
 //! Local management names and installation facts, never portable Pack metadata.
 use super::{PactrunPersistence, PersistenceError};
 use crate::domain::{
-    InstallNames, LocalName, LocalRevisionFacts, LocalRevisionReference, LocalSelector, PackageId,
-    RevisionContentDigest, RevisionIdentity,
+    IdentityMatches, InstallNames, LocalName, LocalRevisionFacts, LocalRevisionReference,
+    LocalSelector, PackageId, RevisionContentDigest, RevisionIdentity,
 };
 use rusqlite::{Connection, OptionalExtension, Transaction, TransactionBehavior, params};
 
@@ -179,32 +179,65 @@ pub(super) fn resolve_revision(
     db: &Connection,
     reference: &LocalRevisionReference,
 ) -> Result<RevisionIdentity, PersistenceError> {
-    let (p, r) = reference.components();
-    // A single snapshot and at most two rows suffice to prove uniqueness.
-    let mut stmt = db.prepare("SELECT r.package_id,r.revision_content_digest FROM revisions r LEFT JOIN package_local_names p ON p.package_id=r.package_id LEFT JOIN revision_local_names n ON n.package_id=r.package_id AND n.revision_content_digest=r.revision_content_digest WHERE (p.name=?1 OR (?2 IS NOT NULL AND lower(hex(r.package_id)) LIKE ?2 || '%')) AND (n.name=?3 OR (?4 IS NOT NULL AND lower(hex(r.revision_content_digest)) LIKE ?4 || '%')) LIMIT 2").map_err(sql)?;
-    let rows = stmt
-        .query_map(
-            params![p.as_str(), p.id_prefix(32), r.as_str(), r.id_prefix(64)],
-            |row| Ok((row.get::<_, Vec<u8>>(0)?, row.get::<_, Vec<u8>>(1)?)),
-        )
-        .map_err(sql)?;
-    let mut found = None;
-    for row in rows {
-        let (p, r) = row.map_err(sql)?;
-        let id = identity(p, r)?;
-        if found.is_some() {
-            return Err(PersistenceError::InvalidMetadata(
-                "resolution.ambiguous_reference".into(),
-            ));
-        }
-        found = Some(id);
+    let mut matches = revision_matches(db, reference, 2)?;
+    if matches.len() > 1 {
+        return Err(PersistenceError::InvalidMetadata(
+            "resolution.ambiguous_reference".into(),
+        ));
     }
-    found.ok_or_else(|| {
+    matches.pop().ok_or_else(|| {
         PersistenceError::InvalidMetadata("Revision reference does not resolve".into())
     })
 }
 
+fn revision_matches(
+    db: &Connection,
+    reference: &LocalRevisionReference,
+    limit: i64,
+) -> Result<Vec<RevisionIdentity>, PersistenceError> {
+    let (p, r) = reference.components();
+    let mut stmt = db.prepare("SELECT r.package_id,r.revision_content_digest FROM revisions r LEFT JOIN package_local_names p ON p.package_id=r.package_id LEFT JOIN revision_local_names n ON n.package_id=r.package_id AND n.revision_content_digest=r.revision_content_digest WHERE (p.name=?1 OR (?2 IS NOT NULL AND lower(hex(r.package_id)) LIKE ?2 || '%')) AND (n.name=?3 OR (?4 IS NOT NULL AND lower(hex(r.revision_content_digest)) LIKE ?4 || '%')) ORDER BY r.package_id,r.revision_content_digest LIMIT ?5").map_err(sql)?;
+    let rows = stmt
+        .query_map(
+            params![
+                p.as_str(),
+                p.id_prefix(32),
+                r.as_str(),
+                r.id_prefix(64),
+                limit
+            ],
+            |row| Ok((row.get::<_, Vec<u8>>(0)?, row.get::<_, Vec<u8>>(1)?)),
+        )
+        .map_err(sql)?;
+    let mut found = Vec::new();
+    for row in rows {
+        let (p, r) = row.map_err(sql)?;
+        found.push(identity(p, r)?);
+    }
+    Ok(found)
+}
+
 impl PactrunPersistence {
+    pub(crate) fn matching_revisions(
+        &self,
+        reference: &LocalRevisionReference,
+    ) -> Result<IdentityMatches, PersistenceError> {
+        let db = self
+            .database
+            .lock()
+            .map_err(|_| PersistenceError::DatabaseLockPoisoned)?;
+        let rows = revision_matches(&db, reference, 21)?;
+        let has_more = rows.len() > 20;
+        let candidates = rows
+            .into_iter()
+            .take(20)
+            .map(|id| format!("{}:{}", id.package_id, id.content_digest.revision_id()))
+            .collect();
+        Ok(IdentityMatches {
+            candidates,
+            has_more,
+        })
+    }
     pub(crate) fn resolve_named_revision(
         &self,
         reference: &LocalRevisionReference,

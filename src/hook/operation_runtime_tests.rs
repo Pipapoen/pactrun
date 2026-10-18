@@ -637,7 +637,11 @@ fn native_migration_keeps_edge_parameters_and_same_name_reports_independent() {
                 source: path[0].content_digest,
                 target: path[1].content_digest,
             };
-            let selected = format!("{}/{}", edge.source, edge.target);
+            let selected = format!(
+                "{}/{}",
+                edge.source.revision_id(),
+                edge.target.revision_id()
+            );
             let output = f.marker("exported-report");
             let (code, body, err) = cli(
                 &f.storage,
@@ -658,10 +662,10 @@ fn native_migration_keeps_edge_parameters_and_same_name_reports_independent() {
             );
             assert_eq!(code, 0, "{} {err}", String::from_utf8_lossy(&body));
             let body: Value = serde_json::from_slice(&body).unwrap();
-            assert_eq!(body["format_version"], "1.0-alpha.4");
+            assert_eq!(body["format_version"], "1.0-alpha.5");
             assert_eq!(
-                body["result"]["edge"]["source_revision_digest"],
-                edge.source.to_string()
+                body["result"]["edge"]["source_revision_id"],
+                edge.source.revision_id()
             );
             assert_eq!(
                 fs::read(output).unwrap(),
@@ -681,10 +685,10 @@ fn native_migration_keeps_edge_parameters_and_same_name_reports_independent() {
                 selected.clone(),
             ];
             let (code, body, _) = cli(&f.storage, &args);
-            assert_eq!(code, 1);
+            assert_eq!(code, 2);
             assert_eq!(
                 serde_json::from_slice::<Value>(&body).unwrap()["format_version"],
-                "1.0-alpha.3"
+                "1.0-alpha.5"
             );
             assert_eq!(
                 report(&f, run, Some(&edge)),
@@ -722,28 +726,28 @@ fn machine_version_prefix_errors_and_jsonl_keep_the_selected_envelope_without_op
     let tmp = tempfile::tempdir_in(parent).unwrap();
     let root = tmp.path().join("absent");
     for (args, code, version) in [
-        (vec!["--format", "json", "--version"], 0, "1.0-alpha.4"),
+        (vec!["--format", "json", "--version"], 0, "1.0-alpha.5"),
         (
             vec![
                 "--machine-version",
-                "1.0-alpha.3",
+                "1.0-alpha.5",
                 "--format",
                 "json",
                 "--version",
             ],
             0,
-            "1.0-alpha.3",
+            "1.0-alpha.5",
         ),
         (
             vec![
                 "--format",
                 "json",
                 "--machine-version",
-                "1.0-alpha.3",
+                "1.0-alpha.5",
                 "unknown-command",
             ],
             2,
-            "1.0-alpha.3",
+            "1.0-alpha.5",
         ),
         (
             vec![
@@ -754,20 +758,20 @@ fn machine_version_prefix_errors_and_jsonl_keep_the_selected_envelope_without_op
                 "--version",
             ],
             2,
-            "1.0-alpha.4",
+            "1.0-alpha.5",
         ),
         (
             vec![
                 "--format",
                 "json",
                 "--machine-version",
-                "1.0-alpha.3",
+                "1.0-alpha.5",
                 "--machine-version",
-                "1.0-alpha.4",
+                "1.0-alpha.5",
                 "--version",
             ],
             2,
-            "1.0-alpha.3",
+            "1.0-alpha.5",
         ),
     ] {
         let (actual, body, err) = cli(&root, &args.iter().map(|a| (*a).into()).collect::<Vec<_>>());
@@ -782,7 +786,7 @@ fn machine_version_prefix_errors_and_jsonl_keep_the_selected_envelope_without_op
         &root,
         &[
             "--machine-version",
-            "1.0-alpha.3",
+            "1.0-alpha.5",
             "--format",
             "jsonl",
             "--version",
@@ -791,11 +795,11 @@ fn machine_version_prefix_errors_and_jsonl_keep_the_selected_envelope_without_op
     );
     assert_eq!(code, 0);
     let value: Value = serde_json::from_slice(&body).unwrap();
-    assert_eq!(value["format_version"], "1.0-alpha.3");
-    assert_eq!(value["response"]["format_version"], "1.0-alpha.3");
+    assert_eq!(value["format_version"], "1.0-alpha.5");
+    assert_eq!(value["response"]["format_version"], "1.0-alpha.5");
     let (code, body, error) = cli(
         &root,
-        &["--machine-version", "1.0-alpha.3", "--version"].map(String::from),
+        &["--machine-version", "1.0-alpha.5", "--version"].map(String::from),
     );
     assert_eq!(code, 2);
     assert!(body.is_empty());
@@ -868,10 +872,10 @@ fn new_cli_readiness_is_per_operation_and_legacy_invocation_refuses_before_a_run
             format!("marker={}", marker.display()),
         ],
     );
-    assert_eq!(code, 1);
+    assert_eq!(code, 2);
     assert_eq!(
         serde_json::from_slice::<Value>(&body).unwrap()["format_version"],
-        "1.0-alpha.3"
+        "1.0-alpha.5"
     );
     assert!(!marker.exists());
     assert!(f.application.list_runs(f.instance.id).unwrap().is_empty());
@@ -902,7 +906,7 @@ fn new_cli_readiness_is_per_operation_and_legacy_invocation_refuses_before_a_run
 // Test-ID: PR-TEST-0729
 // Verifies: PR-REQ-0388, PR-REQ-0389
 #[test]
-fn legacy_machine_keeps_old_fields_and_all_live_event_envelopes() {
+fn legacy_core_keeps_requiredness_in_current_machine_envelopes() {
     let f = legacy_fixture();
     let (code, body, err) = cli(
         &f.storage,
@@ -910,7 +914,7 @@ fn legacy_machine_keeps_old_fields_and_all_live_event_envelopes() {
             "--format",
             "json",
             "--machine-version",
-            "1.0-alpha.3",
+            "1.0-alpha.5",
             "instance",
             "show",
             "hook-fixture",
@@ -919,8 +923,9 @@ fn legacy_machine_keeps_old_fields_and_all_live_event_envelopes() {
     );
     assert_eq!(code, 0, "{err}");
     let value: Value = serde_json::from_slice(&body).unwrap();
-    assert_eq!(value["result"]["required_inputs_satisfied"], true);
-    assert!(value["result"].get("input_requirements").is_none());
+    assert!(value["result"].get("required_inputs_satisfied").is_none());
+    assert_eq!(value["result"]["legacy_required_inputs"]["satisfied"], true);
+    assert!(value["result"]["input_requirements"].is_array());
     let (code, body, err) = cli(
         &f.storage,
         &["--format", "json", "instance", "show", "hook-fixture"].map(String::from),
@@ -936,7 +941,7 @@ fn legacy_machine_keeps_old_fields_and_all_live_event_envelopes() {
             "--format".into(),
             "jsonl".into(),
             "--machine-version".into(),
-            "1.0-alpha.3".into(),
+            "1.0-alpha.5".into(),
             "invoke".into(),
             "hook-fixture".into(),
             "precheck".into(),
@@ -954,11 +959,11 @@ fn legacy_machine_keeps_old_fields_and_all_live_event_envelopes() {
     assert!(
         records
             .iter()
-            .all(|record| record["format_version"] == "1.0-alpha.3")
+            .all(|record| record["format_version"] == "1.0-alpha.5")
     );
     assert_eq!(
         records.last().unwrap()["response"]["format_version"],
-        "1.0-alpha.3"
+        "1.0-alpha.5"
     );
     assert_eq!(session_at(&marker)["protocol_version"], "1.0-alpha.1");
 }

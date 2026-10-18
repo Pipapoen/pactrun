@@ -4,28 +4,32 @@ title: Pack fields and values
 
 # Pack fields and values
 
-Use this reference while editing `pactrun.yaml`. The paths below are YAML paths:
+Use this reference for `source_format: "1.0-alpha.4"` while editing `pactrun.yaml`.
+All version content declarations belong inside `revision`, including runtime
+files. Older Source `1.0-alpha.2` and `1.0-alpha.3` remain readable under their
+own schemas; see the [legacy source reference](./source-format.md) and
+[operation format](./operation-format.md). The paths below are YAML paths:
 `[]` means one sequence entry, and `?` in a shape means an optional property.
 Fields not listed by the selected shape are rejected. Omission uses a documented
 default; it does not mean that arbitrary `null` values are accepted.
 
 For the exact grammar, portable metadata shapes, and path rules, use the
-[complete source reference](./source-format.md). Advanced normalized declaration
+[current source and ID reference](./revision-packs.md). Advanced normalized declaration
 rules are in [declaration types and identity](./revision-format.md).
 
 ## Root and runtime files
 
 | Field | Type / accepted value | Required or default | Meaning |
 | --- | --- | --- | --- |
-| `source_format` | String `"1.0-alpha.2"` | Required | Selects the supported source format; numeric versions are refused. |
-| `package_id` | 32 lowercase hexadecimal characters | Required | Stable lineage ID. Generate once with `pactrun pack generate-id`; keep it across Revisions of this Pack. |
-| `revision` | Object | Required; `{}` is valid | Operational declarations below. Do not add `revision.format_version`; installation supplies it. |
-| `runtime_content` | Object | Required; `{}` is valid | Files Pactrun acquires into the installed Revision. |
-| `runtime_content.files` | Sequence | Empty when omitted | Runtime file declarations. |
-| `runtime_content.files[].id` | Semantic ID | Required | ID used by Hook `script` or `executable` references. |
-| `runtime_content.files[].source` | Source-relative path | Required | File beneath the Pack directory, read during installation. |
-| `runtime_content.files[].path` | Portable logical path | Required | Path within owned installed content; independent of the original host source. |
-| `runtime_content.files[].executable` | Boolean `true`, `false` | `false` | Required to be `true` for a direct executable. Script launch does not use this flag to choose an interpreter. |
+| `source_format` | String `"1.0-alpha.4"` | Required | Selects the source schema; numeric versions are refused. |
+| `package_id` | 32 lowercase hexadecimal characters | Required | Stable product lineage ID. Generate once with `pactrun package generate-id`; keep it across versions. |
+| `revision` | Object | Required; `{}` is valid | The management declarations and runtime content for this version. Do not add `revision.format_version`; projection supplies the Core format. |
+| `revision.runtime_content` | Object | Empty when omitted | Files acquired into the installed Revision. |
+| `revision.runtime_content.files` | Sequence | Empty when omitted | Runtime file declarations. |
+| `revision.runtime_content.files[].id` | Semantic ID | Required | ID used by Hook `script` or `executable` references. |
+| `revision.runtime_content.files[].source` | Source-relative path | Required | File beneath the source directory, read during installation. Its source path is not part of the Revision ID. |
+| `revision.runtime_content.files[].path` | Portable logical path | Required | Location within installed runtime content; part of the version's meaning. |
+| `revision.runtime_content.files[].executable` | Boolean `true`, `false` | `false` | Required to be `true` for a direct executable. Script launch does not use this flag to choose an interpreter. |
 | `portable_metadata` | Object | Empty when omitted | Labels, presentation, and provenance; never operational configuration. |
 
 Runtime files are copied and identified at installation. Later edits to the
@@ -50,7 +54,7 @@ filesystem aliases. Service locators have a different grammar; see
 
 | Field under `revision` | Omission | Contents |
 | --- | --- | --- |
-| `inputs` | Empty sequence | Persistent managed bindings. |
+| `inputs` | Empty sequence | Input identity and protection declarations. Each operation states which bindings it needs. |
 | `actions` | Empty sequence | User-invoked operations. |
 | `migrations` | Empty sequence | Inbound transitions from exact Revisions in this Package. |
 | `service_storages` | Empty sequence | Owned storage allocations for service data. |
@@ -66,11 +70,12 @@ is not shorthand for an omitted capability or an empty collection.
 | Field | Values | Required or default | Meaning |
 | --- | --- | --- | --- |
 | `id` | Semantic ID | Required | Stable binding name. |
-| `required` | `true`, `false` | `false` | `true` requires a binding for ordinary Actions and Capture. Creation may still leave the Instance incomplete. |
 | `protection` | `normal`, `secret` | `normal` | `secret` applies protected handling/disclosure. It does not encrypt the host or sandbox a Hook. |
 
-Input values are opaque bytes, not typed parameter values. Once bound, an active
-required Input cannot be ordinarily deleted. Secret protection is sticky:
+Input values are opaque bytes, not typed parameter values. Current-format
+operations declare their own required and optional Inputs. Removing a binding
+can make an operation's requirements unsatisfied; requiredness alone does not
+prevent removal. Secret protection is sticky:
 changing a declaration to `normal` does not declassify existing Secret bytes.
 Migration and Cleanup declare their own binding requirements.
 
@@ -78,7 +83,6 @@ Migration and Cleanup declare their own binding requirements.
 # Place this property directly inside revision.
 inputs:
   - id: config
-    required: true
     protection: normal
 ```
 
@@ -88,6 +92,7 @@ inputs:
 | --- | --- | --- | --- |
 | `id` | Semantic ID | Required | Name used by `pactrun invoke`. |
 | `access` | `observe`, `mutate` | Required | `observe` uses a pinned read context without a reader lock; `mutate` serializes/conflicts with mutations on the same Instance. Neither freezes external service bytes. |
+| `inputs` | `{required: [<input-id>], optional: [<input-id>]}` | Empty lists when omitted | Required bindings must exist before this Action runs. Both lists grant read access to their declared Inputs; omitted Inputs are not available through managed Input helpers. |
 | `parameters` | Sequence | Required; `[]` is valid | Invocation-only typed values. |
 | `outputs` | Sequence of `{id: <semantic-id>}` | Required; `[]` is valid | Declared managed-output slots. The Hook must explicitly register produced outputs. |
 | `hook` | Hook object below | Required | How the operation runs and which service authorities it receives. |
@@ -143,7 +148,7 @@ scalar. Parse JSON rather than evaluating the result as shell code.
 
 | Field | Values | Required or default | Meaning |
 | --- | --- | --- | --- |
-| `protocol_version` | FormatVersion string; this runtime supports `"1.0-alpha.1"` | Required | Identity-bearing protocol selection. Numeric `1` or `2` is not accepted. |
+| `protocol_version` | String `"1.0-alpha.2"` | Defaults to `"1.0-alpha.2"` | Protocol selected by current Source. Numeric values and other versions are refused in this schema. |
 | `launch` | One closed alternative below | Required | Direct executable, interpreter, or built-in Shell Loader. |
 | `args` | Ordered string sequence | Required; `[]` is valid | Literal argument tail; no shell interpolation by Pactrun. |
 | `io` | `{terminal: <value>}` | Required | Pack-facing terminal contract. |
@@ -153,11 +158,10 @@ scalar. Parse JSON rather than evaluating the result as shell code.
 Protocol labels use `Major.Minor`, optionally followed by `-alpha.N`, `-beta.N`,
 or `-rc.N`. Components are canonical unsigned 64-bit decimal integers without leading
 zeroes; prerelease `N` starts at one. Labels are ASCII and at most 128 bytes.
-Syntactic validity and runtime support are separate: a service-free declaration
-can preserve an unsupported label while its Action fails compilation. Service
-authorities and transforms also require supported protocol capabilities during
-declaration validation. Use `"1.0-alpha.1"` for runnable Hooks in this candidate;
-installation alone does not prove that every operation can run.
+Current Source selects Core and Hook Protocol `1.0-alpha.2`. Older Source
+`1.0-alpha.2` retains its original Hook contract and validation rules; do not
+mix fields or protocol labels between these schemas. Installation still does
+not prove that a service's prerequisites will be satisfied when an operation runs.
 
 | `io.terminal` | Meaning |
 | --- | --- |
@@ -190,13 +194,15 @@ authors use the [message reference](./hook-protocol.md).
 
 | Location | Fields | Meaning |
 | --- | --- | --- |
-| `revision.snapshot.capture` | `parameters`, `access`, `hook` | Optional Capture capability; `access` is `observe` or `mutate`. |
-| `revision.snapshot.restore` | `parameters`, `hook` | Optional Restore capability; always Mutate. Do not add an `access` field. |
-| `revision.cleanup` | `requires`, `hook` | Optional Cleanup capability; no invocation parameters. |
-| `cleanup.requires[]` | `{role: active or retained, input_id: <id>}` | Exact binding requirements for Cleanup. |
+| `revision.snapshot.capture` | `parameters`, `access`, `inputs`, `outputs`, `hook` | Optional Capture capability; `access` is `observe` or `mutate`. |
+| `revision.snapshot.restore` | `parameters`, `inputs`, `outputs`, `hook` | Optional Restore capability; always Mutate. Inputs refer to staged Snapshot bindings. |
+| `revision.cleanup` | `inputs`, `parameters`, `outputs`, `hook` | Optional Cleanup capability, including invocation parameters and ordinary report outputs. |
+| `cleanup.inputs` | `{required: [{role, input_id}], optional: [{role, input_id}]}` | Exact active or retained binding read grants and requirements. |
 
-All fields listed inside a present capability are required; empty sequences are
-valid where the capability needs no parameters or bindings. Capture/Restore may
+Input-use objects and their lists default to empty. Capture/Restore outputs
+default to empty; Cleanup parameters and outputs also default to empty. Existing
+required fields, including the Hook and Capture/Restore parameters, must still
+be supplied. Capture/Restore may
 be declared independently. See the [Shell helper reference](./shell-loader.md)
 for Hook interactions and the [declaration reference](./revision-format.md)
 for capability contracts.
@@ -243,7 +249,7 @@ Presentation targets use `kind: revision`, `input` with `input_id`, `action` wit
 `action_id`, `action_parameter` with `action_id` and `parameter_id`, `managed_output`
 with `action_id` and `output_id`, `snapshot_capture`, `snapshot_capture_parameter`
 with `parameter_id`, `snapshot_restore`, `snapshot_restore_parameter` with
-`parameter_id`, `migration` with `source_revision_digest`, or `cleanup`.
+`parameter_id`, `migration` with a complete bare `source_revision_id`, or `cleanup`.
 No target names an arbitrary Package, Instance, Storage, or resource. The Revision
 target accepts `summary`, `description`, and `help`, not `display_name`.
 Other supported targets accept all four fields. Package and Revision names are

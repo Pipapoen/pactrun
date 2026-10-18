@@ -16,7 +16,8 @@ Revision.
 | Object | Identity | What it represents |
 | --- | --- | --- |
 | Package | `PackageId` | A stable lineage that continues across Revision changes. |
-| Revision | `PackageId` and `RevisionContentDigest` | One immutable operational definition and its owned runtime content. |
+| Revision | Revision ID (content digest), scoped to a Package | One immutable operational definition and its owned runtime content. |
+| Revision Pack | No separate object ID | An installable bundle carrying one version and its Package ID. |
 | Instance | `InstanceId` | A managed object with a human name, one active Revision, and its own persistent data. |
 
 Installing a Revision does not create an Instance. Multiple Instances can use

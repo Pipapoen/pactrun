@@ -43,18 +43,16 @@ fn installed_reference(root: &Path, source: &Path) -> String {
         &[
             "--format",
             "json",
-            "pack",
+            "revision",
             "install",
             source.to_str().unwrap(),
         ],
     );
     let value: serde_json::Value = serde_json::from_str(&output).unwrap();
     format!(
-        "exact:{}/{}",
+        "{}:{}",
         value["result"]["revision"]["package_id"].as_str().unwrap(),
-        value["result"]["revision"]["content_digest"]
-            .as_str()
-            .unwrap()
+        value["result"]["revision"]["revision_id"].as_str().unwrap()
     )
 }
 fn fixture() -> Fixture {
@@ -142,8 +140,8 @@ fn socket_finalization_diagnostics_preserve_cleanup_and_admission_boundaries() {
     let source = f._temp.path().join("pack");
     let yaml = fs::read_to_string(source.join("pactrun.yaml")).unwrap();
     let migration = format!(
-        "  migrations:\n    - source_revision_digest: '{}'\n      transitions: []\n      requires_source: []\n      requires_target: []\n      produces_target: []\n      storage_transitions:\n        - {{kind: reuse, source: {{role: active, storage_id: data}}, target_storage_id: data}}\n",
-        f.revision.rsplit('/').next().unwrap()
+        "  migrations:\n    - source_revision_digest: 'sha256:{}'\n      transitions: []\n      requires_source: []\n      requires_target: []\n      produces_target: []\n      storage_transitions:\n        - {{kind: reuse, source: {{role: active, storage_id: data}}, target_storage_id: data}}\n",
+        f.revision.rsplit(':').next().unwrap()
     );
     fs::write(
         source.join("pactrun.yaml"),
@@ -285,8 +283,8 @@ fn socket_finalization_diagnostics_preserve_cleanup_and_admission_boundaries() {
     ))
     .unwrap();
     assert_eq!(
-        current["result"]["active_revision"]["content_digest"],
-        f.revision.rsplit('/').next().unwrap()
+        current["result"]["active_revision"]["revision_id"],
+        f.revision.rsplit(':').next().unwrap()
     );
     let retry = response(
         &call(
