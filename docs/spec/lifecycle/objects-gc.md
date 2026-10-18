@@ -62,7 +62,7 @@ Packages remain visible until explicitly deleted. Installing a Revision Pack
 with the same Package ID after Package deletion may create that Package again;
 deletion does not reserve the ID or restore its former local names.
 
-**Verification: PR-TEST-0814, PR-TEST-0815, PR-TEST-0816, PR-TEST-0817, PR-TEST-0462.**
+**Verification: PR-TEST-0814, PR-TEST-0815, PR-TEST-0816, PR-TEST-0817, PR-TEST-0819, PR-TEST-0462.**
 
 ### PR-REQ-0342 - Sensitive Artifact delivery
 

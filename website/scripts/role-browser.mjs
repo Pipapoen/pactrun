@@ -29,6 +29,23 @@ async function scopedSearch(role, query) {
   checks.push(`${role} scoped search stays in reader guidance for ${query}`);
 }
 try {
+  for (const diagram of ['intro-alpha11/responsibilities.svg', 'intro-alpha11/tooling.svg',
+    'intro-alpha10/tooling.svg', 'pack-authors/roles.svg', 'pack-authors/package-lineage.svg',
+    'pack-authors/pack-composition.svg']) {
+    const asset = new URL('../img/' + diagram, base.endsWith('/') ? base : base + '/');
+    assert.equal((await page.goto(asset.href, {waitUntil: 'networkidle'})).status(), 200);
+    const outside = await page.locator('svg').evaluate(svg => {
+      const canvas = svg.viewBox.baseVal;
+      return [...svg.querySelectorAll('text')].filter(text => {
+        const box = text.getBBox();
+        return box.x < canvas.x - 1 || box.y < canvas.y - 1 ||
+          box.x + box.width > canvas.x + canvas.width + 1 || box.y + box.height > canvas.y + canvas.height + 1;
+      }).map(text => text.textContent);
+    });
+    assert.deepEqual(outside, [], diagram + ': text must stay inside the diagram');
+    await page.locator('svg').screenshot({path: path.join(output, diagram.replaceAll('/', '-').replace('.svg', '.png'))});
+  }
+  checks.push('Revision Pack diagrams render without clipped text');
   await open('package-authors/');
   assert.equal(await page.locator('.pagination-nav__link--prev').count(), 0);
   await page.locator('.pagination-nav__link--next').click();
