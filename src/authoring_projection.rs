@@ -8,7 +8,9 @@ pub(super) fn parse_source(bytes: &[u8]) -> Result<VersionedPackSourceCandidate,
     reject_forbidden_tokens(text)?;
     let document = parse_document(text)?;
     let Node::Mapping(fields) = &document else {
-        return Err(AuthoringError::new("Pack source must be a mapping"));
+        return Err(AuthoringError::new(
+            "Revision Pack source must be a mapping",
+        ));
     };
     let version = string_scalar(
         fields
@@ -32,7 +34,7 @@ pub(super) fn parse_source(bytes: &[u8]) -> Result<VersionedPackSourceCandidate,
         document,
         &["source_format", "package_id", "revision", "runtime_content"],
         &["portable_metadata"],
-        "Pack source",
+        "Revision Pack source",
     )?;
     root.remove("source_format");
     let package_id = PackageId::from_str(&string_scalar(take(&mut root, "package_id")?)?)

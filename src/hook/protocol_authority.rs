@@ -22,7 +22,7 @@ pub(in crate::hook) struct MaterializedAuthority {
 }
 
 /// Immutable wire bytes paired with the matching owner-selected messaging
-/// state. Common fields come from existing typed materializers, not a Pack JSON
+/// state. Common fields come from existing typed materializers, not a Revision Pack JSON
 /// envelope. This builder qualifies the new authority set; it does not replace
 /// filesystem admission or claim a native-path sandbox.
 pub(in crate::hook) struct PreparedSession {

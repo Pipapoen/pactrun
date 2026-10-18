@@ -1,10 +1,10 @@
 ---
-title: Author your first Pack
+title: Author your first Revision Pack
 ---
 
-# Author your first Pack
+# Author your first Revision Pack {#author-your-first-pack}
 
-This tutorial adds an observable Shell Hook to a minimal Pack. Use a disposable
+This tutorial adds an observable Shell Hook to a minimal Revision Pack. Use a disposable
 storage root as shown in [authoring setup](../setup.md). You need
 Pactrun and a supported host interpreter. The POSIX example uses `sh`.
 
@@ -12,7 +12,7 @@ Pactrun and a supported host interpreter. The POSIX example uses `sh`.
 
 Work from the disposable `pactrun-demo` directory established by the
 authoring setup. Put the manifest and script in its `pack` subdirectory. If
-you previously used the user tutorial's empty Pack, replace that manifest; keep the isolated
+you previously used the user tutorial's empty Revision Pack, replace that manifest; keep the isolated
 storage-root environment selection.
 
 ```text
@@ -48,7 +48,7 @@ revision:
 Create `pack/inspect.sh` beside the manifest:
 
 ```sh
-printf 'Hello from the Pack\n'
+printf 'Hello from the Revision Pack\n'
 "$PACTRUN_EXECUTABLE" hook workspace
 ```
 
@@ -84,7 +84,7 @@ revision:
 Save the script as `pack/inspect.ps1`:
 
 ```powershell
-Write-Output 'Hello from the Pack'
+Write-Output 'Hello from the Revision Pack'
 & $env:PACTRUN_EXECUTABLE hook workspace
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 ```
@@ -106,7 +106,7 @@ pactrun run list hook-demo
 pactrun run show <run-id>
 ```
 
-`hook-example:initial` is the local name you assigned, not part of the Pack.
+`hook-example:initial` is the local name you assigned, not part of the Revision Pack.
 Use the Run ID shown by invocation or `run list` as `<run-id>`. Expect the greeting,
 a Workspace path, and a successful Run. The Workspace is scratch; do not keep its
 path as durable service state. If admission fails, check host interpreter availability,
@@ -120,17 +120,17 @@ source paths, and declared shell kind before retrying.
 - [Snapshots and managed data](../managed-capabilities/snapshots-and-managed-data.md)
 - [Migrations](../managed-capabilities/migrations.md)
 
-Keep the Package ID stable for revisions of one lineage. Install a changed Pack
+Keep the Package ID stable for revisions of one lineage. Install a changed Revision Pack
 to obtain a new Revision; omit `--revision-name` or choose a new unused name on
 later installations. An existing Instance stays bound until an allowed transition.
 Retire the disposable Instance with `instance delete` after reviewing its plan.
 
-More detail: [Pack fields and values](../reference/pack-fields.md).
+More detail: [Revision Pack fields and values](../reference/pack-fields.md).
 
 <details>
 <summary>Maintainer sources (optional)</summary>
 
-Contracts: [Pack source](../../spec/packages/source-format.md),
+Contracts: [Revision Pack source](../../spec/packages/source-format.md),
 [Revision model](../../spec/packages/revision-format.md),
 [Shell Loader](../../spec/interfaces/shell-loader.md).
 

@@ -5,7 +5,7 @@ title: Retire Instances and reclaim storage
 # Retire Instances and reclaim storage
 
 Choose retirement according to what should happen to service data. Review the
-Pack's Cleanup behavior and maintain independent backups before deletion.
+Revision Pack's Cleanup behavior and maintain independent backups before deletion.
 This is a deliberate lifecycle task, not a required follow-up to installation
 or a successful Action. Identify the live Instance or retained deletion attempt
 first. If you only want to inspect an Instance, use [inspection and operation guidance](./run-and-diagnose.md).
@@ -34,7 +34,7 @@ attempt and state token shown by inspection.
 
 ## When Cleanup succeeds but deletion fails
 
-Cleanup success only records completion of the Pack's service work. Pactrun must
+Cleanup success only records completion of the Revision Pack's service work. Pactrun must
 also finish reclaiming owned storage before retirement succeeds. For example,
 a service can leave a Unix admin socket behind after its container stops; the
 current Linux finalizer refuses entries other than regular files and directories.
@@ -60,7 +60,7 @@ and Instance; deletion inspection identifies the actual attempt and current phas
 
 Do not automatically retry, replay completed Cleanup, change permissions, or
 assume migration can restore the service. Finalization may already have removed
-files or moved surviving data. Fixing a Pack by migration **before retirement**
+files or moved surviving data. Fixing a Revision Pack by migration **before retirement**
 is different from handling an Instance that has already been partially deleted.
 An explicit finalization-only retry does not replay completed Cleanup.
 
@@ -114,7 +114,7 @@ blanket ownership change, permissive chmod, or privileged retry as routine setup
 Administrator cleanup in the evaluation was a separate recovery outcome, not a
 passing ordinary-user deletion path.
 
-Pack authors must evaluate the service's UID, directory permissions and Cleanup
+Revision Pack authors must evaluate the service's UID, directory permissions and Cleanup
 lifecycle together, including initialized database data rather than only an empty
 directory. No generally validated permission-handoff recipe is supplied by this
 Preview.
@@ -127,13 +127,13 @@ without revealing paths. It does not grant permission to delete foreign-owned
 data or replay Cleanup. Filesystem traversal and identity prerequisites still
 apply, so handoff is not guaranteed for every inaccessible or replaced location.
 
-A corrected disposable Authentik evaluation Pack keeps PostgreSQL/Redis data
+A corrected disposable Authentik evaluation Revision Pack keeps PostgreSQL/Redis data
 under the invoking host user's UID/GID from initial deployment. Its initialized
 data passed normal retirement; this is not a migration or ownership-repair recipe
 for existing data. These Core corrections are included in the public alpha.2
 Preview; use the [version update instructions](./version-management.md) to move
 an existing alpha.1 Preview installation forward. Updating the executable alone
-does not rewrite an installed Pack or repair existing foreign-owned data.
+does not rewrite an installed Revision Pack or repair existing foreign-owned data.
 
 ## Remove retained objects deliberately
 

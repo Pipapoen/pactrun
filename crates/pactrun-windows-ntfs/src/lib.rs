@@ -697,7 +697,7 @@ mod implementation {
         source_names(file, usize::MAX)
     }
 
-    /// Bounded enumeration for Pack acquisition, using the opened directory.
+    /// Bounded enumeration for Revision Pack acquisition, using the opened directory.
     pub fn source_names(
         file: &File,
         maximum: usize,
@@ -758,7 +758,9 @@ mod implementation {
             });
             if name != "." && name != ".." {
                 if names.len() >= maximum {
-                    return Err(io::Error::other("Pack directory entry limit exceeded"));
+                    return Err(io::Error::other(
+                        "Revision Pack directory entry limit exceeded",
+                    ));
                 }
                 names.push_back(name);
             }

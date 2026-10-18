@@ -5,7 +5,7 @@ title: Invoke command reference
 # Invoke command reference
 
 Run a declared Action on a live Instance. Discover its parameter IDs and types
-with `action show`. Replace the operands below with names from your installed Pack.
+with `action show`. Replace the operands below with names from your installed Revision Pack.
 
 ## Syntax
 
@@ -62,7 +62,7 @@ Protect source files and avoid commands that print sensitive values to history.
 ### Exact text values
 
 These are invocation-text rules, including `--param-file` and `--param-stdin`.
-They differ from YAML numeric-default spellings used by Pack authors.
+They differ from YAML numeric-default spellings used by Revision Pack authors.
 
 | Declared type | Accepted text | Refused examples |
 | --- | --- | --- |
@@ -109,7 +109,7 @@ can leave external effects that require inspection; it does not promise rollback
 
 These examples assume an Action named `inspect` with a string parameter named
 `message`. The [author guide](../../package-authors/fundamentals/actions-inputs-and-parameters.md)
-shows that declaration. The parameter-free starter Pack needs that declaration
+shows that declaration. The parameter-free starter Revision Pack needs that declaration
 installed in a new Revision before these parameter examples apply.
 
 ```text

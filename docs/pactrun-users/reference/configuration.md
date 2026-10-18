@@ -19,7 +19,7 @@ owned by the existing executable/environment contract.
 The user TOML document owns `presentation` and `startup_diagnostics`. The Store
 TOML document owns `diagnostics`. Both accept `version = 1`; omitted version is
 1. Unknown keys, duplicate keys, invalid types and unsupported versions MUST be
-refused. An empty document selects defaults. No current-directory or Pack
+refused. An empty document selects defaults. No current-directory or Revision Pack
 configuration discovery is permitted.
 
 The default user file is `%APPDATA%/<entry>/config.toml` on Windows, or

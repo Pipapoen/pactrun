@@ -11,7 +11,7 @@ grouping runtime content inside `revision` and using bare Revision IDs. See
 [Revision Packs](./revision-packs.md) for that authoring structure. The
 `1.0-alpha.3` Source reader described here remains supported.
 
-This contract defines Pack source `1.0-alpha.3` and Revision canonical
+This contract defines Revision Pack source `1.0-alpha.3` and Revision canonical
 `1.0-alpha.2`. The [support table](../storage/format-domains.md) lists their exact
 readers alongside the legacy contracts. Existing supported formats retain their
 meaning; this page does not redefine their bytes or defaults.
@@ -22,7 +22,7 @@ The following exact combinations MUST govern the operation-scoped contract:
 
 | Domain | Legacy contract | Operation-scoped contract |
 | --- | --- | --- |
-| Pack source | `1.0-alpha.2` | `1.0-alpha.3` |
+| Revision Pack source | `1.0-alpha.2` | `1.0-alpha.3` |
 | Revision canonical | `1.0-alpha.1` | `1.0-alpha.2` |
 | Hook Protocol | `1.0-alpha.1` | `1.0-alpha.2` |
 | CLI machine interface | `1.0-alpha.3` | `1.0-alpha.4` |
@@ -41,7 +41,7 @@ closed schema replacements, not permission for arbitrary extension fields.
 New Source Hook defaults select `1.0-alpha.2`; old Source defaults do not change.
 
 Revision Pack, Snapshot integrity and Snapshot bundle versions are not
-advanced by these operation formats. Supporting the new Core does not change the Pack
+advanced by these operation formats. Supporting the new Core does not change the Revision Pack
 envelope. Operation artifact persistence is defined separately by
 [operation artifact storage](../persistence/operation-artifacts.md) and uses the
 supported atomic Store upgrade path without rewriting immutable content.
@@ -118,7 +118,7 @@ Hook-free edges; requirements do not manufacture a Hook Session.
 
 ### PR-REQ-0389 - Existing object and contract continuity
 
-Implementing these versions MUST preserve currently supported old Pack
+Implementing these versions MUST preserve currently supported old Revision Pack
 installation and execution, old Input visibility, global required admission,
 bound-required removal restrictions, exact-revision Restore, and historical
 Run interpretation. New software MUST select policy from the exact pinned

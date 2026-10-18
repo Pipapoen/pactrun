@@ -97,9 +97,9 @@ retained Run artifacts are preserved. The upgrade adds storage for artifacts
 produced by Capture, Restore, Migration and Cleanup. Older executables cannot
 reopen this Store; preserve a backup before upgrading if rollback is needed.
 
-Existing Packs retain their original Input and Hook behavior. New operation-level
+Existing Revision Packs retain their original Input and Hook behavior. New operation-level
 Input declarations use Source `1.0-alpha.3`, Core `1.0-alpha.2` and Hook Protocol
-`1.0-alpha.2`; changing a Pack to this model creates a new Revision rather than
+`1.0-alpha.2`; changing a Revision Pack to this model creates a new Revision rather than
 relabeling the installed one. Restore still requires the Snapshot's exact
 producer Revision.
 
@@ -122,7 +122,7 @@ fields. Earlier machine selectors are refused. Update automation against the
 New Source `1.0-alpha.4` puts runtime content inside `revision`; old Source
 `1.0-alpha.2` and `1.0-alpha.3` remain readable under their original rules.
 Exported Revision Packs use format `1.0-alpha.3`; alpha.10 also imports existing
-Pack `1.0-alpha.2` files. Earlier executables may not read the new Source or Pack
+Revision Pack `1.0-alpha.2` files. Earlier executables may not read the new Source or Revision Pack
 format even when they can open the same Store schema.
 
 ## Stable and Preview switching

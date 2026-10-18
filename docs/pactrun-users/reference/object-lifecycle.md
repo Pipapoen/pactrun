@@ -39,6 +39,32 @@ Run is an error. SQLite object-owned content rows are removed with their owner,
 permitting internal space reuse, not guaranteed file shrinkage or secure erasure.
 No deletion cascades to an independent Snapshot or service-owned data.
 
+### Explicit Package deletion {#pr-req-0412---explicit-package-deletion}
+
+`package delete <package>` MUST remove the selected Package, its local name and
+all installed Revisions in one serialized transaction. A Package selector accepts
+a complete Package ID, a unique ID prefix or a local name. A missing complete ID
+is an idempotent success; unresolved or ambiguous names and prefixes remain errors.
+
+The same transaction MUST validate every Revision and apply the existing Revision
+deletion checks before removing any of them. An active Instance, execution or
+transition pin, service association or preparation, or another retained recovery
+reference that blocks Revision deletion MUST block the entire Package deletion.
+Refusal, rollback or process loss before commit MUST preserve the Package, all its
+Revisions and their metadata. The committed outcome removes all of them together.
+Concurrent installation and Instance/Run admission MUST serialize with deletion;
+they MUST NOT publish a dangling reference or evade the checks.
+
+The command MUST NOT invoke Hooks, retire Instances, delete independent Run or
+Snapshot history, or directly remove service-owned data. Shared physical content
+continues to follow ordinary garbage collection and reference protection.
+
+`revision delete <package>:<revision>` remains available and MUST retain the
+Package and its local name, including when it removes the last Revision. Empty
+Packages remain visible until explicitly deleted. Installing a Revision Pack
+with the same Package ID after Package deletion may create that Package again;
+deletion does not reserve the ID or restore its former local names.
+
 ### Sensitive Artifact delivery {#pr-req-0342---sensitive-artifact-delivery}
 
 Only published Artifacts can be exported. Export requires purpose-specific

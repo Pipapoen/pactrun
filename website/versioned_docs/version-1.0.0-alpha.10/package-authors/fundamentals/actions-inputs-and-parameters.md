@@ -5,7 +5,7 @@ title: Declare Actions, Inputs, and parameters
 # Declare Actions, Inputs, and parameters
 
 For all types, allowed values, omission defaults, and constraints, use
-[Pack fields and values](../reference/pack-fields.md).
+[Revision Pack fields and values](../reference/pack-fields.md).
 
 ## Choose the Input contract
 
@@ -30,7 +30,7 @@ requires the Snapshot's exact producer Revision; it does not perform Migration.
 
 ## Choose the data lifetime
 
-Before editing, complete the [first Pack tutorial](./authoring-model.md) so you
+Before editing, complete the [first Revision Pack tutorial](./authoring-model.md) so you
 have a working manifest and Hook to extend. Keep that Package ID for this lineage.
 
 Use Inputs for Instance configuration and parameters for one invocation. Use
@@ -39,7 +39,7 @@ Do not use runtime content or metadata to smuggle mutable configuration.
 
 ## Declare an Input
 
-Place this property directly inside `revision` when your Pack needs configuration:
+Place this property directly inside `revision` when your Revision Pack needs configuration:
 
 ```yaml
 inputs:
@@ -86,16 +86,16 @@ The operator supplies ordinary parameters with `--param message=value`.
 
 ## Validate the user-facing contract
 
-Install the Pack in isolated storage. Inspect `action show`, then test `--plan`,
+Install the Revision Pack in isolated storage. Inspect `action show`, then test `--plan`,
 success, missing required values, invalid typed values, and Hook failure. Confirm
 that sensitive content does not appear in output or diagnostics. Use declared
 output slots for retained artifacts and register them explicitly.
 
-Editing the source does not update a live Instance. Reinstall the changed Pack,
+Editing the source does not update a live Instance. Reinstall the changed Revision Pack,
 copy its new reference from `revision list`, and create a fresh test Instance or use a declared
 Migration. Do not expect the earlier parameter-free `hook-demo` to gain fields.
 
-If you applied both examples above to the starter Pack, create `config.txt` with
+If you applied both examples above to the starter Revision Pack, create `config.txt` with
 synthetic bytes, such as `demo`, using a text editor. Then run:
 
 ```text
@@ -114,14 +114,14 @@ change it to read `message`. Inspect failures before retrying.
 Retire `field-demo` after reviewing its deletion plan. Continue with
 [runtime files](./recipes-and-runtime-content.md).
 
-More detail: [Pack fields and values](../reference/pack-fields.md).
+More detail: [Revision Pack fields and values](../reference/pack-fields.md).
 
 <details>
 <summary>Maintainer sources (optional)</summary>
 
 Contracts: [Action definitions](../../spec/operations/action-definitions.md),
 [invocation parameters](../../spec/operations/parameters.md),
-[Pack source](../../spec/packages/source-format.md), and
+[Revision Pack source](../../spec/packages/source-format.md), and
 [Hook protocol](../../spec/interfaces/hook-protocol.md).
 
 </details>

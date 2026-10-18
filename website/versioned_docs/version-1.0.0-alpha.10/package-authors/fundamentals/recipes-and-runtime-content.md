@@ -6,7 +6,7 @@ title: Package runtime files
 
 Declare each runtime file with a content ID, source-relative path, installed
 logical path, and executable flag. The author tutorial shows a script entry.
-Start from the [working first Pack](./authoring-model.md). This page explains how
+Start from the [working first Revision Pack](./authoring-model.md). This page explains how
 its file declaration controls acquisition and launch, then how to validate export.
 
 For the POSIX starter, put this fragment inside `revision`. It places the same owned script at
@@ -25,7 +25,7 @@ Revision; changing the file path does not rebind an existing Instance.
 
 ## Keep paths portable
 
-Place source files beneath the selected Pack root. Use exact spelling and forward
+Place source files beneath the selected Revision Pack root. Use exact spelling and forward
 slashes in manifest paths. Avoid symlinks, traversal segments, reserved names,
 and filesystem aliases. Installation refuses unsafe paths rather than following
 them to undeclared host content.
@@ -47,17 +47,17 @@ Trusted Hooks have host access; runtime packaging is not a security sandbox.
 ## Distribution
 
 After installing and validating a Revision, export it with `revision export`.
-Test importing the exported Pack into isolated storage before distributing it.
+Test importing the exported Revision Pack into isolated storage before distributing it.
 Review portable metadata and avoid including secrets in runtime files.
 
-**Done:** the exported Pack installs and its declared operation works without the
+**Done:** the exported Revision Pack installs and its declared operation works without the
 original source directory. Continue with [Hook integration](../managed-capabilities/hooks-recovery-and-cleanup.md)
 for output, risk, and Cleanup behavior. Capability tutorials are optional after that.
 
 Recipes are not a supported authoring feature. Existing links to this page are
-retained for continuity; use explicit Pack declarations and Hooks.
+retained for continuity; use explicit Revision Pack declarations and Hooks.
 
-More detail: [Pack fields and values](../reference/pack-fields.md).
+More detail: [Revision Pack fields and values](../reference/pack-fields.md).
 
 <details>
 <summary>Maintainer sources (optional)</summary>

@@ -64,7 +64,7 @@ test('operation contracts select exact versions while preserving legacy ownershi
   const get = name => docs.find(([file]) => file === name)?.[1];
   const format = get('spec/packages/operation-format.md');
   for (const row of [
-    '| Pack source | `1.0-alpha.2` | `1.0-alpha.3` |',
+    '| Revision Pack source | `1.0-alpha.2` | `1.0-alpha.3` |',
     '| Revision canonical | `1.0-alpha.1` | `1.0-alpha.2` |',
     '| Hook Protocol | `1.0-alpha.1` | `1.0-alpha.2` |',
     '| CLI machine interface | `1.0-alpha.3` | `1.0-alpha.4` |',

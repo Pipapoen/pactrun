@@ -13,7 +13,7 @@ Package-specific behavior. It MAY be written as a shell, PowerShell, Python,
 Node.js, Go, Rust, or another executable supported by the host.
 
 `RevisionCoreFormatV1` represents native and interpreter launch without host
-file associations and excludes launcher `argv[0]` from the Pack-facing
+file associations and excludes launcher `argv[0]` from the Revision Pack-facing
 contract. See [Revision format](../packages/revision-format.md).
 
 **Verification: PR-TEST-0095.**
@@ -112,7 +112,7 @@ host-device sandbox.
 
 ### PR-REQ-0280 - Hook Protocol runtime transport discovery
 
-Hook Protocol transport discovery is a stable Pack-facing runtime-integration
+Hook Protocol transport discovery is a stable Revision Pack-facing runtime-integration
 contract that selects the dedicated stream required by PR-REQ-0205 without
 changing the supported Hook protocol framing, message schema or state machine.
 Before launching a Hook, Pactrun MUST create one owner-private listener and MUST

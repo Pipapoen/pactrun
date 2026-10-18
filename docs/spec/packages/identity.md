@@ -16,7 +16,7 @@ Presentation, provenance, and local trust do not change either ID.
 Revision changes, presentation or publisher changes, export, and import. A fork
 that becomes a new lineage MUST be explicitly re-identified.
 
-The Pack source declares this identity in the required exact
+The Revision Pack source declares this identity in the required exact
 `package_id` in `PackSourceYamlV1`; installation MUST NOT derive a lineage from
 source location or content. ID generation is a separate non-mutating operation.
 
@@ -59,7 +59,7 @@ local-management data MUST remain outside it.
 
 The [Revision format](./revision-format.md) includes common
 fields and ServiceStorage/resource declarations in one identity-bearing
-projection. The [Pack source](./source-format.md) is projected into this
+projection. The [Revision Pack source](./source-format.md) is projected into this
 format; it does not define another Revision identity or a raw-Core authoring
 route. Changes to a published format follow the
 [compatibility policy](../storage/compatibility.md).
@@ -146,8 +146,8 @@ content-store, materialization, permission, or launcher lookup.
 
 Production projection MUST be deterministic and normalize the Frozen semantic
 sets while preserving ordered Hook arguments. Semantic JSON decoding is an
-internal codec and conformance facility, not a Pack authoring, import, or
-persistence contract. Pack authoring MUST enter through
+internal codec and conformance facility, not a Revision Pack authoring, import, or
+persistence contract. Revision Pack authoring MUST enter through
 `NormalizedPackDefinition` and the typed projection boundary rather than this
 internal parser.
 

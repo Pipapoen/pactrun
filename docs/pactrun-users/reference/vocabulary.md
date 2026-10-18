@@ -25,7 +25,7 @@ title: User vocabulary
 | Managed Service Resource | A separately declared service-owned live file or directory within ServiceStorage. Declaring it does not create it or automatically back it up. |
 | Workspace | Execution-scoped scratch. Do not keep its path as durable service state. |
 | Artifact | Explicitly registered managed output retained separately from Workspace; export before deliberate deletion. |
-| Snapshot | Immutable recovery representation with complete managed bindings and authored service content. Not every host resource or executable Pack is included. |
+| Snapshot | Immutable recovery representation with complete managed bindings and authored service content. Not every host resource or executable Revision Pack is included. |
 | Migration | A declared path to another Revision in the same Package. Each edge commits separately; there is no whole-path rollback promise. |
 | Retained binding/resource | State preserved after it stops being active. Inspect its role and the allowed operation rather than treating it as current configuration. |
 | Manual recovery | Pactrun cannot establish the required service consistency. Inspect and repair externally before explicitly acknowledging it. |

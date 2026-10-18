@@ -18,9 +18,9 @@ bundle of management definitions and related files. A **Package** is the product
 lineage; a **Revision** is one immutable version of its contents. You can use a
 Revision Pack prepared by someone else, or write one for your own service.
 Pactrun itself is a single executable; the service and any tools required by its
-Pack remain separate.
+Revision Pack remain separate.
 
-![Pack authors define the service-specific procedures; users provide settings and choose operations. Pactrun manages their execution, while the service owns its application behavior and live data.](/img/intro-alpha9/responsibilities.svg)
+![Revision Pack authors define the service-specific procedures; users provide settings and choose operations. Pactrun manages their execution, while the service owns its application behavior and live data.](/img/intro-alpha11/responsibilities.svg)
 
 ## Why Pactrun?
 
@@ -33,15 +33,15 @@ These concerns recur across services, even though their actual operating
 procedures differ. Pactrun provides a common way to manage them:
 
 - **Separate named setups.** An **Instance** represents one managed use of a
-  Pack, with its own configuration and execution history. Multiple Instances
-  can use the same Pack without sharing those settings.
+  Revision Pack, with its own configuration and execution history. Multiple Instances
+  can use the same Revision Pack without sharing those settings.
 - **Known instruction versions.** Each installed version is a **Revision**.
   It is immutable, and installing another Revision does not automatically
   switch existing Instances to it.
-- **Defined operations and recorded results.** Packs expose operations with
+- **Defined operations and recorded results.** Revision Packs expose operations with
   declared requirements. Managed executions have records that can be inspected
   for outcomes and available diagnostics.
-- **Support for continued maintenance.** Packs can define backup, restore,
+- **Support for continued maintenance.** Revision Packs can define backup, restore,
   migration and cleanup capabilities, subject to the service's requirements.
 
 This lets authors concentrate on service-specific procedures rather than
@@ -52,20 +52,20 @@ write those scripts themselves.
 ## Who does what?
 
 Pactrun does not contain built-in knowledge of every service. That knowledge
-comes from the Pack, while the service remains responsible for its application
+comes from the Revision Pack, while the service remains responsible for its application
 behavior and live data.
 
-- **The Pack author** defines settings, operations and the programs or scripts
+- **The Revision Pack author** defines settings, operations and the programs or scripts
   that implement them. Those executable steps are called **Hooks**.
-- **The user** selects a trusted Pack, provides configuration and decides which
+- **The user** selects a trusted Revision Pack, provides configuration and decides which
   operations to perform.
 - **Pactrun** manages installed Revisions and Instances, coordinates executions
   and records their results.
 - **The service** provides its actual functionality and manages its live data.
   Its consistency and upgrade requirements still apply.
 
-For example, having a backup capability does not establish that a Pack can
-capture every service safely while it is running. The Pack must implement an
+For example, having a backup capability does not establish that a Revision Pack can
+capture every service safely while it is running. The Revision Pack must implement an
 appropriate procedure and describe its supported scope. Likewise, a recorded
 failure does not automatically undo changes to the service, and an older
 version is not automatically a safe data rollback.
@@ -88,7 +88,7 @@ already provides a customizable command interface: named tasks, descriptions,
 variables, aliases and calls between tasks. A Taskfile can wrap service startup,
 backup or upgrade commands. Those capabilities are not unique to Pactrun.
 
-**Why use a Pack rather than a Taskfile?** Pactrun also defines the persistent
+**Why use a Revision Pack rather than a Taskfile?** Pactrun also defines the persistent
 objects and lifecycle rules around those commands:
 
 - **An Instance continues to exist between operations.** Its identity,
@@ -99,31 +99,31 @@ objects and lifecycle rules around those commands:
   installed instructions. Installing newer instructions does not silently
   change the ones used by an existing Instance.
 - **Maintenance operations follow shared contracts.** Pactrun defines how
-  Snapshots, Migrations and Cleanup relate to managed objects. A Pack supplies
+  Snapshots, Migrations and Cleanup relate to managed objects. A Revision Pack supplies
   the service-specific implementation; it does not have to invent the entire
   surrounding management model.
 
-This is also a cost. Pack authors must work within Pactrun's definitions and
+This is also a cost. Revision Pack authors must work within Pactrun's definitions and
 protocols. If you only need a convenient, parameterized interface to existing
 commands, a Taskfile or ordinary scripts may be simpler. Neither approach makes
 an arbitrary service backup or upgrade correct without suitable implementation.
 
 ### Service managers and container tools
 
-These tools primarily handle how the service runs. They can be used by a Pack
+These tools primarily handle how the service runs. They can be used by a Revision Pack
 rather than replaced by Pactrun.
 
 | Existing tool | Its responsibility | Pactrun's role |
 | --- | --- | --- |
-| **Service managers, such as systemd** | Start and stop services, manage startup dependencies and supervise processes. | Manage Pack-defined configuration and maintenance operations. Ongoing process supervision stays with the service manager. |
-| **Docker / Compose** | Run containers and describe services, networks and volumes, with their own lifecycle and logging tools. | Expose service-specific operations and their records through Packs. The same management model can also be used for native services. |
+| **Service managers, such as systemd** | Start and stop services, manage startup dependencies and supervise processes. | Manage Revision Pack-defined configuration and maintenance operations. Ongoing process supervision stays with the service manager. |
+| **Docker / Compose** | Run containers and describe services, networks and volumes, with their own lifecycle and logging tools. | Expose service-specific operations and their records through Revision Packs. The same management model can also be used for native services. |
 
-A Pack can combine tools: for example, a service's own backup command and a
-service manager for stopping or restarting it. Another Pack might invoke Docker
-Compose. The integration belongs to the Pack; Docker and WSL are not universal
+A Revision Pack can combine tools: for example, a service's own backup command and a
+service manager for stopping or restarting it. Another Revision Pack might invoke Docker
+Compose. The integration belongs to the Revision Pack; Docker and WSL are not universal
 prerequisites. Pactrun itself is not an always-on process supervisor.
 
-![Pactrun manages Revisions, configuration and execution history. Pack Hooks can combine service commands, service managers and container tools; each tool retains its own runtime responsibilities.](/img/intro-alpha10/tooling.svg)
+![Pactrun manages Revisions, configuration and execution history. Revision Pack Hooks can combine service commands, service managers and container tools; each tool retains its own runtime responsibilities.](/img/intro-alpha11/tooling.svg)
 
 ### Application management platforms
 
@@ -137,7 +137,7 @@ packaging model and scope of integration.
 | **[YunoHost](https://doc.yunohost.org/admin/what_is_yunohost/)** | A Debian-based self-hosting platform with [application packages](https://doc.yunohost.org/en/dev/packaging/). | Package-defined installation and maintenance, including upgrades and backup/restore, integrated with web administration, users, domains and certificates. |
 | **[Cloudron](https://docs.cloudron.io/)** | A platform installed on a [fresh Ubuntu server](https://docs.cloudron.io/installation/), with apps distributed through its App Store and packaging system. | App installation and updates, per-app backup/restore, centralized users, and integration with databases, DNS and certificates. |
 | **[Coolify](https://coolify.io/docs/core/what-is-coolify)** | A deployment platform for Docker workloads on connected servers, using application source, images or Compose definitions. | Builds and deployments, resource configuration, logs, domains and HTTPS through a dashboard or API. |
-| **Pactrun** | A standalone command-line tool on Windows and Linux. Packs define operations for native services or other tools chosen by the author. | Installed Revisions, Instances, configuration and managed execution records, with Snapshot, Migration and Cleanup mechanisms where the Pack implements them. |
+| **Pactrun** | A standalone command-line tool on Windows and Linux. Revision Packs define operations for native services or other tools chosen by the author. | Installed Revisions, Instances, configuration and managed execution records, with Snapshot, Migration and Cleanup mechanisms where the Revision Pack implements them. |
 
 **Choose an integrated platform when you want its wider management environment.**
 For example, YunoHost or Cloudron can provide application maintenance together
@@ -145,11 +145,11 @@ with shared user and domain management; Coolify provides a container-deployment
 workflow and dashboard. Those integrations are part of what you adopt, not
 features Pactrun automatically supplies.
 
-**Consider Pactrun when you want Pack-defined operations without adopting that
+**Consider Pactrun when you want Revision Pack-defined operations without adopting that
 whole environment.** Its focus is local, command-driven management of persistent
 Instances. It does not provide a hosting control panel, remote orchestration or
 a scheduler. Host administration and service-specific integration remain your
-responsibility or the Pack author's responsibility.
+responsibility or the Revision Pack author's responsibility.
 
 If an existing task runner, service manager, Compose setup or hosting platform
 already covers your needs, using it directly may be the better choice.
@@ -184,30 +184,30 @@ The executables are unsigned. Use isolated data while evaluating this release.
 
 :::
 
-## Use a Pack
+## Use a Revision Pack {#use-a-pack}
 
-Using a Pack and writing one are different roles. A user needs a trusted Pack
+Using a Revision Pack and writing one are different roles. A user needs a trusted Revision Pack
 and an environment that meets its requirements, not knowledge of Pactrun's
-authoring format. The Pack's documentation describes its configuration, external
+authoring format. The Revision Pack's documentation describes its configuration, external
 tools and supported operations. Operation names and capabilities vary between
-Packs; there is no universal `start` or `backup` operation.
+Revision Packs; there is no universal `start` or `backup` operation.
 
-Installing a Pack makes its definition and files available to Pactrun. An
+Installing a Revision Pack makes its definition and files available to Pactrun. An
 Instance associates a selected Revision with configuration for a particular
 use. Creating an Instance may allocate declared storage, but does not
 automatically start the service. Actual service setup and startup depend on the
-Pack's procedures.
+Revision Pack's procedures.
 
 The [user guides](./guides/index.md) cover the operating tasks. The
-[Pack author guide](./package-authors/index.md) covers creating and distributing
+[Revision Pack author guide](./package-authors/index.md) covers creating and distributing
 those procedures for other people to use.
 
 ## Keep exploring
 
 | What you need | Where to look |
 | --- | --- |
-| Use a supplied Pack | [User guides](./guides/index.md) |
-| Create or maintain a Pack | [Pack author guide](./package-authors/index.md) |
+| Use a supplied Revision Pack | [User guides](./guides/index.md) |
+| Create or maintain a Revision Pack | [Revision Pack author guide](./package-authors/index.md) |
 | Find a command, option or output field | [User reference](./pactrun-users/reference/index.md) |
 | Read exact behavior and formats | [Specification](./spec/index.md) |
 

@@ -17,7 +17,7 @@ representation a particular interface supports.
 ### PR-REQ-0077 - Separate version domains
 
 There is one product version and exactly eight independent format/protocol
-domains: Pack source, Revision canonical, Hook Protocol, Snapshot content/integrity,
+domains: Revision Pack source, Revision canonical, Hook Protocol, Snapshot content/integrity,
 Snapshot bundle, Revision Pack, CLI machine interface and Persistence.
 Results and event streams share the CLI version; runtime closure, Session subviews,
 error catalogs and selector discriminators do not create additional domains.
@@ -61,7 +61,7 @@ Supported Store opening upgrades follow
 [PR-REQ-0373](./store-opening.md#pr-req-0373---store-opening-and-supported-catalog-upgrades).
 Other unsupported schemas have no implicit or explicit upgrade chain. Refusal MUST
 NOT clear real data, rewrite identities, infer Run outcomes, or touch
-service-owned resources. Pack-defined Revision Migration is independent of
+service-owned resources. Revision Pack-defined Revision Migration is independent of
 storage-format compatibility.
 
 The exact public version is the string in the singleton metadata row. SQLite's
@@ -127,7 +127,7 @@ identify their kind, format version, manifest, and content. Unsupported formats
 MUST be rejected rather than guessed. Packaging or compression changes MUST NOT
 change contained domain identity.
 
-For Revision transport, this envelope is the user-facing distribution Pack in
+For Revision transport, this envelope is the user-facing distribution Revision Pack in
 [Revision Pack format](../packages/distribution.md), not a separately
 managed Bundle object. Snapshot transport remains independent and unchanged.
 

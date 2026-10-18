@@ -7,7 +7,7 @@ title: Install a standalone archive
 This is the advanced offline/engineering fallback. Prefer the
 [Scoop or Homebrew installation](./installation.md) for ordinary use.
 
-This shared setup is for users and Pack authors. It ends with a verified
+This shared setup is for users and Revision Pack authors. It ends with a verified
 `pactrun` command in the current terminal. It does not create an Instance or
 choose a store for real service data.
 
@@ -117,9 +117,9 @@ package repository, or shell profile was changed by these steps.
 
 - **New user:** [Create your first Instance](../introduction.md). It creates its
   own isolated test store; you do not need to study internal storage first.
-- **Pack author:** [Prepare an authoring workspace](../package-authors/setup.md).
+- **Revision Pack author:** [Prepare an authoring workspace](../package-authors/setup.md).
 - **Operating real service data:** [Choose a data location](./data-location.md),
-  then [install a supplied Pack and create an Instance](./use-pack.md).
+  then [install a supplied Revision Pack and create an Instance](./use-pack.md).
 
 An executable update is separate from managed-data compatibility. Keep backups;
 unsupported stores are refused rather than upgraded or deleted automatically.

@@ -35,9 +35,12 @@ pub(super) fn parse_package(parser: &mut Parser) -> Result<Command, CliError> {
     if matches!(operation.as_str(), "list" | "show") {
         return catalog::parse_package(parser, &operation);
     }
+    if operation == "delete" {
+        return lifecycle::parse_package_delete(parser).map(Command::Lifecycle);
+    }
     if !matches!(operation.as_str(), "rename" | "unname") {
         return Err(CliError::usage(
-            "Package command must be generate-id, list, show, rename or unname",
+            "Package command must be generate-id, list, show, delete, rename or unname",
         ));
     }
     let reference = LocalSelector::parse(required_value_string(parser, "Package reference")?)

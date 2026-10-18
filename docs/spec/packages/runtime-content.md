@@ -41,7 +41,7 @@ Authors and frontends MUST provide enough normalized information for Pactrun to
 bind immutable content to logical runtime roles and paths. Reassigning identical
 blobs to different semantic roles MAY produce a different Revision digest.
 
-The Pack source format therefore keeps `source` acquisition separate from
+The Revision Pack source format therefore keeps `source` acquisition separate from
 the identity-bearing logical `path`, `id`, and `executable` descriptor fields.
 
 This runtime-content closure does not content-address, copy, version, or

@@ -12,8 +12,8 @@ title: Specification Reference Index
 
 ## Packages and Revisions
 
-- [Pack Authoring Model](./packages/authoring.md)
-- [Pack Source Format](./packages/source-format.md)
+- [Revision Pack Authoring Model](./packages/authoring.md)
+- [Revision Pack Source Format](./packages/source-format.md)
 - [Package and Revision Identity](./packages/identity.md)
 - [Local Names and References](./packages/local-names.md)
 - [Revision Format and Identity Encoding](./packages/revision-format.md)

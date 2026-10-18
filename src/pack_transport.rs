@@ -1,4 +1,4 @@
-//! Pack container acquisition and the independently versioned distribution codec.
+//! Revision Pack container acquisition and the independently versioned distribution codec.
 use crate::{
     domain::*,
     hook::ActionCancellation,
@@ -28,7 +28,7 @@ fn err(e: impl std::fmt::Display) -> String {
 pub(crate) fn check_cancel(c: &ActionCancellation) -> io::Result<()> {
     // Interrupted is retried by write_all and must not represent cancellation.
     if c.is_requested() {
-        Err(io::Error::other("Pack operation cancelled"))
+        Err(io::Error::other("Revision Pack operation cancelled"))
     } else {
         Ok(())
     }
@@ -86,7 +86,7 @@ fn open_path(path: &Path) -> io::Result<File> {
     let name = path
         .file_name()
         .and_then(|n| n.to_str())
-        .ok_or_else(|| io::Error::other("invalid Pack path"))?;
+        .ok_or_else(|| io::Error::other("invalid Revision Pack path"))?;
     crate::opened_files::open_file(&crate::opened_files::open_root(parent)?, &[name])
 }
 impl InputFiles {
@@ -110,7 +110,7 @@ impl InputFiles {
         for entry in &entries {
             let name = entry.name.trim_end_matches('/');
             if folded.insert(name.to_ascii_lowercase(), name).is_some() {
-                return Err("conflicting Pack member names".into());
+                return Err("conflicting Revision Pack member names".into());
             }
             names.insert(name.to_owned(), entry.name.ends_with('/'));
         }
@@ -122,7 +122,7 @@ impl InputFiles {
                         break;
                     }
                     if left != right {
-                        return Err("conflicting Pack member ancestor names".into());
+                        return Err("conflicting Revision Pack member ancestor names".into());
                     }
                 }
             }
@@ -132,24 +132,26 @@ impl InputFiles {
             let mut ancestor = name.as_str();
             while let Some((parent, _)) = ancestor.rsplit_once('/') {
                 if names.get(parent) == Some(&false) {
-                    return Err("Pack file/directory conflict".into());
+                    return Err("Revision Pack file/directory conflict".into());
                 }
                 ancestor = parent;
             }
         }
         if names.get("pactrun.yaml") == Some(&true) || names.get(DESCRIPTOR) == Some(&true) {
-            return Err("Pack entry marker must be a regular file".into());
+            return Err("Revision Pack entry marker must be a regular file".into());
         }
         let source = names.contains_key("pactrun.yaml");
         let distribution = names.contains_key(DESCRIPTOR);
         if source == distribution {
-            return Err("Pack requires exactly one source or distribution marker".into());
+            return Err("Revision Pack requires exactly one source or distribution marker".into());
         }
         for entry in &entries {
             let manifest = (source && entry.name == "pactrun.yaml")
                 || (distribution && matches!(entry.name.as_str(), DESCRIPTOR | CORE | RUNTIME));
             if manifest && entry.size > JSON_LIMIT {
-                return Err("Pack manifest exceeds codec limit before decompression".into());
+                return Err(
+                    "Revision Pack manifest exceeds codec limit before decompression".into(),
+                );
             }
         }
         let mut files = BTreeMap::new();
@@ -188,7 +190,7 @@ impl InputFiles {
     }
     fn required(&self, name: &str) -> Result<File> {
         self.read(name)?
-            .ok_or_else(|| format!("missing Pack member {name}"))
+            .ok_or_else(|| format!("missing Revision Pack member {name}"))
     }
     fn names(&self) -> Result<BTreeSet<String>> {
         match self {
@@ -217,9 +219,9 @@ pub(crate) fn acquire(
     let source = input.read("pactrun.yaml")?;
     let distribution = input.read(DESCRIPTOR)?;
     match (source, distribution) {
-        (Some(_), Some(_)) => Err("Pack has both source and distribution markers".into()),
+        (Some(_), Some(_)) => Err("Revision Pack has both source and distribution markers".into()),
         (None, None) => {
-            Err("Pack root has neither pactrun.yaml nor pactrun-distribution.json".into())
+            Err("Revision Pack root has neither pactrun.yaml nor pactrun-distribution.json".into())
         }
         (Some(mut source), None) => {
             let mut bytes = Vec::new();
@@ -228,7 +230,7 @@ pub(crate) fn acquire(
                 .read_to_end(&mut bytes)
                 .map_err(err)?;
             if bytes.len() as u64 > JSON_LIMIT {
-                return Err("Pack source manifest exceeds codec limit".into());
+                return Err("Revision Pack source manifest exceeds codec limit".into());
             }
             let candidate = crate::authoring::parse_pack_source_yaml(&bytes).map_err(err)?;
             let mut blobs = BTreeMap::new();
@@ -293,7 +295,7 @@ pub(crate) fn acquire(
             }
             let raw = crate::strict_json::parse_json(&bytes, JSON_LIMIT as usize).map_err(err)?;
             let crate::strict_json::RawJsonValue::Object(fields) = &raw else {
-                return Err("Pack descriptor must be an object".into());
+                return Err("Revision Pack descriptor must be an object".into());
             };
             let header = |name: &str| -> Result<&str> {
                 fields
@@ -303,10 +305,10 @@ pub(crate) fn acquire(
                         crate::strict_json::RawJsonValue::String(text) => Some(text.as_str()),
                         _ => None,
                     })
-                    .ok_or_else(|| format!("Pack descriptor requires string {name}"))
+                    .ok_or_else(|| format!("Revision Pack descriptor requires string {name}"))
             };
             if header("kind")? != "pactrun_distribution" {
-                return Err("unsupported Pack distribution kind".into());
+                return Err("unsupported Revision Pack distribution kind".into());
             }
             crate::domain::VersionDomain::PackDistribution
                 .require(header("format_version")?)
@@ -315,7 +317,9 @@ pub(crate) fn acquire(
                 .require(header("revision_format")?)
                 .map_err(err)?;
             if has_null(&raw) {
-                return Err("Pack descriptor optional values must be omitted, not null".into());
+                return Err(
+                    "Revision Pack descriptor optional values must be omitted, not null".into(),
+                );
             }
             let dto: Descriptor = serde_json::from_slice(&bytes).map_err(err)?;
             if dto.kind != "pactrun_distribution"
@@ -323,7 +327,7 @@ pub(crate) fn acquire(
                     .require(&dto.format_version)
                     .is_err()
             {
-                return Err("unsupported Pack distribution format".into());
+                return Err("unsupported Revision Pack distribution format".into());
             }
             crate::domain::VersionDomain::Revision
                 .require(&dto.revision_format)
@@ -360,12 +364,14 @@ pub(crate) fn acquire(
                 };
                 let blob = session.stage_runtime_source(&mut reader).map_err(err)?;
                 if blob.blob_digest != descriptor.blob_digest {
-                    return Err("Pack runtime blob digest mismatch".into());
+                    return Err("Revision Pack runtime blob digest mismatch".into());
                 }
                 blobs.insert(blob.blob_digest.clone(), blob);
             }
             if input.names()? != expected {
-                return Err("distribution Pack has missing or unreferenced members".into());
+                return Err(
+                    "distribution Revision Pack has missing or unreferenced members".into(),
+                );
             }
             Ok(PreparedRevision {
                 identity,
@@ -400,9 +406,9 @@ fn expand_entry(
         check_cancel(c).map_err(err)?;
         count = count
             .checked_add(bytes.len() as u64)
-            .ok_or("Pack length overflow")?;
+            .ok_or("Revision Pack length overflow")?;
         if count > e.size {
-            return Err("Pack decompression exceeds declared length".into());
+            return Err("Revision Pack decompression exceeds declared length".into());
         }
         stage.writer().write_all(bytes).map_err(err)?;
         crc.update(bytes);
@@ -445,17 +451,17 @@ fn expand_entry(
             output(&decoded[..produced])?;
             if status == flate2::Status::StreamEnd {
                 if decoder.total_in() != e.compressed {
-                    return Err("Pack Deflate trailing or missing bytes".into());
+                    return Err("Revision Pack Deflate trailing or missing bytes".into());
                 }
                 break;
             }
             if consumed == 0 && produced == 0 {
-                return Err("truncated or stalled Pack Deflate stream".into());
+                return Err("truncated or stalled Revision Pack Deflate stream".into());
             }
         }
     }
     if count != e.size || crc.finalize() != e.crc {
-        return Err("Pack size or CRC mismatch".into());
+        return Err("Revision Pack size or CRC mismatch".into());
     }
     stage.finish_operation_file().map_err(err)?;
     Ok(StagedRuntimeSource {
@@ -484,12 +490,12 @@ pub(crate) fn encode(
     };
     let descriptor = serde_json::to_vec(&dto).map_err(err)?;
     if descriptor.len() as u64 > JSON_LIMIT {
-        return Err("Pack descriptor exceeds codec limit".into());
+        return Err("Revision Pack descriptor exceeds codec limit".into());
     }
     let mut stage = session.create_snapshot_stage().map_err(err)?;
     {
         if pack.blobs.len().checked_add(3).is_none_or(|n| n > 65_539) {
-            return Err("Pack entry limit exceeded".into());
+            return Err("Revision Pack entry limit exceeded".into());
         }
         let failed = std::rc::Rc::new(std::cell::Cell::new(None));
         let mut writer = zip::ZipWriter::new(crate::zip_output::DropSafeWriter {
@@ -553,7 +559,7 @@ pub(crate) fn encode(
         }
         writer.finish().map_err(err)?;
         if let Some(kind) = failed.get() {
-            return Err(format!("Pack ZIP output failed: {kind}"));
+            return Err(format!("Revision Pack ZIP output failed: {kind}"));
         }
     }
     stage.finish_operation_file().map_err(err)?;

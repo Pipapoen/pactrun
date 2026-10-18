@@ -120,7 +120,7 @@ pub(super) fn install_prepared(
             != identity.content_digest
     {
         return Err(ApplicationError::InvalidInstallation(
-            "Pack candidate identity or blob closure mismatch".into(),
+            "Revision Pack candidate identity or blob closure mismatch".into(),
         ));
     }
     let batch = metadata_batch(&identity, &metadata, local)?;
@@ -129,7 +129,7 @@ pub(super) fn install_prepared(
     for (digest, blob) in blobs {
         crate::pack_transport::check_cancel(cancellation).map_err(|source| {
             ApplicationError::Io {
-                operation: "install Pack",
+                operation: "install Revision Pack",
                 source,
             }
         })?;
@@ -140,7 +140,7 @@ pub(super) fn install_prepared(
         let witness = persistence.put_runtime_content(&digest, &mut reader)?;
         if witness.digest() != &digest || witness.byte_len() != blob.bytes.byte_len() {
             return Err(ApplicationError::InvalidInstallation(
-                "Pack publication witness mismatch".into(),
+                "Revision Pack publication witness mismatch".into(),
             ));
         }
         publications.push(witness);

@@ -156,6 +156,10 @@ The [Revision Pack contract](../packages/distribution.md) defines
 `revision export` and import through `revision install`, without a second import
 command.
 
+`package delete <package>` removes a complete Package and its installed Revisions
+under [the Package deletion contract](../lifecycle/objects-gc.md#pr-req-0412---explicit-package-deletion).
+Single-Revision deletion remains available and retains the Package.
+
 ### PR-REQ-0119 - Security-sensitive authorization spelling
 
 Secret export, sensitive Snapshot export, Secret declassification, recovery
@@ -224,7 +228,7 @@ This process configuration is not an Input acquisition or authorization channel.
 
 Help queries use `pactrun [--format human|json|jsonl] <command-path> --help`,
 where the path contains only command words and may be empty for root help.
-No Instance, Pack, parameter or other operation operands are needed. The same
+No Instance, Revision Pack, parameter or other operation operands are needed. The same
 paths MUST be available in every format, without opening storage, reading stdin,
 acquiring files or launching a Hook. Literal operand values named `--help` MUST
 NOT be reinterpreted as help queries.
@@ -438,7 +442,7 @@ path discovery, planning and implemented execution. Recovery uses
 PR-REQ-0287; Instance deletion and `AbandonManagement` use the
 [retirement contract](../lifecycle/retirement.md).
 [Managed-object lifecycle](../lifecycle/objects-gc.md) separately adds
-Snapshot deletion, and [Pack transport](../packages/distribution.md)
+Snapshot deletion, and [Revision Pack transport](../packages/distribution.md)
 owns Revision import/export. These commands preserve the purpose-specific
 authorization boundaries in PR-REQ-0119. Unspecified commands and options MUST
 NOT be inferred from an internal application API.

@@ -56,7 +56,7 @@ Without explicit file selectors, `config show` uses the platform user config
 location and `pactrun.toml` under the selected Store. Missing files use built-in
 defaults. Selecting a Store still follows [data locations](./data-location.md);
 a configuration file cannot move or select it. Pactrun does not search the
-current working directory or a Pack for configuration.
+current working directory or a Revision Pack for configuration.
 
 ## Override one invocation
 

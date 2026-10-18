@@ -1,10 +1,10 @@
 ---
-title: Understanding a Pack
+title: Understanding a Revision Pack
 ---
 
-# Understanding a Pack
+# Understanding a Revision Pack {#understanding-a-pack}
 
-Before writing Hello Pack's first definition, we need to know what Pactrun
+Before writing Hello Revision Pack's first definition, we need to know what Pactrun
 will recognize: a Package with a lasting identity, Revisions that preserve each
 version's contents, and Revision Packs that carry those contents for installation.
 
@@ -13,12 +13,12 @@ version's contents, and Revision Packs that carry those contents for installatio
 A **Package** represents a product that you maintain over time. Its
 `package_id` identifies that product throughout its development.
 
-This continuing identity is called the **Package lineage**. Hello Pack can
+This continuing identity is called the **Package lineage**. Hello Revision Pack can
 start with an empty definition, gain functionality, and receive fixes while
 remaining the same Package. Keep its Package ID when making those changes.
 
 The identity also survives moving the source directory, changing the display
-name, or sharing the Pack with someone else. If a fork becomes a separately
+name, or sharing the Revision Pack with someone else. If a fork becomes a separately
 maintained product lineage, give it a new Package ID.
 
 ## A Revision Pack carries a version
@@ -32,11 +32,11 @@ portable `.pack` file. Installing a Revision Pack records that version in Pactru
 
 ## A Revision preserves exact contents
 
-As you maintain a Pack, its contents change. A **Revision** is an immutable
+As you maintain a Revision Pack, its contents change. A **Revision** is an immutable
 management definition together with its accompanying runtime content. One
 Package can have several Revisions.
 
-![Hello Pack keeps one Package ID across three Revisions. Each Revision contains its own management definition and runtime content.](/img/pack-authors/package-lineage.svg)
+![Hello Revision Pack keeps one Package ID across three Revisions. Each Revision contains its own management definition and runtime content.](/img/pack-authors/package-lineage.svg)
 
 The letters A, B, and C in the diagram are examples. Pactrun calculates a
 **Revision ID** from the operational meaning of the definition and its runtime
@@ -53,7 +53,7 @@ Once installed, a Revision keeps its contents. Editing your source files does
 not rewrite it. Installing the edited source lets Pactrun validate and identify
 the resulting contents.
 
-## How Pactrun recognizes Pack source
+## How Pactrun recognizes Revision Pack source {#how-pactrun-recognizes-pack-source}
 
 The **source** is the collection of files you edit to produce a Revision.
 For our tutorial, it lives in the `pack/` directory prepared in Getting Ready.
@@ -101,7 +101,7 @@ pactrun package generate-id
 
 It prints a new Package ID: 32 lowercase hexadecimal characters. The command
 only generates the ID; you will put it in the source yourself. Generate it once
-for this new Hello Pack and keep it as the Pack evolves.
+for this new Hello Revision Pack and keep it as the Revision Pack evolves.
 
 Create `pack/pactrun.yaml` in your editor with:
 
@@ -132,5 +132,5 @@ omitted declarations here. `runtime_content: {}` inside `revision` declares no
 runtime files; omitting it has the same meaning. `revision: {}` is also a valid
 empty starting point.
 
-With a valid generated ID, this is a complete minimal Pack source. You now have
-Hello Pack's identity and the source structure where its implementation will grow.
+With a valid generated ID, this is a complete minimal Revision Pack source. You now have
+Hello Revision Pack's identity and the source structure where its implementation will grow.

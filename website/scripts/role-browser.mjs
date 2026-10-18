@@ -36,21 +36,21 @@ try {
   const tutorialLinks = await page.locator('.pagination-nav a').evaluateAll(items => items.map(item => item.getAttribute('href')));
   assert.ok(tutorialLinks.every(href => href.includes('/package-authors/tutorial/') || /\/package-authors\/?$/.test(href)));
   await page.locator('.pagination-nav__link--prev').click();
-  await article().getByRole('heading', {name: 'Pack authors', exact: true}).waitFor();
+  await article().getByRole('heading', {name: 'Revision Pack authors', exact: true}).waitFor();
   checks.push('tutorial pagination connects the author introduction and lesson without entering Reference');
   const authorSidebar = page.locator('.theme-doc-sidebar-container');
   await authorSidebar.getByText('Tutorial', {exact: true}).click();
-  await authorSidebar.getByText('First Hello Pack', {exact: true}).click();
+  await authorSidebar.getByText('First Hello Revision Pack', {exact: true}).click();
   await authorSidebar.getByRole('link', {name: 'Getting Ready', exact: true}).click();
   await article().getByRole('heading', {name: 'Getting Ready', exact: true}).waitFor();
   assert.ok((await article().innerText()).includes('ServiceStorage'));
-  checks.push('author sidebar opens the first Hello Pack introduction');
+  checks.push('author sidebar opens the first Hello Revision Pack introduction');
   await page.locator('.pagination-nav__link--next').click();
-  await article().getByRole('heading', {name: 'Understanding a Pack', exact: true}).waitFor();
+  await article().getByRole('heading', {name: 'Understanding a Revision Pack', exact: true}).waitFor();
   await article().locator('img').evaluateAll(async images => {
     await Promise.all(images.map(image => image.decode()));
     if (images.length !== 2 || images.some(image => image.naturalWidth === 0))
-      throw new Error('Pack concept diagrams did not load');
+      throw new Error('Revision Pack concept diagrams did not load');
   });
   await page.screenshot({path: path.join(output, 'understanding-a-pack.png'), fullPage: true});
   await page.locator('.pagination-nav__link--next').click();
@@ -60,21 +60,21 @@ try {
   for (const command of ['pactrun revision install ./pack', "pactrun revision list 'PACKAGE_ID'",
     "pactrun revision show 'REVISION_REFERENCE'"]) assert.ok(installationLesson.includes(command), command);
   await page.locator('.pagination-nav__link--prev').click();
-  await article().getByRole('heading', {name: 'Understanding a Pack', exact: true}).waitFor();
+  await article().getByRole('heading', {name: 'Understanding a Revision Pack', exact: true}).waitFor();
   await page.locator('.pagination-nav__link--prev').click();
   await article().getByRole('heading', {name: 'Getting Ready', exact: true}).waitFor();
-  checks.push('Hello Pack lessons connect setup, Pack concepts and installation in order');
+  checks.push('Hello Revision Pack lessons connect setup, Revision Pack concepts and installation in order');
 
   await open('package-authors/');
-  await page.locator('.theme-doc-sidebar-container').getByRole('link', {name: 'Pack fields and values', exact: true}).click();
-  await article().getByRole('heading', {name: 'Pack fields and values', exact: true}).waitFor();
+  await page.locator('.theme-doc-sidebar-container').getByRole('link', {name: 'Revision Pack fields and values', exact: true}).click();
+  await article().getByRole('heading', {name: 'Revision Pack fields and values', exact: true}).waitFor();
   assert.equal(await page.locator('.pagination-nav__link--next').count(), 0);
   const fields = await article().innerText();
   for (const value of ['io.terminal', 'interactive', 'required', 'protection', 'parameters', 'There is no default terminal mode']) assert.ok(fields.includes(value), value);
   const sidebarLinks = await page.locator('.theme-doc-sidebar-container a[href]').evaluateAll(links => links.map(link => link.getAttribute('href')).filter(href => href.startsWith('/')));
   assert.ok(sidebarLinks.length > 5);
   assert.ok(sidebarLinks.every(href => readerRole(href, new URL(base).pathname) === 'Authors'));
-  assert.ok(await page.locator('.theme-doc-sidebar-container').getByRole('link', {name: 'Pack fields and values', exact: true}).isVisible());
+  assert.ok(await page.locator('.theme-doc-sidebar-container').getByRole('link', {name: 'Revision Pack fields and values', exact: true}).isVisible());
   await page.screenshot({path: path.join(output, 'author-fields-desktop.png'), fullPage: false});
   await scopedSearch('Authors', 'hook protocol');
   await open('package-authors/reference/pack-fields');

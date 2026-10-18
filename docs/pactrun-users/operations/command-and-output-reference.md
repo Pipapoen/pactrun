@@ -22,7 +22,8 @@ For Action parameter syntax, timeouts, defaults, and examples, read the
 
 | Task | Commands | Reference |
 | --- | --- | --- |
-| Install or export a Revision | pack, revision | [Command details](../reference/command-details.md) |
+| Install or export a Revision | `revision` | [Command details](../reference/command-details.md) |
+| Remove a Package or one Revision | `package delete`, `revision delete` | [Retained objects and GC](../reference/object-lifecycle.md) |
 | Create and inspect Instances | instance create/list/show | [Command details](../reference/command-details.md) |
 | Supply or export configuration | input | [Command details](../reference/command-details.md) |
 | Execute and inspect operations | action, invoke, run | [Invoke](./invoke-reference.md) |
@@ -48,6 +49,25 @@ reported continuation rather than assuming the first page is complete. Pages
 are separate read snapshots, not a frozen export of the whole catalog.
 Revision lists are newest-installed first, with unknown times last; their returned
 cursor includes its sort position and is not an editable Revision reference.
+
+## Remove a version or a product lineage
+
+Use `revision delete <package>:<revision>` to remove one installed version.
+The Package and its local name remain even when no Revisions are left.
+
+Use `package delete <package>` to remove a Package, its local name and every
+installed Revision. You can select the Package by its complete ID, a unique ID
+prefix or a local name. Pactrun checks all its Revisions first: an Instance using
+any version, a retained Run reference, service association or recovery requirement
+blocks the whole deletion. A refused deletion leaves all versions in place.
+
+Package deletion does not retire Instances, run Hooks or remove service-owned
+data. Independent Run history and Snapshots remain. Shared physical content is
+reclaimed through normal garbage collection. Installing a Revision Pack with the
+same Package ID later creates the Package again, without its former local name.
+Restoring a retained Snapshot still requires its exact producer Revision; keep
+the matching Revision Pack for reinstallation because Snapshot bundles do not
+contain its executable runtime content.
 
 ## Output modes
 

@@ -4,11 +4,11 @@ title: Your first Instance
 
 # Your first Instance
 
-This tutorial creates an empty Pack and an Instance in an isolated storage root.
+This tutorial creates an empty Revision Pack and an Instance in an isolated storage root.
 It does not launch a Hook or manage a service. Allow about one short terminal
 session. First complete [installation and command verification](./guides/installation.md).
 Keep that terminal open so the verified command remains available. This tutorial
-supplies its own empty Pack; you do not need a real service or prior YAML knowledge.
+supplies its own empty Revision Pack; you do not need a real service or prior YAML knowledge.
 
 - A **Package** is a stable authored lineage.
 - A **Revision** is one exact immutable definition and its runtime files.
@@ -48,14 +48,14 @@ If setup reports an error, stop before running the next step. Both variants
 refuse an existing `pactrun-demo` directory and select the storage root only
 after directory creation succeeds. Use a new directory to repeat the tutorial.
 
-Pactrun prepares the Store automatically when you install the Pack. There is no
+Pactrun prepares the Store automatically when you install the Revision Pack. There is no
 initialization command or internal directory setup. Listing an unused Store
 returns an empty result without creating it.
 
 The environment variable affects subsequent commands in this terminal. Restore
 its previous value when finished, or close this dedicated terminal.
 
-## 2. Create the Pack source
+## 2. Create the Revision Pack source {#2-create-the-pack-source}
 
 Run `pactrun package generate-id` and copy the complete identifier. Create
 `pack/pactrun.yaml` as UTF-8 text with the following content. Replace the
@@ -69,7 +69,7 @@ revision:
 ```
 
 Empty Inputs, Actions, Migrations, and runtime files use the source format's
-empty defaults. This Pack has no Snapshot or Cleanup capability.
+empty defaults. This Revision Pack has no Snapshot or Cleanup capability.
 
 ## 3. Install and create an Instance
 
@@ -106,8 +106,8 @@ pactrun instance delete demo
 pactrun instance history list
 ```
 
-This empty Pack needs no Cleanup Hook. Deletion ends the live Instance while
-retained history remains discoverable. Do not generalize this result to a Pack
+This empty Revision Pack needs no Cleanup Hook. Deletion ends the live Instance while
+retained history remains discoverable. Do not generalize this result to a Revision Pack
 with service resources; read [retirement](./guides/retirement.md) first.
 
 ## If a step fails
@@ -121,10 +121,10 @@ new name. Preserve diagnostics rather than repeatedly retrying a write.
 
 You have installed a synthetic Revision, created and inspected an Instance, and
 retired that empty example. The store and retained history remain; `demo` is no
-longer a live Instance. This Pack supplies no Inputs, Actions, Snapshot, or Cleanup
+longer a live Instance. This Revision Pack supplies no Inputs, Actions, Snapshot, or Cleanup
 Hook, so it is not the prerequisite Instance for later service-operation examples.
 
-**Continue as a user:** [install a supplied Pack and create an Instance](./guides/use-pack.md),
+**Continue as a user:** [install a supplied Revision Pack and create an Instance](./guides/use-pack.md),
 then choose a task based on its actual capabilities. **Choose authoring instead:**
-open the [Pack author guide](./package-authors/index.md). Authoring is an optional
-role change, not the next required step for operating a Pack.
+open the [Revision Pack author guide](./package-authors/index.md). Authoring is an optional
+role change, not the next required step for operating a Revision Pack.

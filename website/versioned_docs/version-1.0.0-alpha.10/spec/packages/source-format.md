@@ -1,8 +1,8 @@
 ---
-title: Pack Source Format
+title: Revision Pack Source Format
 ---
 
-# Pack Source Format
+# Revision Pack Source Format {#pack-source-format}
 
 ## Supported baseline
 
@@ -24,7 +24,7 @@ Hook protocol_version is a FormatVersion string, never a raw integer token.
 Format changes and existing-object compatibility follow the
 [compatibility contract](../storage/compatibility.md).
 
-### PR-REQ-0258 - Pack source schema, numbers, and Package lineage {#pr-req-0258---packsourceyamlv1-schema-numbers-and-package-lineage}
+### PR-REQ-0258 - Revision Pack source schema, numbers, and Package lineage {#pr-req-0258---packsourceyamlv1-schema-numbers-and-package-lineage}
 
 The source root MUST contain one manifest named exactly `pactrun.yaml`. The
 manifest MUST be one UTF-8 YAML 1.2 JSON-compatible document with this closed
@@ -139,7 +139,7 @@ omission means an empty collection. A present property MUST contain a sequence.
 Every map is closed, every unmarked property is required, and `?` marks the only
 optional properties.
 
-Pack metadata contains explanations and provenance, not Package or Revision names.
+Revision Pack metadata contains explanations and provenance, not Package or Revision names.
 Names are managed locally by the user. The `reference_labels` field and
 `display_name` for the Revision target are not accepted. Revision explanations
 use `summary`, `description`, or `help`; other declared targets may use all four
@@ -252,7 +252,7 @@ descriptor. If the kernel or filesystem cannot provide all these semantics,
 installation MUST fail before content staging rather than use weaker pathname
 traversal.
 
-These opened-object rules govern the directory form. For a ZIP-based source Pack,
+These opened-object rules govern the directory form. For a ZIP-based source Revision Pack,
 [Revision Pack container rules](./distribution.md) instead establish the privately
 staged archive as the immutable acquisition anchor. Exact validated member names
 form its root-relative namespace; the same SourceRelativePathV1 spelling rules
@@ -357,7 +357,7 @@ tag/alias/anchor/merge-key, null, unknown-field and source-root rule remains.
 There is no include/template language, arbitrary host-path declaration, inferred
 Package lineage, content-based format inference, or install-time generation.
 
-The defaults above also apply to service-capable Packs. Additionally:
+The defaults above also apply to service-capable Revision Packs. Additionally:
 
 | Position | Default |
 | --- | --- |
