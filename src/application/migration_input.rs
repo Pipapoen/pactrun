@@ -97,10 +97,10 @@ impl fmt::Display for Failure {
     fn fmt(&self, out: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             out,
-            "Migration Input acquisition failed.\ninstance: {}\ntarget: exact:{}/{}\ninput: {}\nphase: {}\nreason: {} ({})\nNo Run was accepted. Check the supplied Input and staging access or size limit before deciding to retry; no automatic retry is authorized.",
+            "Migration Input acquisition failed.\ninstance: {}\ntarget: {}:{}\ninput: {}\nphase: {}\nreason: {} ({})\nNo Run was accepted. Check the supplied Input and staging access or size limit before deciding to retry; no automatic retry is authorized.",
             self.instance,
             self.target.package_id,
-            self.target.content_digest,
+            self.target.content_digest.revision_id(),
             self.input.as_str(),
             self.phase.code(),
             self.reason.code(),

@@ -16,11 +16,11 @@ fn run_export_migration_preserves_exact_edges_and_prepared_vs_committed_sources(
     let (report,files)=super::run_export_runtime::contents(&f.marker("migration.zip"));
     let inputs=report["inputs"].as_array().unwrap();
     for item in inputs {
-        assert!(path.windows(2).any(|pair|item["edge"]["source_revision_digest"]==pair[0].content_digest.to_string()
-            && item["edge"]["target_revision_digest"]==pair[1].content_digest.to_string()));
+        assert!(path.windows(2).any(|pair|item["edge"]["source_revision_id"]==pair[0].content_digest.revision_id()
+            && item["edge"]["target_revision_id"]==pair[1].content_digest.revision_id()));
     }
     let find=|scope,input|inputs.iter().find(|i|i["scope"]==scope&&i["input_id"]==input
-        &&i["edge"]["source_revision_digest"]==path[1].content_digest.to_string()).unwrap();
+        &&i["edge"]["source_revision_id"]==path[1].content_digest.revision_id()).unwrap();
     assert_eq!(find("target_prepared","request")["state"],"transient");
     assert_eq!(find("target_prepared","result")["state"],"pending_output");
     assert!(find("target_prepared","result")["member"].is_null());
@@ -133,8 +133,8 @@ fn guard_refusal_explains_the_existing_boundary_without_replaying_a_hook() {
     let request = f.marker("guard-request.json");
     fs::write(&request, b"{}").unwrap();
     let target = path.last().unwrap();
-    let reference = format!("exact:{}/{}", target.package_id, target.content_digest);
-    let input = format!("{}/request={}", path[2].content_digest, request.display());
+    let reference = format!("{}:{}", target.package_id, target.content_digest.revision_id());
+    let input = format!("{}/request={}", path[2].content_digest.revision_id(), request.display());
     let name = f.instance.name.as_str();
     let args = ["--format", "json", "instance", "migrate", name, "--to", &reference, "--input-file", &input];
     let mut out = vec![]; let mut err = vec![];
