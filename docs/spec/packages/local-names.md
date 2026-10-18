@@ -6,7 +6,7 @@ title: Local Names and References
 
 Names belong to the user of a Store. They identify installed Packages and
 Revisions without changing Package IDs, content digests, or existing Instance
-bindings. Pack authors provide declarations and explanations, not local names.
+bindings. Revision Pack authors provide declarations and explanations, not local names.
 
 ### PR-REQ-0371 - Local names and two-part identity resolution
 
@@ -60,7 +60,7 @@ identity rather than re-resolving a name during execution.
 
 Each locally installed Revision records its successful installation time. A
 repeat installation, metadata update or rename MUST preserve this time. Removing
-and reinstalling a Revision creates a new installation time. Imported Packs MUST
+and reinstalling a Revision creates a new installation time. Imported Revision Packs MUST
 NOT carry local installation times or user names to another Store. Earlier
 installations whose time was not recorded use an explicit unknown value; upgrade
 time MUST NOT substitute for installation time. Time is neither Revision identity

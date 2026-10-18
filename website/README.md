@@ -46,6 +46,11 @@ existing version. It creates versioned Markdown and a sidebar, updates the
 edition registry, and captures CLI help with its source commit. It does not
 publish the website.
 
+To start an edition from a reviewed saved edition instead of the development
+documents, append `--from VERSION`. This copies only that edition's committed
+documents and sidebar and captures help from the current committed CLI. Apply
+the new release's documented changes to the resulting edition before publishing.
+
 For a correction to an existing edition, edit its files under
 `website/versioned_docs/version-VERSION/` and the affected versioned sidebar;
 do not run the snapshot command again. Keep the correction applicable to that

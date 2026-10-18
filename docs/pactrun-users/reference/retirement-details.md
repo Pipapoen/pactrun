@@ -10,7 +10,7 @@ Start with the [user reference guide](./index.md) for task-oriented explanations
 
 <a id="instance-retirement" />
 
-Normal retirement completes Pack Cleanup, records that it must not be replayed,
+Normal retirement completes Revision Pack Cleanup, records that it must not be replayed,
 and finalizes Pactrun-provided storage. Abandonment removes management without
 authorizing destruction of service-owned state. Both paths preserve the durable
 evidence needed after failure.
@@ -61,7 +61,7 @@ unrelated replacement. Filesystem and SQL operations are not one atomic commit.
 Instance removal and deletion success require all lifetime obligations to end.
 
 Implementation note: the current Linux finalizer traverses regular files and
-directories, rejecting other entry kinds, including Unix sockets. Pack Cleanup
+directories, rejecting other entry kinds, including Unix sockets. Revision Pack Cleanup
 that creates such runtime artifacts needs to remove them before successful
 completion. A safe unsupported-entry diagnostic does not relax qualification
 or authorize Core to remove those artifacts. Cleanup success and successful

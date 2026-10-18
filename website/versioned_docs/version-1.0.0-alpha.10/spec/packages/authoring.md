@@ -1,20 +1,20 @@
 ---
-title: Pack Authoring Model
+title: Revision Pack Authoring Model
 ---
 
-# Pack Authoring Model
+# Revision Pack Authoring Model {#pack-authoring-model}
 
 ## Low floor, high ceiling
 
-A minimal Pack can contain metadata, one Action, and one Hook. Structured
+A minimal Revision Pack can contain metadata, one Action, and one Hook. Structured
 parameters, persistent Inputs, managed outputs, Snapshots, Migration,
 ServiceStorage-backed Managed Service Resources, and interactive terminal
-behavior are optional capabilities and must not burden minimal Packs.
+behavior are optional capabilities and must not burden minimal Revision Packs.
 
 Authors describe capabilities they provide. They are not required to enumerate
 large sets of negative `supports_x: false` flags.
 
-The [Pack source format](./source-format.md) is the built-in YAML authoring
+The [Revision Pack source format](./source-format.md) is the built-in YAML authoring
 interface. Pactrun translates it into an internal Candidate; the Candidate model
 is not a public frontend API.
 
@@ -33,7 +33,7 @@ The final normalized definition MUST contain resolved semantic runtime
 descriptors with author-declared `ContentId` values and content-derived
 `blob_digest` values before it crosses this boundary.
 
-The built-in Pack source frontend uses the exact source profile, schema-directed
+The built-in Revision Pack source frontend uses the exact source profile, schema-directed
 scalar rules, portable metadata shapes, safe acquisition and projection owned by
 PR-REQ-0258 through PR-REQ-0260.
 
@@ -74,7 +74,7 @@ bytes.
 
 **Verification: PR-TEST-0069.**
 
-## Normalized Pack Definition
+## Normalized Revision Pack Definition {#normalized-pack-definition}
 
 The model may contain:
 
@@ -106,7 +106,7 @@ grants and presence prerequisites use the closed shapes in the
 
 ServiceStorage and ServiceStorage-backed Managed Service Resource declarations
 are part of the current normalized model. Their source fields and identity
-projection are owned by the [Pack source](./source-format.md) and
+projection are owned by the [Revision Pack source](./source-format.md) and
 [Revision](./revision-format.md) baselines. Session grants are owned by the
 [Hook protocol](../interfaces/hook-protocol.md); association, continuity, retention and
 publication follow [ServiceStorage execution](../instances/service-storage.md)
@@ -135,5 +135,5 @@ fields for every capability. Low-level execution primitives MAY be shared.
 
 Pactrun can lint, plan, warn, and provide actionable diagnostics, but it does
 not impose unnecessary framework bureaucracy merely to prevent every possible
-bad Pack. Authors remain responsible for service-specific correctness, accurate
+bad Revision Pack. Authors remain responsible for service-specific correctness, accurate
 recovery-risk signaling, and practical retry behavior.

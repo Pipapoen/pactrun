@@ -978,7 +978,7 @@ fn parse_install(parser: &mut Parser) -> Result<Command, CliError> {
     let source_root = PathBuf::from(required_value(parser, "source root")?);
     if source_root == Path::new("-") {
         return Err(CliError::usage(
-            "Pack stdin is not supported; specify a filesystem path",
+            "Revision Pack stdin is not supported; specify a filesystem path",
         ));
     }
     let mut policy = None;
@@ -1004,7 +1004,11 @@ fn parse_install(parser: &mut Parser) -> Result<Command, CliError> {
                     },
                 )
             }
-            _ => return Err(CliError::usage("unsupported or duplicate Pack option")),
+            _ => {
+                return Err(CliError::usage(
+                    "unsupported or duplicate Revision Pack option",
+                ));
+            }
         }
     }
     Ok(Command::Install {

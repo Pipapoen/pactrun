@@ -10,7 +10,7 @@ Start with the [user reference guide](./index.md) for task-oriented explanations
 
 <a id="snapshot-commands" />
 
-Capture and Restore execute Pack capabilities. Listing, inspection, verification,
+Capture and Restore execute Revision Pack capabilities. Listing, inspection, verification,
 and transport are management operations; they do not launch a Hook.
 
 ### Snapshot command syntax {#pr-req-0301---m4-human-command-spelling}

@@ -138,7 +138,8 @@ impl Metadata {
                         (false, None, Some(digest)) => digest.parse()?,
                         _ => {
                             return Err(
-                                "migration Revision ID field does not match Pack format".into()
+                                "migration Revision ID field does not match Revision Pack format"
+                                    .into(),
                             );
                         }
                     },

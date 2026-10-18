@@ -58,7 +58,7 @@ impl SecureSourceRoot {
     pub(crate) fn open(path: &Path) -> Result<Self, SourceAcquisitionError> {
         platform::open_root(path)
             .map(|root| Self { root })
-            .map_err(|error| SourceAcquisitionError::io("open Pack source root", error))
+            .map_err(|error| SourceAcquisitionError::io("open Revision Pack source root", error))
     }
 
     pub(crate) fn open_manifest(&self) -> Result<File, SourceAcquisitionError> {

@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="680" height="490" viewBox="0 0 680 490" role="img" aria-labelledby="title desc">
   <title id="title">One Package lineage, several Revisions</title>
-  <desc id="desc">Hello Pack keeps the same Package ID. Each immutable Revision has its own management definition and runtime content. A, B, and C are illustrative names.</desc>
+  <desc id="desc">Hello Revision Pack keeps the same Package ID. Each immutable Revision has its own management definition and runtime content. A, B, and C are illustrative names.</desc>
   <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#64748b"/></marker></defs>
   <style>
     text {font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; text-anchor: middle;}
@@ -10,7 +10,7 @@
   </style>
   <rect width="680" height="490" rx="18" fill="#f1f5f9"/>
   <rect x="80" y="24" width="520" height="100" rx="12" fill="#dbeafe" stroke="#60a5fa"/>
-  <text class="title" x="340" y="62">Hello Pack</text>
+  <text class="title" x="340" y="62">Hello Revision Pack</text>
   <text class="body" x="340" y="94">One Package lineage · same package_id</text>
   <path class="arrow" d="M340 124V170H125V222"/>
   <path class="arrow" d="M340 170V222"/>

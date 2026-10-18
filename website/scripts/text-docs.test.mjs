@@ -150,14 +150,15 @@ test('Pactrun home follows the README structure with explanatory diagrams, not a
   assert.notEqual(current, released);
   assert.match(current, /^slug: \/$/m);
   const readme = await readFile(path.join(root, 'README.md'), 'utf8');
-  const headings = text => [...text.matchAll(/^## (.+)$/gm)].map(match => match[1]);
+  const headings = text => [...text.matchAll(/^## (.+)$/gm)].map(match => match[1].replace(/\s+\{#[^}]+\}$/, ''));
   assert.deepEqual(headings(current), headings(readme));
   const comparison = current.split('## Where it fits\n')[1].split('## Install\n')[0];
   assert.deepEqual([...comparison.matchAll(/^### (.+)$/gm)].map(match => match[1]),
     ['Command interfaces and task runners', 'Service managers and container tools', 'Application management platforms']);
   for (const product of ['Taskfile.yml', 'YunoHost', 'Cloudron', 'Coolify']) assert.ok(comparison.includes(product));
   assert.doesNotMatch(current, /className="pactrun-home/);
-  const install = current.split('## Install\n')[1].split('## Use a Pack\n')[0];
+  const install = current.split('## Install\n')[1].split('## Use a Revision Pack {#use-a-pack}\n')[0];
+  assert.ok(readme.includes('<a id="use-a-pack"></a>'));
   assert.doesNotMatch(current.replace(install, ''), /^```/m, 'Only Install contains executable instructions');
   assert.equal([...install.matchAll(/^```(?:powershell|sh)$/gm)].length, 2);
   for (const text of ['Windows x86-64', 'glibc 2.36 or newer', 'Git',

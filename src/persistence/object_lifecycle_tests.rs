@@ -1,6 +1,8 @@
 use super::*;
 #[path = "object_lifecycle_extra_tests.rs"]
 mod extra;
+#[path = "package_deletion_tests.rs"]
+mod package_deletion;
 use crate::domain::*;
 use rusqlite::{Connection, params};
 use sha2::{Digest, Sha256};
@@ -195,10 +197,10 @@ fn wait(path: &Path) {
 }
 
 // Test-ID: PR-TEST-0462
-// Verifies: PR-REQ-0341
+// Verifies: PR-REQ-0341, PR-REQ-0412
 #[test]
 fn object_deletion_crashes_leave_atomic_retryable_commit_boundaries() {
-    for kind in ["revision", "snapshot", "run"] {
+    for kind in ["revision", "snapshot", "run", "package"] {
         for (point, committed) in [
             ("before_object_deletion_commit", false),
             ("after_object_deletion_commit", true),
@@ -206,7 +208,15 @@ fn object_deletion_crashes_leave_atomic_retryable_commit_boundaries() {
             let (_temp, root) = root();
             let p = PactrunPersistence::open(&root).unwrap();
             let (rev, _) = revision(&p, 20, b"tool");
+            let package_second = if kind == "package" {
+                p.rename_package(rev.package_id, Some(&LocalName::parse("series").unwrap()))
+                    .unwrap();
+                Some(revision(&p, 20, b"second").0)
+            } else {
+                None
+            };
             let target = match kind {
+                "package" => ObjectDeletion::Package(rev.package_id),
                 "revision" => ObjectDeletion::Revision(rev.clone()),
                 "snapshot" => {
                     ObjectDeletion::Snapshot(snapshot(&p, &rev, InstanceId::from_bytes([3; 16])))
@@ -224,6 +234,7 @@ fn object_deletion_crashes_leave_atomic_retryable_commit_boundaries() {
             };
             let mut args = vec![kind.to_owned(), "delete".to_owned()];
             args.push(match &target {
+                ObjectDeletion::Package(id) => id.to_string(),
                 ObjectDeletion::Revision(r) => {
                     format!("{}:{}", r.package_id, r.content_digest.revision_id())
                 }
@@ -244,6 +255,17 @@ fn object_deletion_crashes_leave_atomic_retryable_commit_boundaries() {
                 Some(87)
             );
             let p = PactrunPersistence::open(&root).unwrap();
+            if let Some(second) = package_second {
+                assert_eq!(p.load_revision(&rev).unwrap().is_none(), committed);
+                assert_eq!(p.load_revision(&second).unwrap().is_none(), committed);
+                if committed {
+                    assert!(p.catalog_package(rev.package_id).is_err());
+                } else {
+                    let package = p.catalog_package(rev.package_id).unwrap();
+                    assert_eq!(package.revision_count, 2);
+                    assert_eq!(package.name.unwrap().as_str(), "series");
+                }
+            }
             assert_eq!(
                 p.delete_object(&target).unwrap(),
                 if committed {

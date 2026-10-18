@@ -22,10 +22,10 @@ const sidebars: SidebarsConfig = {
         ]},
       ],
     },
-    {type: 'category', label: 'Pack authors', items: [
+    {type: 'category', label: 'Revision Pack authors', items: [
           'package-authors/index',
           {type: 'category', label: 'Tutorial', items: [
-            {type: 'category', label: 'First Hello Pack', items: [
+            {type: 'category', label: 'First Hello Revision Pack', items: [
               'package-authors/tutorial/first-hello-pack/intro',
               'package-authors/tutorial/first-hello-pack/understanding-a-pack',
               'package-authors/tutorial/first-hello-pack/installing-the-first-revision',

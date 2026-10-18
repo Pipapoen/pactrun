@@ -145,7 +145,7 @@ CleanupV1
 The presence of a parameter `default` makes that parameter optional for an
 invocation; omission makes it required. Parameters have no enum, range, regex, raw argv,
 or extension-map parameter forms. `IOContractV1` describes only the
-Pack-facing terminal contract: `none` grants no user terminal channel,
+Revision Pack-facing terminal contract: `none` grants no user terminal channel,
 `output` grants output streams without interactive input, and `interactive`
 grants a bidirectional terminal. The Hook Protocol channel always remains
 separate.
@@ -255,7 +255,7 @@ file; its executable bit does not control interpreter launch. The selected
 Content IDs, host command, interpreter arguments, Hook arguments, protocol
 version, and I/O contract are identity-bearing.
 
-The launcher process `argv[0]` is not Pack-facing, is not Revision identity,
+The launcher process `argv[0]` is not Revision Pack-facing, is not Revision identity,
 and MUST NOT be relied upon by a Hook. The direct argument tail is `args`. The
 interpreter argument tail is `interpreter_args`, followed by the materialized
 script path, followed by `args`. Golden vectors verify representation and
@@ -339,7 +339,7 @@ becoming a Hook-owned escape path.
 
 Direct launch selects the materialized owned executable. Runtime implementations
 must deliver the specified argument tail while treating `argv[0]` as
-platform-controlled and outside the Pack-facing contract.
+platform-controlled and outside the Revision Pack-facing contract.
 
 Any future requirement to detect in-place candidate replacement, symlink or
 reparse retargeting, or a changed object behind the same candidate path requires
@@ -601,7 +601,7 @@ by identity; both lists must be nonempty and duplicate-free.
 Storage/resource transition arrays sort by their sole target, or the first
 sorted transform target. Target uniqueness below makes that a total unique
 key; one transform group owns all its targets. Different explicit mappings
-remain distinct identities even when a Pack believes them equivalent.
+remain distinct identities even when a Revision Pack believes them equivalent.
 
 Use RuntimeContentClosureIdentityV1 as the sibling component. Encode both
 normalized components and hash them using the
@@ -647,7 +647,7 @@ checked before grant/publication: present/absent require that exact definitive
 observation; any asserts no existence condition and never converts Unknown to
 presence or absence. This explicitly permits naming already service-owned files
 inside a reused allocation without moving them or adopting an external directory.
-It asserts no content validity or coherence; the Pack owns that interpretation.
+It asserts no content validity or coherence; the Revision Pack owns that interpretation.
 Only parents necessary for the Storage root are created by Pactrun; service
 directory trees belong to service/Hook behavior. A target create predicate and
 Hook prerequisite that contradict at the same observation boundary are invalid.
@@ -661,7 +661,7 @@ claims without inferring identity or compatibility from a locator. Directory
 containment alone is not equality and retains the explicit subtree semantics.
 
 `reuse` requires an active source; `reattach` requires a retained source. Both
-are explicit Pack assertions of representation compatibility. Storage reuse or
+are explicit Revision Pack assertions of representation compatibility. Storage reuse or
 reattach transfers the same allocation to the target role. Distinct active
 Storage declarations may not share an allocation. Resource reuse/reattach
 requires equal kind, exact case-sensitive locator and the same resolved physical
@@ -720,13 +720,13 @@ POSIX supports sh and bash; Windows supports powershell_7 and
 windows_powershell_5_1. Other host/shell pairs MUST fail admission, not fall back.
 Host executable resolution and admission revalidation retain the exact selected
 path rules. Loader execution MUST use the running Pactrun executable without
-requiring an installed PATH alias or copying Pactrun into the Pack.
+requiring an installed PATH alias or copying Pactrun into the Revision Pack.
 
 **Verification: PR-TEST-0486, PR-TEST-0487, PR-TEST-0492, PR-TEST-0493, PR-TEST-0510.**
 
 ## YAML projection
 
-Pack Source YAML baseline explicitly uses the string `source_format: "1.0-alpha.2"` and otherwise
+Revision Pack Source YAML baseline explicitly uses the string `source_format: "1.0-alpha.2"` and otherwise
 retains YAML baseline's closed schema, defaults, scalar handling and source acquisition.
 Its revision projection inserts `format_version: "1.0-alpha.1"`. There is no inferred upgrade
 of a development-era source or installed Revision, and no interpreter argument

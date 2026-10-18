@@ -1,8 +1,9 @@
 //! Object lifetime policy, distinct from service retirement and physical collection.
-use super::{RevisionIdentity, RunId, SnapshotId};
+use super::{PackageId, RevisionIdentity, RunId, SnapshotId};
 
 #[derive(Clone, Debug)]
 pub(crate) enum ObjectDeletion {
+    Package(PackageId),
     Snapshot(SnapshotId),
     Revision(RevisionIdentity),
     Run { run: RunId, delete_artifacts: bool },

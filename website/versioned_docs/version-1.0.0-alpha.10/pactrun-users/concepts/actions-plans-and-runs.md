@@ -4,7 +4,7 @@ title: Actions, plans, and Runs
 
 # Actions, plans, and Runs
 
-An Action is a Pack-defined operation. Inspect its declared parameters, access,
+An Action is a Revision Pack-defined operation. Inspect its declared parameters, access,
 and description before invoking it. Author descriptions are informational;
 Pactrun still checks the operation's actual contract and current state.
 

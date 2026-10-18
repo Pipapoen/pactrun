@@ -1,5 +1,7 @@
 use super::{PactrunPersistence, PersistenceError};
-use crate::domain::{DeletionFacts, ObjectDeletion, ObjectDeletionResult, RunState};
+use crate::domain::{
+    DeletionFacts, ObjectDeletion, ObjectDeletionResult, RevisionIdentity, RunState,
+};
 use rusqlite::{Connection, Params, TransactionBehavior};
 
 pub(super) fn validate_reference_graph(db: &Connection) -> Result<(), PersistenceError> {
@@ -18,6 +20,33 @@ pub(super) fn validate_reference_graph(db: &Connection) -> Result<(), Persistenc
 fn exists(db: &Connection, sql: &str, params: impl Params) -> Result<bool, PersistenceError> {
     db.query_row(sql, params, |r| r.get(0))
         .map_err(|e| PersistenceError::sqlite("inspect object lifetime", e))
+}
+
+fn revision_deletion_facts(
+    db: &Connection,
+    id: &RevisionIdentity,
+) -> Result<DeletionFacts, PersistenceError> {
+    let args = [
+        id.package_id.as_bytes().as_slice(),
+        id.content_digest.as_bytes().as_slice(),
+    ];
+    Ok(DeletionFacts::Revision {
+        active_instance: exists(
+            db,
+            "SELECT EXISTS(SELECT 1 FROM instances WHERE active_package_id=?1 AND active_revision_content_digest=?2)",
+            args,
+        )?,
+        execution_pin: exists(
+            db,
+            "SELECT EXISTS(SELECT 1 FROM run_revision_pins WHERE package_id=?1 AND revision_content_digest=?2 UNION ALL SELECT 1 FROM run_migration_revision_pins WHERE package_id=?1 AND revision_content_digest=?2)",
+            args,
+        )?,
+        service_reference: exists(
+            db,
+            "SELECT EXISTS(SELECT 1 FROM service_storage_preparations WHERE package_id=?1 AND revision_content_digest=?2 UNION ALL SELECT 1 FROM instance_service_storages WHERE declaration_package_id=?1 AND declaration_revision_digest=?2 UNION ALL SELECT 1 FROM instance_service_resources WHERE declaration_package_id=?1 AND declaration_revision_digest=?2)",
+            args,
+        )?,
+    })
 }
 
 impl PactrunPersistence {
@@ -128,6 +157,49 @@ impl PactrunPersistence {
         self.check_write_admission(&tx)?;
         validate_reference_graph(&tx)?;
         match target {
+            ObjectDeletion::Package(package) => {
+                let args = [package.as_bytes().as_slice()];
+                if !exists(
+                    &tx,
+                    "SELECT EXISTS(SELECT 1 FROM packages WHERE package_id=?1)",
+                    args,
+                )? {
+                    return Ok(AlreadyAbsent);
+                }
+                let mut query = tx.prepare("SELECT package_id,revision_content_digest FROM revisions WHERE package_id=?1 ORDER BY revision_content_digest")
+                    .map_err(|e| PersistenceError::sqlite("enumerate Package deletion", e))?;
+                let rows = query
+                    .query_map(args, |row| {
+                        Ok((row.get::<_, Vec<u8>>(0)?, row.get::<_, Vec<u8>>(1)?))
+                    })
+                    .map_err(|e| PersistenceError::sqlite("read Package revisions", e))?;
+                for row in rows {
+                    let (package, digest) =
+                        row.map_err(|e| PersistenceError::sqlite("read Package revision", e))?;
+                    let id = super::sqlite_instances::revision_identity(package, digest)?;
+                    super::sqlite_revision_store::load_revision_from(&tx, &id)?.ok_or_else(
+                        || {
+                            PersistenceError::CorruptRevision(
+                                "Package Revision disappeared during deletion".into(),
+                            )
+                        },
+                    )?;
+                    if let Some(reason) = revision_deletion_facts(&tx, &id)?.block() {
+                        return Ok(Blocked(reason));
+                    }
+                }
+                drop(query);
+                // All validation and all removals share this serialized transaction.
+                tx.execute(
+                    "DELETE FROM revision_runtime_content_refs WHERE package_id=?1",
+                    args,
+                )
+                .map_err(|e| PersistenceError::sqlite("release Package content references", e))?;
+                tx.execute("DELETE FROM revisions WHERE package_id=?1", args)
+                    .map_err(|e| PersistenceError::sqlite("delete Package revisions", e))?;
+                tx.execute("DELETE FROM packages WHERE package_id=?1", args)
+                    .map_err(|e| PersistenceError::sqlite("delete Package identity and name", e))?;
+            }
             ObjectDeletion::Snapshot(id) => {
                 let args = [id.as_bytes().as_slice()];
                 if !exists(
@@ -160,23 +232,7 @@ impl PactrunPersistence {
                     id.package_id.as_bytes().as_slice(),
                     id.content_digest.as_bytes().as_slice(),
                 ];
-                let facts = DeletionFacts::Revision {
-                    active_instance: exists(
-                        &tx,
-                        "SELECT EXISTS(SELECT 1 FROM instances WHERE active_package_id=?1 AND active_revision_content_digest=?2)",
-                        args,
-                    )?,
-                    execution_pin: exists(
-                        &tx,
-                        "SELECT EXISTS(SELECT 1 FROM run_revision_pins WHERE package_id=?1 AND revision_content_digest=?2 UNION ALL SELECT 1 FROM run_migration_revision_pins WHERE package_id=?1 AND revision_content_digest=?2)",
-                        args,
-                    )?,
-                    service_reference: exists(
-                        &tx,
-                        "SELECT EXISTS(SELECT 1 FROM service_storage_preparations WHERE package_id=?1 AND revision_content_digest=?2 UNION ALL SELECT 1 FROM instance_service_storages WHERE declaration_package_id=?1 AND declaration_revision_digest=?2 UNION ALL SELECT 1 FROM instance_service_resources WHERE declaration_package_id=?1 AND declaration_revision_digest=?2)",
-                        args,
-                    )?,
-                };
+                let facts = revision_deletion_facts(&tx, id)?;
                 if let Some(reason) = facts.block() {
                     return Ok(Blocked(reason));
                 }

@@ -3,7 +3,7 @@
 ## Choose a task
 
 - [Operate Pactrun](./use-pactrun.md)
-- [Author a Pack](./author-packs.md)
+- [Author a Revision Pack](./author-packs.md)
 - [Integrate a Hook](./integrate-hooks.md)
 - [Modify Pactrun](./develop-pactrun.md)
 - [Find a product contract](../spec/index.md)

@@ -7287,6 +7287,25 @@
       "if": {
         "properties": {
           "command": {
+            "const": "package delete"
+          },
+          "status": {
+            "const": "success"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "$ref": "#/$defs/Deletion"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "command": {
             "const": "run artifact export"
           },
           "status": {
@@ -9191,6 +9210,42 @@
       "if": {
         "properties": {
           "command": {
+            "const": "package delete"
+          },
+          "error": {
+            "properties": {
+              "kind": {
+                "const": "output"
+              }
+            }
+          },
+          "status": {
+            "const": "failure"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/PartialResult"
+              },
+              {
+                "$ref": "#/$defs/Deletion"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "command": {
             "const": "run artifact export"
           },
           "error": {
@@ -10655,6 +10710,7 @@
             "run delete",
             "revision delete",
             "snapshot delete",
+            "package delete",
             "run artifact export",
             "run artifact delete",
             "run export",

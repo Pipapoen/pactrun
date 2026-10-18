@@ -15,7 +15,7 @@ acquire that guarantee merely by sharing a Major number.
 [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html) supplies product-version
 terminology and precedence rules. [Conan's client stability policy](https://docs.conan.io/2/introduction.html#stable)
 is a reference for keeping ordinary updates within a stable Major contract.
-Pactrun's formal same-Major commitment includes continued use of existing Packs,
+Pactrun's formal same-Major commitment includes continued use of existing Revision Packs,
 managed objects and services; its exact scope is defined by the requirements below.
 
 ## Version identifiers
@@ -32,14 +32,14 @@ Major as the formal external-compatibility boundary.
 Alpha products MAY replace prerelease interfaces rather than retain every earlier
 alpha contract. Affected format versions and supported readers MUST be explicit;
 this does not authorize silent data deletion, identity changes or service actions.
-Within one formal Major, newer software MUST continue to install and use Packs valid
+Within one formal Major, newer software MUST continue to install and use Revision Packs valid
 under earlier published external contracts of that Major, with their existing
 meaning and applicable platform/execution prerequisites preserved. Minor and
-patch releases MUST NOT require a previously valid Pack to be rewritten merely
+patch releases MUST NOT require a previously valid Revision Pack to be rewritten merely
 because the tool was upgraded.
 
 External-format evolution within a Major MUST be a non-breaking extension.
-New capabilities MUST NOT invalidate an older Pack because it does not declare
+New capabilities MUST NOT invalidate an older Revision Pack because it does not declare
 them. Existing valid fields, omission behavior, defaults and Hook semantics
 MUST NOT silently change. Syntactic acceptance without semantic compatibility
 does not satisfy this requirement.
@@ -79,7 +79,7 @@ selecting an older executable does not guarantee data downgrade or rollback.
 ### PR-REQ-0331 - Explicit support selection and actionable refusal
 
 Pactrun MUST distinguish software-version or capability requirements from format
-identifiers and from the version of the tool that happened to author a Pack.
+identifiers and from the version of the tool that happened to author a Revision Pack.
 Using a newer authoring tool alone MUST NOT manufacture a requirement for that
 tool version when the resulting contract and capabilities do not require it.
 
@@ -93,7 +93,7 @@ The narrow SQLite read-coordination allowance in
 [PR-REQ-0078](./format-domains.md#pr-req-0078---persistence-migrations)
 permits inspection only, not operation admission or mutation of existing data.
 
-A product in Major 1 may, for example, report that a Pack requires a later
+A product in Major 1 may, for example, report that a Revision Pack requires a later
 1.x capability. That does not imply Major 2 support. Support diagnostics must
 come from an actual contract requirement; this policy does not add a manifest
 field, capability registry, negotiation mechanism, or inferred minimum version.

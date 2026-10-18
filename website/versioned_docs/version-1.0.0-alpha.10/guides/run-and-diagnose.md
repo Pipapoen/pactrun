@@ -4,11 +4,11 @@ title: Run and diagnose an Action
 
 # Run and diagnose an Action
 
-Use an installed Pack whose Hooks you trust. This example assumes the Pack
+Use an installed Revision Pack whose Hooks you trust. This example assumes the Revision Pack
 provides an Action named `inspect`; discover actual names before substituting one.
 You need a [live Instance](./use-pack.md) and any
 [required configuration](./configure-inputs.md). If `action list` is empty, stop
-this procedure and choose a capability the Pack actually declares.
+this procedure and choose a capability the Revision Pack actually declares.
 
 ## Discover and plan
 
@@ -79,9 +79,9 @@ Hook stdout/stderr, Input values or service logs. See the
 | Missing or invalid parameter | Inspect `action show` and supply the declared parameter |
 | Service presence requirement not met | Read the resource reference and expected/observed presence; inspect current service state before considering another attempt |
 | Conflict or changed state | Reinspect the Instance; plan again before retrying |
-| Host executable unavailable | Check the Pack's interpreter/program prerequisites |
+| Host executable unavailable | Check the Revision Pack's interpreter/program prerequisites |
 | Hook failure or cancellation | Inspect the Run; check service state before another write |
-| Manual recovery required | Follow the Pack's recovery procedure before acknowledging recovery |
+| Manual recovery required | Follow the Revision Pack's recovery procedure before acknowledging recovery |
 | Missing retained output | Check retention policy and whether output was registered |
 
 An invocation refused for missing Inputs prints a command for each missing value,

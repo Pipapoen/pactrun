@@ -22,7 +22,7 @@ to run. Spec and Development are optional maintainer sources.
 | Select a Migration path and target files | [Migration details](./migration-details.md) |
 | Inspect or obtain an allowed service location | [Resource details](./resource-details.md) |
 | Delete, abandon, or resolve a deletion attempt | [Retirement and recovery](./retirement-details.md) |
-| Delete retained Runs, Artifacts, Snapshots, or Revisions | [Retained objects and GC](./object-lifecycle.md) |
+| Delete Packages, Revisions, retained Runs, Artifacts or Snapshots | [Retained objects and GC](./object-lifecycle.md) |
 | Automate safely | [Current JSON/JSONL reference](./operation-output.md), [envelope reference](./machine-output.md), [response schema](./cli-machine.schema.json), [event schema](./cli-events.schema.json) |
 
 The advanced references are synchronized views of the same product rules, not

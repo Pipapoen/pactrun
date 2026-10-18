@@ -29,7 +29,7 @@ configuration file can retain this disclosure consent.
 Selected bytes are not sanitized or guaranteed private. Logical identifiers and
 timing metadata can themselves be sensitive. Reports MUST identify selection and
 unavailable evidence, warn readers to review before sharing, and MUST NOT upload
-anything or contact a Pack author automatically.
+anything or contact a Revision Pack author automatically.
 
 The command supports machine interface `1.0-alpha.4`. Its result identifies the
 Run, `outcome: exported`, copied Input and Artifact counts, a count of selected

@@ -1,6 +1,6 @@
-//! Pack-specific bounded ZIP preflight. Snapshot's accepted profile is unchanged.
+//! Revision Pack-specific bounded ZIP preflight. Snapshot's accepted profile is unchanged.
 //! The record checker follows the existing audited Snapshot checker, but retains
-//! compressed extents and validates general safe member names for Pack containers.
+//! compressed extents and validates general safe member names for Revision Pack containers.
 use std::{
     collections::BTreeSet,
     fs::File,
@@ -19,8 +19,8 @@ impl From<io::Error> for BundleError {
 impl std::fmt::Display for BundleError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::Profile(s) => write!(f, "Pack ZIP: {s}"),
-            Self::Io(k) => write!(f, "Pack ZIP I/O: {k}"),
+            Self::Profile(s) => write!(f, "Revision Pack ZIP: {s}"),
+            Self::Io(k) => write!(f, "Revision Pack ZIP I/O: {k}"),
         }
     }
 }
@@ -40,7 +40,7 @@ fn invalid<T>(s: &'static str) -> Result<T, BundleError> {
 }
 fn check_limit(value: u64, maximum: u64) -> Result<(), BundleError> {
     if value > maximum {
-        invalid("Pack structural resource limit exceeded")
+        invalid("Revision Pack structural resource limit exceeded")
     } else {
         Ok(())
     }

@@ -704,15 +704,20 @@ fn shell_loader_capture_registered_binary_content_round_trips() {
         .unwrap();
         let script = if cfg!(windows) {
             format!(
-                r#"if ($args[0] -eq 'capture') {{
+                r#"$timer = [Diagnostics.Stopwatch]::StartNew()
+[Console]::Error.WriteLine('Snapshot script started: ' + $args[0])
+if ($args[0] -eq 'capture') {{
   $root = & $env:PACTRUN_EXECUTABLE hook candidate
   if ($LASTEXITCODE -ne 0) {{exit 1}}
   [IO.File]::Copy('{}', [IO.Path]::Combine($root, 'data'))
   & $env:PACTRUN_EXECUTABLE hook capture-register --file '{}'
   exit $LASTEXITCODE
 }}
-$content = (& $env:PACTRUN_EXECUTABLE hook snapshot-content | ConvertFrom-Json)
+$contentJson = & $env:PACTRUN_EXECUTABLE hook snapshot-content
+[Console]::Error.WriteLine('Snapshot helper returned after ' + $timer.ElapsedMilliseconds + ' ms')
 if ($LASTEXITCODE -ne 0) {{exit 2}}
+$content = $contentJson | ConvertFrom-Json
+[Console]::Error.WriteLine('Snapshot JSON parsed after ' + $timer.ElapsedMilliseconds + ' ms')
 [IO.File]::Copy([IO.Path]::Combine($content.readonly_root_path, $content.logical_descriptors[0].materialized_path.Replace('/', '\')), '{}')
 exit 0
 "#,
@@ -739,6 +744,7 @@ fi
         };
         fs::write(scenario.source.join("script.txt"), script).unwrap();
         scenario.install_and_create("sample");
+        let capture_started = std::time::Instant::now();
         let capture = execute(
             &scenario,
             &[
@@ -749,13 +755,18 @@ fi
                 "10000",
             ],
         );
+        eprintln!(
+            "Snapshot binary round trip: {shell}, capture {} ms",
+            capture_started.elapsed().as_millis()
+        );
         assert_success(&capture);
         let text = String::from_utf8(capture.stdout).unwrap();
         let snapshot = text
             .lines()
             .find_map(|l| l.strip_prefix("Snapshot: "))
             .expect(&text);
-        assert_success(&execute(
+        let restore_started = std::time::Instant::now();
+        let restore = execute(
             &scenario,
             &[
                 "snapshot",
@@ -765,7 +776,13 @@ fi
                 "--execution-timeout-ms",
                 "10000",
             ],
-        ));
+        );
+        eprintln!(
+            "Snapshot binary round trip: {shell}, restore {} ms",
+            restore_started.elapsed().as_millis()
+        );
+        eprintln!("{}", String::from_utf8_lossy(&restore.stderr));
+        assert_success(&restore);
         assert_eq!(fs::read(restored).unwrap(), bytes);
     }
 }

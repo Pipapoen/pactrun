@@ -11,7 +11,7 @@ string `format_version: "1.0-alpha.3"`, required string `revision_format`
 `1.0-alpha.1` or `1.0-alpha.2`, `package_id`, bare `revision_id` and optional
 `portable_metadata`. The declared
 Revision format and inner canonical component are independently checked before
-publication. Source/serialized-Pack selection is exact, without parse-error fallback.
+publication. Source/serialized-Revision Pack selection is exact, without parse-error fallback.
 
 The supported `1.0-alpha.2` reader keeps its original `revision_digest` field
 with the `sha256:` prefix. New exports use `1.0-alpha.3`; readers reject an ID
@@ -21,7 +21,7 @@ remain unchanged, including their frozen internal digest encodings.
 Format changes and existing-object compatibility follow the
 [compatibility contract](../storage/compatibility.md).
 
-### PR-REQ-0354 - Pack containers and exact Revision transport
+### PR-REQ-0354 - Revision Pack containers and exact Revision transport {#pr-req-0354---pack-containers-and-exact-revision-transport}
 
 `revision install <path>` MUST accept source or serialized content in a directory
 or ZIP file. The conventional extension is `.pack`; extensions MUST NOT select
@@ -49,7 +49,7 @@ descriptors alone determine executability. Ordering, timestamps and compression
 do not affect domain identity. Bound metadata before allocation; stream payloads
 with checked accounting and existing component limits, not a new runtime-byte quota.
 
-The bounded Pack profile permits at most 65,539 ZIP entries, at most 64 MiB of
+The bounded Revision Pack profile permits at most 65,539 ZIP entries, at most 64 MiB of
 container metadata, paths of at most 1,024 UTF-8 bytes (plus a directory slash),
 and at most 16 MiB for each source manifest, distribution descriptor or canonical
 component. ZIP member names are exact UTF-8 safe source-relative paths; ambiguous
@@ -67,7 +67,7 @@ No public Candidate API or stable Rust API is introduced.
 
 **Verification: PR-TEST-0538, PR-TEST-0540, PR-TEST-0542, PR-TEST-0544, PR-TEST-0545, PR-TEST-0548.**
 
-### PR-REQ-0355 - Pack metadata conflict policy
+### PR-REQ-0355 - Revision Pack metadata conflict policy {#pr-req-0355---pack-metadata-conflict-policy}
 
 Export omits metadata by default. `--include-portable-metadata` carries all portable
 presentation and provenance for the exact Revision. Local names, installation

@@ -95,8 +95,8 @@ owns download, extraction, activation and program inventory. These steps do not
 create an Instance, choose a service data location, or migrate existing data.
 
 - **New user:** [Create your first Instance](../introduction.md), using its isolated store.
-- **Pack author:** [Prepare an authoring workspace](../package-authors/setup.md).
+- **Revision Pack author:** [Prepare an authoring workspace](../package-authors/setup.md).
 - **Real service data:** [Choose a data location](./data-location.md), then
-  [install a supplied Pack](./use-pack.md).
+  [install a supplied Revision Pack](./use-pack.md).
 - **Updates and channel changes:** [Manage versions](./version-management.md).
 - **Offline/engineering fallback:** [Install a supplied standalone archive](./standalone-installation.md).

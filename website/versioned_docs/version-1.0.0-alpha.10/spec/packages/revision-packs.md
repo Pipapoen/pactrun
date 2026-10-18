@@ -7,7 +7,7 @@ title: Revision Packs and Package Catalogs
 A Package is a service-management product lineage. A Revision is one immutable
 version of its management definition and owned runtime content. A Revision Pack
 is the installable bundle carrying one Revision's content, its Package ID and
-optional descriptive metadata. Pack is not a Package kind or a separate managed
+optional descriptive metadata. Revision Pack is not a Package kind or a separate managed
 object with its own ID.
 
 ### PR-REQ-0407 - Package-scoped Revision IDs
@@ -54,7 +54,7 @@ Invalid Package IDs MUST identify the `package_id` field in the source error.
 
 Revision Pack `1.0-alpha.3` carries complete bare `revision_id` and `package_id`
 fields. Readers MUST verify both declared content format and computed Revision
-ID before publication. Export uses the new Pack contract; supported Pack
+ID before publication. Export uses the new Revision Pack contract; supported Revision Pack
 `1.0-alpha.2` retains its original descriptor and prefixed digest representation.
 Repacking identical operational content or changing portable descriptions MUST
 NOT manufacture a new Revision ID. Container timestamps and compression do not

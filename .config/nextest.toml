@@ -14,7 +14,15 @@ path = "junit.xml"
 
 [[profile.ci.overrides]]
 platform = 'cfg(windows)'
-filter = 'binary(invoke_cli) | (binary(system) & test(windows::))'
+# Reserve the runner for PowerShell startup and JSON parsing in this round trip.
+filter = 'binary(system) & test(shell_loader_capture_registered_binary_content_round_trips)'
+threads-required = 'num-test-threads'
+
+[[profile.ci.overrides]]
+platform = 'cfg(windows)'
+# PowerShell helper fixtures launch many child processes. Do not overlap them
+# with another shell/console fixture and consume a functional operation's deadline.
+filter = 'binary(invoke_cli) | (binary(system) & (test(windows::) | test(shell_loader::)))'
 test-group = 'windows-console'
 
 [[profile.ci.overrides]]

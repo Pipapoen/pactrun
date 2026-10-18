@@ -15,7 +15,7 @@ rules; stable identity, payload opacity and independent protection rules remain.
 
 Every Input declaration MUST have a stable semantic `InputIdentity`. Within one
 Package lineage, an author MUST NOT reuse an identity for a different meaning.
-The [Pack source format](../packages/source-format.md) defines its authoring spelling and
+The [Revision Pack source format](../packages/source-format.md) defines its authoring spelling and
 uses the ASCII semantic-identity grammar of the Revision format.
 
 **Verification: PR-TEST-0039, PR-TEST-0069.**
@@ -62,7 +62,7 @@ creates it, then be edited in place by the service or user. Pactrun MUST NOT
 model this as Input-to-file materialization with implicit two-way synchronization.
 The [resource ownership rules](./service-resources.md) define this distinction.
 The [Revision format](../packages/revision-format.md) and
-[Pack source format](../packages/source-format.md) define its declaration.
+[Revision Pack source format](../packages/source-format.md) define its declaration.
 Other resource kinds are outside the ServiceStorage-backed model.
 
 ### PR-REQ-0243 - Resource exposure and mutation route
@@ -70,7 +70,7 @@ Other resource kinds are outside the ServiceStorage-backed model.
 A ServiceStorage-backed Managed Service Resource exposure contract MUST keep
 read exposure separate from its user mutation route. Read exposure is
 conceptually hidden or readable. User mutation is conceptually unavailable,
-direct, or mediated by a Pack operation. The
+direct, or mediated by a Revision Pack operation. The
 [Revision format](../packages/revision-format.md) specifies their representation.
 
 Direct mutation MUST mean only that the user is authorized to modify the same

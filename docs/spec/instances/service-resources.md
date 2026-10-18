@@ -42,7 +42,7 @@ declare a resource that is currently absent and that the service creates later.
 
 The identity encoding, association schema, access encoding, prerequisite
 encoding, authoring form, wire authority, and durable representation remain
-independent version boundaries defined by the Revision, Hook Protocol, Pack
+independent version boundaries defined by the Revision, Hook Protocol, Revision Pack
 source, and persistence contracts. This
 requirement does not classify non-ServiceStorage-backed service-owned resources.
 
@@ -98,7 +98,7 @@ installation definition, not satisfaction of an operation's execution
 prerequisites. Runtime execution follows its own operation, authority, and
 publication contracts.
 
-Pack source and internal persistence have independently versioned contracts.
+Revision Pack source and internal persistence have independently versioned contracts.
 They MUST NOT modify or acquire the compatibility guarantees of Revision Core,
 Snapshot Integrity, Hook Protocol, or Error Taxonomy. Authoring, binding, and
 metadata changes MUST NOT invent service semantics outside the owning resource

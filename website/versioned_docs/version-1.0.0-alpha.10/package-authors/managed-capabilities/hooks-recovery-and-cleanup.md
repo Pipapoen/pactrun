@@ -49,7 +49,7 @@ override cannot waive unrelated readiness or authority checks.
 
 ## Cleanup
 
-Declare Cleanup when retirement requires Pack-specific service work. Document
+Declare Cleanup when retirement requires Revision Pack-specific service work. Document
 what it stops or deletes, what remains, and how to diagnose a failed attempt.
 Test normal completion, failure, cancellation, and interrupted execution against
 disposable resources. Cleanup confirmation by an operator is an assertion of
@@ -61,11 +61,11 @@ Stopping a daemon or removing its container may leave Unix sockets or FIFOs in
 ServiceStorage. Current Linux finalization accepts regular files and directories;
 it refuses other entry kinds rather than treating them as ordinary files. Do not
 assume caller ownership alone makes every object reclaimable by the finalizer.
-Where your Pack creates such artifacts, its Cleanup must handle them before
-reporting successful completion. This does not require Packs that do not need
+Where your Revision Pack creates such artifacts, its Cleanup must handle them before
+reporting successful completion. This does not require Revision Packs that do not need
 Cleanup, Snapshot or Migration to declare those optional capabilities.
 
-For a Pack-owned Unix admin socket, use this controlled lifecycle test:
+For a Revision Pack-owned Unix admin socket, use this controlled lifecycle test:
 
 1. Start the service against disposable ServiceStorage; verify its admin socket.
 2. Stop it and wait for the service to exit. Check whether the socket remains.
@@ -99,9 +99,9 @@ defines. Use its examples and error rules; ordinary process exit is insufficient
 Test malformed messages and loss of the connection as well as success.
 
 **Next choice:** return to the [author guide](../index.md). Add Snapshot or Migration
-only if your Pack needs it; they are independent examples, not required follow-ups.
+only if your Revision Pack needs it; they are independent examples, not required follow-ups.
 
-More detail: [Pack fields and values](../reference/pack-fields.md).
+More detail: [Revision Pack fields and values](../reference/pack-fields.md).
 
 <details>
 <summary>Maintainer sources (optional)</summary>

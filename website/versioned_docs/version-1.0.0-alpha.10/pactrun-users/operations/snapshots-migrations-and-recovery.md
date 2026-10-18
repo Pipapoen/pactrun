@@ -4,7 +4,7 @@ title: Capture, restore, and migrate
 
 # Capture, restore, and migrate
 
-Snapshot and Migration capabilities are authored by each Pack. Install the
+Snapshot and Migration capabilities are authored by each Revision Pack. Install the
 required Revisions and inspect the operation before executing a write.
 Start with a [live Instance](../../guides/use-pack.md), the author's service
 prerequisites, and any required Inputs. Capture/Restore requires the corresponding
@@ -24,7 +24,7 @@ pactrun snapshot verify <snapshot-id>
 
 A Snapshot contains the declared captured data. It does not imply a complete
 backup of every host resource. Capture can require a running service or other
-Pack-specific coordination; follow the author's prerequisites.
+Revision Pack-specific coordination; follow the author's prerequisites.
 
 ## Export and import
 
@@ -43,7 +43,7 @@ rehearsal, use a new store where the Snapshot is absent, install the exact
 Revision, then import, verify and Restore. The
 [fresh-store worked example](../../package-authors/managed-capabilities/snapshots-and-managed-data.md#export-the-recovery-files)
 includes both platform setups and cleanup; Snapshot bundles do not carry the
-Pack's executable runtime content.
+Revision Pack's executable runtime content.
 
 ## Restore an existing Instance
 
@@ -96,7 +96,7 @@ resource/storage bindings do not mean their service bytes were deleted.
 ## After failure
 
 Inspect `run show` and the Instance's current Revision, readiness, and recovery
-state. Repair external service coherence using the Pack's procedure before
+state. Repair external service coherence using the Revision Pack's procedure before
 acknowledging manual recovery. Preserve diagnostics and remaining Snapshot data.
 
 More detail: [User reference](../reference/index.md).

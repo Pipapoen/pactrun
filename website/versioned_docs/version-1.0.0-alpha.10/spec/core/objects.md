@@ -63,7 +63,7 @@ whose distinct claims retain their typed source fields.
 
 Installation validates a Candidate before publishing durable content, then
 publishes the Revision and its metadata together. The
-[Pack source contract](../packages/source-format.md) defines source acquisition,
+[Revision Pack source contract](../packages/source-format.md) defines source acquisition,
 normalization, and the identity-bearing projection.
 
 ### PR-REQ-0261 - Revision installation publication
@@ -80,13 +80,13 @@ Installation MUST perform these steps in order:
    apply the source-projected portable metadata plus any crate-private,
    explicitly accepted local metadata batch.
 
-A semantically invalid Pack Source MUST create no durable runtime blob.
+A semantically invalid Revision Pack Source MUST create no durable runtime blob.
 Physical publication and witness acquisition are deduplicated by `blob_digest`,
 not by the author-declared `ContentId`. Different semantic entries with
 identical bytes share one physical blob and one current same-store witness.
 
 Source-projected metadata MUST use the exact presentation and
-provenance shapes in the [Pack source schema](../packages/source-format.md#pr-req-0258---packsourceyamlv1-schema-numbers-and-package-lineage).
+provenance shapes in the [Revision Pack source schema](../packages/source-format.md#pr-req-0258---packsourceyamlv1-schema-numbers-and-package-lineage).
 Its target is the Revision identity derived by the
 [Candidate projection](../packages/source-format.md#pr-req-0260---revisioncandidate-projection-and-metadata-boundary).
 Source authoring MUST NOT restate that identity. The explicit local metadata
@@ -230,6 +230,6 @@ or other resources outside ServiceStorage.
 
 ## Package scope
 
-Pactrun manages Packs. A Stack is not a supported managed resource and has no
+Pactrun manages Revision Packs. A Stack is not a supported managed resource and has no
 implied installation, Revision, Instance, Action, Snapshot, Migration, or CLI
 behavior.

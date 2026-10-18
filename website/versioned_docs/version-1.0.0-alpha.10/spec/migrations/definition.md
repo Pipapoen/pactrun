@@ -106,7 +106,7 @@ NOT downgrade protection through its output.
 ### PR-REQ-0161 - Typed source and target requirements
 
 An edge MAY require typed active or retained source bindings and staged target
-bindings. Requirements are admission prerequisites rather than ACLs. A Pack MAY
+bindings. Requirements are admission prerequisites rather than ACLs. A Revision Pack MAY
 use retained state for compatibility or recovery, and plan or lint output SHOULD
 make that dependence visible.
 

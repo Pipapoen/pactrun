@@ -1,4 +1,4 @@
-//! Local management names and installation facts, never portable Pack metadata.
+//! Local management names and installation facts, never portable Revision Pack metadata.
 use super::{PactrunPersistence, PersistenceError};
 use crate::domain::{
     IdentityMatches, InstallNames, LocalName, LocalRevisionFacts, LocalRevisionReference,
