@@ -1,5 +1,5 @@
 {
-  "description": "Manage installed Packs, long-lived Instances and Pack-defined operations.",
+  "description": "Manage Packages, installed Revisions, long-lived Instances and service operations.",
   "global_options": [
     {
       "name": "--config",
@@ -344,17 +344,17 @@
     },
     "migration-param": {
       "name": "--param",
-      "value": "target-digest/id=value",
+      "value": "target-revision-id/id=value",
       "description": "Supply a typed parameter for one exact edge of the selected Migration path."
     },
     "migration-param-file": {
       "name": "--param-file",
-      "value": "target-digest/id=path",
+      "value": "target-revision-id/id=path",
       "description": "Supply a typed parameter for one exact edge of the selected Migration path."
     },
     "migration-param-stdin": {
       "name": "--param-stdin",
-      "value": "target-digest/id",
+      "value": "target-revision-id/id",
       "description": "Supply a typed parameter for one exact edge of the selected Migration path."
     },
     "artifact-edge": {
@@ -913,7 +913,7 @@
       "description": "Migrate along the selected declared path; --plan only previews the operation.",
       "forms": [
         {
-          "usage": "pactrun instance migrate <instance> --to <reference> [--plan] [--path <path-id>] [--input-file <target-digest>/<input-id>=<path>]... [--param <target-digest>/<parameter-id>=<value>]... [--param-file <target-digest>/<parameter-id>=<path>]... [--param-stdin <target-digest>/<parameter-id>] [--authorize-declassification] [--authorize-recovery-override] [--startup-timeout-ms <ms>] [--execution-timeout-ms <ms>] [--termination-grace-ms <ms>]",
+          "usage": "pactrun instance migrate <instance> --to <reference> [--plan] [--path <path-id>] [--input-file <target-revision-id>/<input-id>=<path>]... [--param <target-revision-id>/<parameter-id>=<value>]... [--param-file <target-revision-id>/<parameter-id>=<path>]... [--param-stdin <target-revision-id>/<parameter-id>] [--authorize-declassification] [--authorize-recovery-override] [--startup-timeout-ms <ms>] [--execution-timeout-ms <ms>] [--termination-grace-ms <ms>]",
           "description": "Migrate along the selected declared path; --plan only previews the operation."
         }
       ],
@@ -1408,7 +1408,7 @@
       "description": "Export a retained Run Artifact with explicit sensitive-export authorization.",
       "forms": [
         {
-          "usage": "pactrun run artifact export <run-id> <output-id> --output <path> --authorize-sensitive-export [--edge <source-digest>/<target-digest>]",
+          "usage": "pactrun run artifact export <run-id> <output-id> --output <path> --authorize-sensitive-export [--edge <source-revision-id>/<target-revision-id>]",
           "description": "Export a retained Run Artifact with explicit sensitive-export authorization."
         }
       ],
@@ -1431,7 +1431,7 @@
       "description": "Delete the selected retained Run Artifact.",
       "forms": [
         {
-          "usage": "pactrun run artifact delete <run-id> <output-id> [--edge <source-digest>/<target-digest>]",
+          "usage": "pactrun run artifact delete <run-id> <output-id> [--edge <source-revision-id>/<target-revision-id>]",
           "description": "Delete the selected retained Run Artifact."
         }
       ],

@@ -244,7 +244,9 @@ pub(super) fn parse(parser: &mut Parser, listing: bool) -> Result<MigrationComma
                     (target, Some(value))
                 };
                 let (revision, id) = target.split_once('/').ok_or_else(|| {
-                    CliError::usage("Migration parameters require <target-digest>/<parameter-id>")
+                    CliError::usage(
+                        "Migration parameters require <target-revision-id>/<parameter-id>",
+                    )
                 })?;
                 let id = parse_parameter_id(id)?;
                 let revision = revision.parse()?;
@@ -312,7 +314,9 @@ pub(super) fn parse(parser: &mut Parser, listing: bool) -> Result<MigrationComma
                 let value = required_parser_value(parser, "Migration Input file binding")?;
                 let (target, file) = split_input_file(value)?;
                 let (revision, input) = target.split_once('/').ok_or_else(|| {
-                    CliError::usage("--input-file requires <target-digest>/<input-id>=<host-path>")
+                    CliError::usage(
+                        "--input-file requires <target-revision-id>/<input-id>=<host-path>",
+                    )
                 })?;
                 let target = InputTarget {
                     revision: revision.parse()?,
