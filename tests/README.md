@@ -37,8 +37,10 @@ separately checks ready-work draining and cancellation between durable steps.
 Process and filesystem tests need a supported persistent filesystem. Keep test
 outputs in the workspace. The full gate uses pinned cargo-nextest with the `ci`
 profile in `.config/nextest.toml`, and separately runs workspace doctests.
-Each test gets its own process. Process/I/O and Windows console groups have
-additional concurrency limits; explicit concurrency tests retain their internal
+Each test gets its own process. Process/I/O and Windows shell/console groups have
+additional concurrency limits. Windows Shell Loader and console fixtures share
+one slot so unrelated PowerShell startup load does not consume their operation
+deadlines; explicit concurrency tests retain their internal
 competing processes. No automatic test retries are enabled.
 
 Before a full nextest run, `tools/verify_test_inventory.py` compares Cargo's

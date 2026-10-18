@@ -14,7 +14,9 @@ path = "junit.xml"
 
 [[profile.ci.overrides]]
 platform = 'cfg(windows)'
-filter = 'binary(invoke_cli) | (binary(system) & test(windows::))'
+# PowerShell helper fixtures launch many child processes. Do not overlap them
+# with another shell/console fixture and consume a functional operation's deadline.
+filter = 'binary(invoke_cli) | (binary(system) & (test(windows::) | test(shell_loader::)))'
 test-group = 'windows-console'
 
 [[profile.ci.overrides]]

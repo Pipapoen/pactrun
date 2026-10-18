@@ -739,6 +739,7 @@ fi
         };
         fs::write(scenario.source.join("script.txt"), script).unwrap();
         scenario.install_and_create("sample");
+        let capture_started = std::time::Instant::now();
         let capture = execute(
             &scenario,
             &[
@@ -749,13 +750,18 @@ fi
                 "10000",
             ],
         );
+        eprintln!(
+            "Snapshot binary round trip: {shell}, capture {} ms",
+            capture_started.elapsed().as_millis()
+        );
         assert_success(&capture);
         let text = String::from_utf8(capture.stdout).unwrap();
         let snapshot = text
             .lines()
             .find_map(|l| l.strip_prefix("Snapshot: "))
             .expect(&text);
-        assert_success(&execute(
+        let restore_started = std::time::Instant::now();
+        let restore = execute(
             &scenario,
             &[
                 "snapshot",
@@ -765,7 +771,12 @@ fi
                 "--execution-timeout-ms",
                 "10000",
             ],
-        ));
+        );
+        eprintln!(
+            "Snapshot binary round trip: {shell}, restore {} ms",
+            restore_started.elapsed().as_millis()
+        );
+        assert_success(&restore);
         assert_eq!(fs::read(restored).unwrap(), bytes);
     }
 }
