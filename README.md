@@ -4,7 +4,7 @@
 
 [Documentation](https://pipapoen.github.io/pactrun/) · [Install](#install) · [Preview releases](https://github.com/Pipapoen/pactrun/releases) · [Write a Revision Pack](./docs/package-authors/index.md)
 
-[![Preview: 1.0.0-alpha.10](https://img.shields.io/badge/preview-1.0.0--alpha.10-0f766e?style=flat-square)](https://github.com/Pipapoen/pactrun/releases/tag/v1.0.0-alpha.10)
+[![Preview: 1.0.0-alpha.11](https://img.shields.io/badge/preview-1.0.0--alpha.11-0f766e?style=flat-square)](https://github.com/Pipapoen/pactrun/releases/tag/v1.0.0-alpha.11)
 [![CI on main](https://img.shields.io/github/actions/workflow/status/Pipapoen/pactrun/ci.yml?branch=main&event=push&style=flat-square&label=CI)](https://github.com/Pipapoen/pactrun/actions/workflows/ci.yml?query=branch%3Amain)
 [![Platforms: Windows and Linux x86-64](https://img.shields.io/badge/platforms-Windows%20%7C%20Linux%20x86--64-475569?style=flat-square)](#install)
 [![License: MIT](https://img.shields.io/badge/license-MIT-475569?style=flat-square)](./LICENSE)
@@ -99,7 +99,7 @@ determines which tools are needed.
 
 ## Install
 
-**Current release: Preview `1.0.0-alpha.10`.** Evaluate it with isolated data before
+**Current release: Preview `1.0.0-alpha.11`.** Evaluate it with isolated data before
 using it for anything important. There is no Stable release yet.
 
 These commands assume Git and the relevant package manager are already available.

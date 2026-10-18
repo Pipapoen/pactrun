@@ -1,0 +1,119 @@
+---
+title: Manage Packages and Revisions
+---
+
+# Manage Packages and Revisions
+
+Use this after [installing a Revision Pack](./use-pack.md). Packages and Revisions have
+stable IDs; local names are optional conveniences you control in the selected
+Store. Authors supply descriptions, not your local names.
+
+The [command overview](/commands) lists the available command forms and options
+for this documentation edition.
+
+## Find an installed Revision
+
+```text
+pactrun package list
+pactrun package show app
+pactrun revision list app
+pactrun revision show app:initial
+```
+
+The list is ordered newest-installed first. Unknown installation times appear
+last. Names are shown when they form an unambiguous reference; otherwise Pactrun
+uses IDs. `--no-trunc` shows complete identity references. Copy the continuation
+command when another page is available; its cursor remains usable if the last
+row on the previous page has since been deleted.
+
+## Set, change, or remove names
+
+Choose a Package ID and Revision ID from the list, replacing the placeholders:
+
+```text
+pactrun package rename <package-id> app
+pactrun revision rename app:<revision-id> initial
+```
+
+Each Package and Revision has at most one local name. Names contain 1 to 31
+ASCII letters, digits, hyphens, underscores or periods, starting with a letter
+or digit. They are case-sensitive. Package names are unique in the Store;
+Revision names are unique within their Package. A conflict is refused, not
+replaced automatically.
+
+```text
+pactrun package rename app web
+pactrun revision rename web:initial stable
+pactrun revision show web:stable
+```
+
+Names do not change identity or update existing Instances. `stable` and `latest`
+are ordinary names, not automatic update channels. To remove a name without
+removing data:
+
+```text
+pactrun revision unname web:stable
+pactrun package unname web
+```
+
+Use IDs again after removing names. Installation may set names with
+`--package-name` and `--revision-name`, but does not silently rename an already
+named object. Repeated installation preserves the recorded installation time;
+deleting and later reinstalling a Revision records a new time.
+
+## Record a local note or assessment
+
+Notes and trust assessments do not travel with an exported Revision Pack. Choose a current
+reference from `revision list <package>` for `<revision>`:
+
+```text
+pactrun revision note set <revision> --value "Local evaluation" --expect-absent
+pactrun revision trust set <revision> trusted --expect-absent
+pactrun revision metadata show <revision>
+```
+
+Use `--expect` with the exact previous value when replacing an existing note or
+assessment. A conflict requires reinspection, not a forced overwrite. Trust is
+a local annotation: `trusted` is not publisher authentication, and `distrusted`
+does not independently prevent execution.
+
+## Export or remove a Revision
+
+```text
+pactrun revision export <revision> --output ./saved-pack --include-portable-metadata
+pactrun revision delete <revision>
+```
+
+Export creates `saved-pack.pack`; `.pack` is always appended to the output base
+path. The archive is unencrypted and can contain sensitive authored content.
+Portable metadata contains descriptions and provenance, not local names, notes,
+trust assessments or installation times. Existing destinations are not replaced.
+
+Deletion is subject to references and lifecycle constraints; it does not delete
+Instances or run service Cleanup. See [retirement](./retirement.md) for those
+operations and [data locations](./data-location.md) for Store selection.
+
+## Remove a Package
+
+Deleting its last Revision keeps the Package ID and local name. To remove a
+Package and every installed version, use its ID, unique prefix or local name:
+
+```text
+pactrun package delete app
+```
+
+Pactrun checks every Revision in one transaction. If an Instance uses any of
+them, or a Run, service association or recovery requirement retains one, the
+whole deletion is refused and all versions remain. A successful deletion removes
+the Package, its local name and all its installed Revisions together.
+
+This operation does not retire Instances, run Cleanup Hooks or remove
+service-owned data. Run history and Snapshots remain; shared physical content
+follows normal garbage collection. Restoring a retained Snapshot still requires
+its exact producer Revision, so keep the matching Revision Pack for reinstallation.
+
+`revision delete <package>:<revision>` remains the way to remove only one version.
+An empty Package can be deleted too. A missing complete Package ID is an
+idempotent success; an unresolved name or ambiguous prefix is an error.
+Installing a Revision Pack with the same Package ID later creates that Package
+again without restoring its former local name.

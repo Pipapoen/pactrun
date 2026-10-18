@@ -179,7 +179,7 @@ pactrun --version
 
 :::warning Preview only
 
-Only **Preview 1.0.0-alpha.10** is available; there is no Stable release yet.
+Only **Preview 1.0.0-alpha.11** is available; there is no Stable release yet.
 The executables are unsigned. Use isolated data while evaluating this release.
 
 :::

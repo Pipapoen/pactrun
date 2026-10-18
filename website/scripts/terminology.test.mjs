@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {readFile} from 'node:fs/promises';
+import {readFile, readdir} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {readDocuments, markdownBody} from '../plugins/text-docs/index.mjs';
@@ -49,6 +49,10 @@ test('current formal documentation and referenced diagram text use Revision Pack
     }
   }
   assert.ok(images.size >= 5, 'Audit the actual diagrams referenced by readers');
+  for (const folder of ['intro-alpha10', 'intro-alpha11', 'pack-authors']) {
+    const directory = path.join(root, 'website/static/img', folder);
+    for (const file of await readdir(directory)) if (file.endsWith('.svg')) images.add(path.join(directory, file));
+  }
   for (const image of images) {
     const svg = await readFile(image, 'utf8');
     for (const [, text] of svg.matchAll(/<(?:title|desc|text|tspan)\b[^>]*>([\s\S]*?)<\/(?:title|desc|text|tspan)>/g))
