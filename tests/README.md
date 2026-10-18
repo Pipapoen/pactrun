@@ -40,7 +40,10 @@ profile in `.config/nextest.toml`, and separately runs workspace doctests.
 Each test gets its own process. Process/I/O and Windows shell/console groups have
 additional concurrency limits. Windows Shell Loader and console fixtures share
 one slot so unrelated PowerShell startup load does not consume their operation
-deadlines; explicit concurrency tests retain their internal
+deadlines. The binary Snapshot round trip reserves all test slots on Windows
+so its PowerShell 5.1 startup and JSON parsing also run without unrelated Hook
+fixtures competing for the runner; stage timings remain in its captured output.
+Explicit concurrency tests retain their internal
 competing processes. No automatic test retries are enabled.
 
 Before a full nextest run, `tools/verify_test_inventory.py` compares Cargo's
