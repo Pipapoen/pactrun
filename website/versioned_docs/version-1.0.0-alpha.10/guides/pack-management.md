@@ -1,8 +1,8 @@
 ---
-title: Manage installed Packs
+title: Manage Packages and Revisions
 ---
 
-# Manage installed Packs
+# Manage Packages and Revisions
 
 Use this after [installing a Pack](./use-pack.md). Packages and Revisions have
 stable IDs; local names are optional conveniences you control in the selected

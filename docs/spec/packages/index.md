@@ -4,7 +4,7 @@ title: Packages and Revisions
 
 # Packages and Revisions
 
-Define, install, identify, and distribute immutable Pack Revisions. Descriptive metadata remains separate from operational identity.
+Define, install, identify, and distribute immutable Revisions. Descriptive metadata remains separate from operational identity.
 
 - [Pack Authoring Model](./authoring.md)
 - [Pack Source Format](./source-format.md)

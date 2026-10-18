@@ -343,7 +343,7 @@ pub(crate) fn acquire(
             if crate::revision_content::calculate_revision_content_digest(&content).map_err(err)?
                 != identity.content_digest
             {
-                return Err("Pack Revision digest mismatch".into());
+                return Err("Revision Pack content digest mismatch".into());
             }
             let mut expected =
                 BTreeSet::from([DESCRIPTOR.to_owned(), CORE.to_owned(), RUNTIME.to_owned()]);

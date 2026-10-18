@@ -84,7 +84,7 @@ Pactrun's storage authority boundary. Do not copy an arbitrary privileged cleanu
 helper or expose the full admin API merely to simplify retirement.
 
 The alpha.2 Caddy evaluation left a socket after successful Cleanup; finalization
-then failed. A new Pack Revision that cleaned its stale socket passed normal
+then failed. A new Revision that cleaned its stale socket passed normal
 retirement in a fresh controlled case. Fixing a still-managed Instance by
 Migration **before** retirement is not a repair recipe for an already partially
 deleted Instance. Completed Cleanup is not replayed on finalization-only retry.

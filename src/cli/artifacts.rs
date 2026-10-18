@@ -86,7 +86,7 @@ pub(super) fn parse(parser: &mut Parser) -> Result<ArtifactCommand, CliError> {
             Arg::Long("edge") => {
                 let value = value_string(parser, "source/target Revision IDs")?;
                 let (source, target) = value.split_once('/').ok_or_else(|| {
-                    CliError::usage("--edge requires <source-digest>/<target-digest>")
+                    CliError::usage("--edge requires <source-revision-id>/<target-revision-id>")
                 })?;
                 set_once(
                     &mut edge,

@@ -75,7 +75,7 @@ pactrun instance migrate demo --to <target-reference> --path <path-id>
 
 Use a complete path ID from discovery. If more candidates exist, follow the
 reported pagination. Supply required per-target Input files with the exact
-`<target-digest>/<input-id>=<path>` selector. Review any declassification separately;
+`<target-revision-id>/<input-id>=<path>` selector. Review any declassification separately;
 its authorization is not a general permission to bypass protection.
 
 A multi-edge failure may leave an earlier edge committed. Inspect the Run and
