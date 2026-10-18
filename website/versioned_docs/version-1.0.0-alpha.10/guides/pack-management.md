@@ -4,7 +4,7 @@ title: Manage Packages and Revisions
 
 # Manage Packages and Revisions
 
-Use this after [installing a Pack](./use-pack.md). Packages and Revisions have
+Use this after [installing a Revision Pack](./use-pack.md). Packages and Revisions have
 stable IDs; local names are optional conveniences you control in the selected
 Store. Authors supply descriptions, not your local names.
 
@@ -63,8 +63,8 @@ deleting and later reinstalling a Revision records a new time.
 
 ## Record a local note or assessment
 
-Notes and trust assessments do not travel with an exported Pack. Choose a current
-reference from `revision list` for `<revision>`:
+Notes and trust assessments do not travel with an exported Revision Pack. Choose a current
+reference from `revision list <package>` for `<revision>`:
 
 ```text
 pactrun revision note set <revision> --value "Local evaluation" --expect-absent

@@ -150,6 +150,10 @@ The Revision Pack contract defines
 `revision export` and import through `revision install`, without a second import
 command.
 
+`package delete <package>` removes a complete Package and its installed Revisions
+under [the Package deletion contract](./object-lifecycle.md#pr-req-0412---explicit-package-deletion).
+Single-Revision deletion remains available and retains the Package.
+
 ### Security-sensitive authorization spelling {#pr-req-0119---security-sensitive-authorization-spelling}
 
 Secret export, sensitive Snapshot export, Secret declassification, recovery
@@ -212,7 +216,7 @@ This process configuration is not an Input acquisition or authorization channel.
 
 Help queries use `pactrun [--format human|json|jsonl] <command-path> --help`,
 where the path contains only command words and may be empty for root help.
-No Instance, Pack, parameter or other operation operands are needed. The same
+No Instance, Revision Pack, parameter or other operation operands are needed. The same
 paths MUST be available in every format, without opening storage, reading stdin,
 acquiring files or launching a Hook. Literal operand values named `--help` MUST
 NOT be reinterpreted as help queries.
@@ -410,7 +414,7 @@ path discovery, planning and implemented execution. Recovery uses
 PR-REQ-0287; Instance deletion and `AbandonManagement` use the
 [retirement contract](./retirement-details.md).
 [Managed-object lifecycle](./object-lifecycle.md) separately adds
-Snapshot deletion, and Pack transport
+Snapshot deletion, and Revision Pack transport
 owns Revision import/export. These commands preserve the purpose-specific
 authorization boundaries in PR-REQ-0119. Unspecified commands and options MUST
 NOT be inferred from an internal application API.
@@ -423,7 +427,7 @@ NOT be inferred from an internal application API.
 - [PR-REQ-0376](../../spec/packages/local-names.md#pr-req-0376---revision-catalog-order-and-local-facts)
 - [PR-REQ-0373](../../spec/storage/store-opening.md#pr-req-0373---store-opening-and-supported-catalog-upgrades)
 - [PR-REQ-0371](../../spec/packages/local-names.md#pr-req-0371---local-names-and-two-part-identity-resolution)
-- [Pack transport](../../spec/packages/distribution.md)
+- [Revision Pack transport](../../spec/packages/distribution.md)
 - [error taxonomy](../../spec/interfaces/errors.md)
 
 </details>

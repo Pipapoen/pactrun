@@ -39,6 +39,7 @@ pub(super) fn command_name(command: &Command) -> &'static str {
         Command::Artifact(A::Export { .. }) => "run artifact export",
         Command::Artifact(A::Delete { .. }) => "run artifact delete",
         Command::Lifecycle(L::Collect { .. }) => "storage gc",
+        Command::Lifecycle(L::Package(_)) => "package delete",
         Command::Lifecycle(L::Revision(_)) => "revision delete",
         Command::Lifecycle(L::Run { .. }) => "run delete",
         Command::Migration(M::List { .. }) => "instance migration-paths",

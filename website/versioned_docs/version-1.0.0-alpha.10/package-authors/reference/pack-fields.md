@@ -1,8 +1,8 @@
 ---
-title: Pack fields and values
+title: Revision Pack fields and values
 ---
 
-# Pack fields and values
+# Revision Pack fields and values {#pack-fields-and-values}
 
 Use this reference for `source_format: "1.0-alpha.4"` while editing `pactrun.yaml`.
 All version content declarations belong inside `revision`, including runtime
@@ -13,7 +13,7 @@ own schemas; see the [legacy source reference](./source-format.md) and
 Fields not listed by the selected shape are rejected. Omission uses a documented
 default; it does not mean that arbitrary `null` values are accepted.
 
-Start with the [complete runnable Pack](../fundamentals/authoring-model.md).
+Start with the [complete runnable Revision Pack](../fundamentals/authoring-model.md).
 For the exact grammar, portable metadata shapes, and path rules, use the
 [current source and ID reference](./revision-packs.md). Advanced normalized declaration
 rules are in [declaration types and identity](./revision-format.md).
@@ -34,7 +34,7 @@ rules are in [declaration types and identity](./revision-format.md).
 | `portable_metadata` | Object | Empty when omitted | Labels, presentation, and provenance; never operational configuration. |
 
 Runtime files are copied and identified at installation. Later edits to the
-source directory do not alter an installed Revision. Exported Packs must include
+source directory do not alter an installed Revision. Exported Revision Packs must include
 their complete declared runtime content. Do not supply derived `blob_digest`
 or file `kind` in a source file declaration.
 
@@ -61,7 +61,7 @@ filesystem aliases. Service locators have a different grammar; see
 | `service_storages` | Empty sequence | Owned storage allocations for service data. |
 | `service_resources` | Empty sequence | Declared files/directories within those allocations. |
 | `snapshot` | Capability absent | Optional `capture` and `restore` declarations. |
-| `cleanup` | Capability absent | Pack-specific work before Instance deletion. |
+| `cleanup` | Capability absent | Revision Pack-specific work before Instance deletion. |
 
 Sequences may be empty. Supply maps/sequences with their declared types; `null`
 is not shorthand for an omitted capability or an empty collection.
@@ -152,7 +152,7 @@ scalar. Parse JSON rather than evaluating the result as shell code.
 | `protocol_version` | String `"1.0-alpha.2"` | Defaults to `"1.0-alpha.2"` | Protocol selected by current Source. Numeric values and other versions are refused in this schema. |
 | `launch` | One closed alternative below | Required | Direct executable, interpreter, or built-in Shell Loader. |
 | `args` | Ordered string sequence | Required; `[]` is valid | Literal argument tail; no shell interpolation by Pactrun. |
-| `io` | `{terminal: <value>}` | Required | Pack-facing terminal contract. |
+| `io` | `{terminal: <value>}` | Required | Revision Pack-facing terminal contract. |
 | `service_access` | Sequence | Empty when omitted | Explicit read/write grants; see [service fields](./service-fields.md). |
 | `service_requires` | Sequence | Empty when omitted | Presence prerequisites, which do not grant authority. |
 
@@ -257,7 +257,7 @@ with `parameter_id`, `snapshot_restore`, `snapshot_restore_parameter` with
 No target names an arbitrary Package, Instance, Storage, or resource. The Revision
 target accepts `summary`, `description`, and `help`, not `display_name`.
 Other supported targets accept all four fields. Package and Revision names are
-chosen by the local user, not supplied by a Pack.
+chosen by the local user, not supplied by a Revision Pack.
 
 ## Common refusals
 

@@ -1,5 +1,47 @@
 use super::*;
 
+// Test-ID: PR-TEST-0818
+// Verifies: PR-REQ-0002
+#[test]
+fn revision_pack_terminology_is_used_by_help_and_installation_errors() {
+    fn assert_formal(text: &str) {
+        let without_formal = text
+            .replace("Revision Packs", "")
+            .replace("Revision Pack", "");
+        assert!(
+            !without_formal
+                .split(|c: char| !c.is_ascii_alphabetic())
+                .any(|word| matches!(word, "Pack" | "Packs")),
+            "{text}"
+        );
+    }
+    for path in [
+        vec!["revision", "install", "--help"],
+        vec!["revision", "export", "--help"],
+        vec!["action", "--help"],
+        vec!["snapshot", "capture", "--help"],
+        vec!["snapshot", "restore", "--help"],
+    ] {
+        let result = query(None, &path);
+        assert_eq!(result.0, 0, "{}", result.2);
+        assert!(result.1.contains("Revision Pack"));
+        assert_formal(&result.1);
+    }
+    let base = Path::new(env!("CARGO_MANIFEST_DIR")).join("target/terminology-tests");
+    fs::create_dir_all(&base).unwrap();
+    let temp = tempfile::tempdir_in(base).unwrap();
+    let source = temp.path().join("source");
+    fs::create_dir(&source).unwrap();
+    fs::write(source.join("pactrun.yaml"), b"[]").unwrap();
+    let result = query(
+        Some(&temp.path().join("store")),
+        &["revision", "install", source.to_str().unwrap()],
+    );
+    assert_eq!(result.0, 1);
+    assert!(result.2.contains("Revision Pack source"), "{}", result.2);
+    assert_formal(&result.2);
+}
+
 fn query(root: Option<&Path>, args: &[&str]) -> (i32, String, String) {
     struct NoInput;
     impl Read for NoInput {

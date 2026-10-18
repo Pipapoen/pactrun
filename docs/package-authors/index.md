@@ -1,8 +1,8 @@
 ---
-title: Pack authors
+title: Revision Pack authors
 ---
 
-# Pack authors
+# Revision Pack authors {#pack-authors}
 
 ## From maintaining a service to helping others maintain it
 
@@ -33,8 +33,8 @@ halfway through: what has it already changed, and is it safe to run again? You
 publish an improved setup: how should someone using the previous version adopt
 it without losing their configuration or service data?
 
-**A Pack author turns these service-specific procedures into a defined interface
-that other people can use and that the author can continue to maintain.** A Pack
+**A Revision Pack author turns these service-specific procedures into a defined interface
+that other people can use and that the author can continue to maintain.** A Revision Pack
 describes the settings people supply, the operations they can request, and the
 programs that carry out those operations. Pactrun provides a common way to use
 that definition and inspect execution results.
@@ -46,9 +46,9 @@ requirements and consequences.
 
 ## Where your work fits
 
-![The author supplies a Pack; the user supplies settings and selects an operation. Pactrun runs the Pack's programs, which use existing tools to operate the service.](/img/pack-authors/roles.svg)
+![The author supplies a Revision Pack; the user supplies settings and selects an operation. Pactrun runs the Revision Pack's programs, which use existing tools to operate the service.](/img/pack-authors/roles.svg)
 
-- **You, the Pack author, define and maintain the integration.** You choose the
+- **You, the Revision Pack author, define and maintain the integration.** You choose the
   supported environment, describe the settings and operations, and supply their
   implementations. A program Pactrun calls to perform this work is a **Hook**.
 - **The user chooses what to do.** They provide the required settings, meet the
@@ -69,7 +69,7 @@ to deliver.
 
 ## What you are responsible for
 
-Your responsibility is the behavior your Pack promises, including what happens
+Your responsibility is the behavior your Revision Pack promises, including what happens
 to people already using it.
 
 **Set a clear scope.** Say which environments and deployment arrangements you
@@ -97,10 +97,10 @@ and when the user needs to inspect or repair the service first.
 update an existing Instance. Pactrun's [Migration](./reference/service-fields.md)
 mechanism lets an author define how an Instance moves from a supported installed definition to a target
 definition, including what happens to its configuration and declared resources.
-Consider that path whenever you change a delivered Pack. Test it against an
+Consider that path whenever you change a delivered Revision Pack. Test it against an
 existing setup, not only a fresh installation.
 
-A Pack Migration and a service upgrade are related but distinct. If a change
+A Revision Pack Migration and a service upgrade are related but distinct. If a change
 also upgrades the service, follow that software's supported upgrade procedure.
 Declaring a Migration
 does not make an arbitrary application upgrade safe or guarantee that external
@@ -114,12 +114,12 @@ you do need to understand and communicate the limits of what you deliver.
 
 ## What you do not need to reimplement
 
-Writing a Pack does not mean reimplementing the service it manages. Prefer the
+Writing a Revision Pack does not mean reimplementing the service it manages. Prefer the
 software's supported tools and maintenance procedures over recreating its
 internal behavior. For example, integrate its supported upgrade process rather
 than inventing a replacement for its database conversion logic.
 
-A Pack also does not automatically take responsibility for every aspect of host
+A Revision Pack also does not automatically take responsibility for every aspect of host
 administration, monitoring, backup, or high availability. Those responsibilities
 depend on its stated scope and the surrounding environment.
 
@@ -129,14 +129,14 @@ that safely or make it an explicit prerequisite and check it. Leaving necessary
 coordination to an undocumented assumption is not a smaller support scope.
 
 Hooks execute trusted host programs. Pactrun's declarations do not provide an
-operating-system sandbox, so a Pack must be reviewed with the access and effects
+operating-system sandbox, so a Revision Pack must be reviewed with the access and effects
 of its programs in mind.
 
 ## Before you begin this tutorial
 
 These are the foundations for following the tutorial, **not a complete
-qualification for independently maintaining a production Pack**. The service
-knowledge and programming ability needed for a real Pack depend on the software,
+qualification for independently maintaining a production Revision Pack**. The service
+knowledge and programming ability needed for a real Revision Pack depend on the software,
 operations, and environments it supports.
 
 You should be able to:
@@ -157,7 +157,7 @@ subjects are unimportant.
 
 An agent can help draft programs, explain documentation, and investigate failures.
 Its output still needs to be checked and tested. Whether or not you work with an
-agent, you remain responsible for understanding the Pack's support boundaries
+agent, you remain responsible for understanding the Revision Pack's support boundaries
 and the effects of the operations you deliver.
 
 ## Terms used on this page

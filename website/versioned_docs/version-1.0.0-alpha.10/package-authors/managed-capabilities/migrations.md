@@ -6,7 +6,7 @@ title: Author Migration paths
 
 The complete manifests in this walkthrough intentionally use supported legacy
 Source `1.0-alpha.2` and Hook Protocol `1.0-alpha.1`. They exercise continuity
-of existing versions. For new Source `1.0-alpha.4` packs, use
+of existing versions. For new Source `1.0-alpha.4` Revision Packs, use
 [current Migration fields](../reference/service-fields.md): Input grants are
 operation-scoped, runtime content is nested, and source versions use bare IDs.
 
@@ -233,7 +233,7 @@ cmp ./config.txt ./settings-copy.txt && printf '%s\n' 'Input bytes match.'
 ### Prepare an unrelated Package
 
 Keep the same working directory and storage root. Create a separate source
-folder; do not overwrite the source or target Pack.
+folder; do not overwrite the source or target Revision Pack.
 
 PowerShell:
 
@@ -293,4 +293,4 @@ pactrun instance delete migration-demo
 
 Source files, exported comparison files and retained history remain available
 for review. This one-edge exercise does not prove multi-edge failure recovery or
-service-resource transformation; those require separate Pack-specific tests.
+service-resource transformation; those require separate Revision Pack-specific tests.

@@ -124,8 +124,8 @@ impl fmt::Display for ApplicationError {
             Self::Configuration(message)
             | Self::InvalidInstallation(message)
             | Self::InvalidRequest(message) => formatter.write_str(message),
-            Self::Authoring(source) => write!(formatter, "Pack source: {source}"),
-            Self::SourceAcquisition(source) => write!(formatter, "Pack source: {source}"),
+            Self::Authoring(source) => write!(formatter, "Revision Pack source: {source}"),
+            Self::SourceAcquisition(source) => write!(formatter, "Revision Pack source: {source}"),
             Self::Staging(source) => write!(formatter, "staging: {source}"),
             Self::MigrationInputAcquisition(failure) => failure.fmt(formatter),
             Self::Revision(source) => write!(formatter, "Revision candidate: {source}"),
@@ -571,7 +571,7 @@ impl PactrunApplication {
                 .map_err(ApplicationError::InvalidInstallation)?;
         crate::output_publication::publish_pack(&archive, destination, cancellation).map_err(
             |failure| ApplicationError::Publication {
-                operation: "Pack export failed",
+                operation: "Revision Pack export failed",
                 destination: destination.to_path_buf(),
                 destination_published: failure.destination_published,
                 source: failure.source,

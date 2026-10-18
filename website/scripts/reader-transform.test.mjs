@@ -3,6 +3,12 @@ import test from 'node:test';
 import {references, renderReference} from './reader-references.mjs';
 const entry = references.find(item => item.audience === 'Authors' && item.source.endsWith('/hook-protocol.md'));
 
+test('renamed owner headings preserve their explicit historical anchors', () => {
+  const rendered = renderReference(entry, '# Revision Pack Source Format {#pack-source-format}\n\nSource details.\n');
+  assert.ok(rendered.includes('<a id="pack-source-format" />'));
+  assert.ok(!rendered.includes('revision-pack-source-format-pack-source-format'));
+});
+
 test('reader projection preserves fenced payloads and inline code literally', () => {
   const literal = '```text\n### PR-REQ-9001 - Literal example\n**Verification: literal payload text.**\n[example](./pack-source.md#literal)\n```';
   const inline = '`[example](./pack-source.md#literal)`';

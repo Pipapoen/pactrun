@@ -1,20 +1,20 @@
 ---
-title: Install a Pack and create an Instance
+title: Install a Revision Pack and create an Instance
 ---
 
-# Install a Pack and create an Instance
+# Install a Revision Pack and create an Instance {#install-a-pack-and-create-an-instance}
 
 Use this after [Pactrun is installed and verified](./installation.md). You need
-a trusted Pack supplied by its author. Pactrun selects a default
+a trusted Revision Pack supplied by its author. Pactrun selects a default
 [store](./data-location.md), which Pactrun prepares when first needed; select
-another location only if you want one. Installing Pactrun and installing a Pack are different
-operations. You do not need to write a manifest to use a supplied Pack.
+another location only if you want one. Installing Pactrun and installing a Revision Pack are different
+operations. You do not need to write a manifest to use a supplied Revision Pack.
 
-The [first Instance tutorial](../introduction.md) uses an empty synthetic Pack.
+The [first Instance tutorial](../introduction.md) uses an empty synthetic Revision Pack.
 It proves the basic command flow, not real service functionality. This procedure
-uses a Pack with the capabilities you actually want to operate.
+uses a Revision Pack with the capabilities you actually want to operate.
 
-## 1. Install the supplied Pack
+## 1. Install the supplied Revision Pack {#1-install-the-supplied-pack}
 
 Replace `./supplied.pack` with its real path. A supported source or distribution
 directory can also be used. Verify the delivery according to the author's instructions.
@@ -52,7 +52,7 @@ pactrun action list demo
 
 Creation may allocate declared service storage, but it does not automatically
 start the service or create its live files. Missing required Inputs can leave the
-new Instance incomplete. An empty Action list means this Pack has no ordinary
+new Instance incomplete. An empty Action list means this Revision Pack has no ordinary
 Actions; do not assume it contains one named `inspect`.
 
 ## Choose the next operation
@@ -63,7 +63,7 @@ Actions; do not assume it contains one named `inspect`.
 - You need Snapshot or Migration operations: use the
   [capability-specific procedures](../pactrun-users/operations/snapshots-migrations-and-recovery.md).
 - You only want to export the Revision or manage local names: use
-  [Pack management](./pack-management.md).
+  [Revision Pack management](./pack-management.md).
 
 **Done:** you have a known live Instance and have inspected its actual capabilities.
 The other task pages use example names; replace them with this Instance's name and

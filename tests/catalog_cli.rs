@@ -25,6 +25,107 @@ fn success(root: &Path, args: &[&str]) -> String {
 #[test]
 fn catalog_hook_without_protocol() {}
 
+// Test-ID: PR-TEST-0819
+// Verifies: PR-REQ-0412
+#[test]
+fn package_lifecycle_commands_preserve_atomic_refusal_and_empty_package_retention() {
+    fn json(root: &Path, args: &[&str]) -> serde_json::Value {
+        let mut selected = vec!["--format", "json"];
+        selected.extend_from_slice(args);
+        serde_json::from_str(&success(root, &selected)).unwrap()
+    }
+    fn reference(value: &serde_json::Value) -> String {
+        format!(
+            "{}:{}",
+            value["result"]["revision"]["package_id"].as_str().unwrap(),
+            value["result"]["revision"]["revision_id"].as_str().unwrap()
+        )
+    }
+    let parent = Path::new(env!("CARGO_MANIFEST_DIR")).join("target/catalog-process-tests");
+    fs::create_dir_all(&parent).unwrap();
+    let temp = tempfile::tempdir_in(parent).unwrap();
+    let root = temp.path().join("store");
+    let source = temp.path().join("source");
+    fs::create_dir(&source).unwrap();
+    let package = "00000000000000000000000000008119";
+    let header = format!("source_format: '1.0-alpha.4'\npackage_id: '{package}'\n");
+    fs::write(
+        source.join("pactrun.yaml"),
+        format!("{header}revision: {{}}\n"),
+    )
+    .unwrap();
+    let first = json(
+        &root,
+        &[
+            "revision",
+            "install",
+            source.to_str().unwrap(),
+            "--package-name",
+            "app",
+        ],
+    );
+    success(
+        &root,
+        &[
+            "instance",
+            "create",
+            "worker",
+            "--revision",
+            &reference(&first),
+        ],
+    );
+    fs::write(
+        source.join("pactrun.yaml"),
+        format!("{header}revision:\n  inputs: [{{id: config, protection: normal}}]\n"),
+    )
+    .unwrap();
+    let second = json(&root, &["revision", "install", source.to_str().unwrap()]);
+    assert_ne!(reference(&first), reference(&second));
+    let denied = call(&root, &["--format", "json", "package", "delete", "app"]);
+    assert_eq!(denied.status.code(), Some(1));
+    let refusal: serde_json::Value = serde_json::from_slice(&denied.stdout).unwrap();
+    assert_eq!(refusal["command"], "package delete");
+    assert_eq!(refusal["status"], "failure");
+    assert_eq!(
+        json(&root, &["package", "show", "app"])["result"]["revision_count"],
+        "2"
+    );
+    json(&root, &["revision", "delete", &reference(&second)]);
+    assert_eq!(
+        json(&root, &["package", "show", "app"])["result"]["revision_count"],
+        "1"
+    );
+    json(&root, &["revision", "install", source.to_str().unwrap()]);
+    success(&root, &["instance", "delete", "worker"]);
+    assert_eq!(
+        json(&root, &["package", "delete", "app"])["result"]["outcome"],
+        "deleted"
+    );
+    assert_eq!(
+        json(&root, &["package", "list"])["result"]["items"],
+        serde_json::json!([])
+    );
+    let recreated = json(&root, &["revision", "install", source.to_str().unwrap()]);
+    assert_eq!(reference(&recreated), reference(&second));
+    assert_eq!(
+        call(&root, &["package", "show", "app"]).status.code(),
+        Some(1)
+    );
+    json(&root, &["revision", "delete", &reference(&recreated)]);
+    assert_eq!(
+        json(&root, &["package", "show", package])["result"]["revision_count"],
+        "0"
+    );
+    assert_eq!(
+        json(&root, &["package", "delete", package])["result"]["outcome"],
+        "deleted"
+    );
+    assert_eq!(
+        json(&root, &["package", "delete", package])["result"]["outcome"],
+        "already_absent"
+    );
+}
+
 // Test-ID: PR-TEST-0535
 // Verifies: PR-REQ-0353, PR-REQ-0088, PR-REQ-0118, PR-REQ-0253
 #[test]

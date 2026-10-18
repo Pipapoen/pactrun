@@ -5,8 +5,8 @@ title: System Model
 # System Model
 
 <!-- spec-navigation:start -->
-Pactrun installs Pack definitions as immutable Revisions and uses those
-Revisions to manage long-lived Instances. Packs declare operations; trusted
+Pactrun installs Revision Pack definitions as immutable Revisions and uses those
+Revisions to manage long-lived Instances. Revision Packs declare operations; trusted
 Hooks perform the service-specific work.
 
 ## Core objects {#reading-map-informative}
@@ -51,7 +51,7 @@ Action, Snapshot, Migration, persistence, compiler, or CLI semantics for a
 ## From Source to Instance
 
 ```text
-Mutable Package Source
+Mutable Revision Pack Source
         -> Revision Candidate
         -> validation and semantic normalization
         -> identity projection and runtime-content materialization
@@ -74,7 +74,7 @@ materialize owned runtime content, and commit an immutable Installed Revision.
 Only an Installed Revision may serve as the execution definition for an
 Instance.
 
-The [Pack source contract](../packages/source-format.md) defines the YAML frontend
+The [Revision Pack source contract](../packages/source-format.md) defines the YAML frontend
 and its Candidate projection. YAML is authoring input and MUST pass through the
 Candidate boundary rather than becoming an installed contract directly.
 
@@ -207,9 +207,9 @@ types MUST NOT become the source of Pactrun policy or identity semantics.
 ## Product-design constraints {#normative-product-design-constraints}
 
 - Pactrun MUST preserve a high ceiling and a low floor: metadata, one Action,
-  and one Hook are sufficient for the smallest useful Pack. Advanced
-  capabilities MUST NOT increase the minimum authoring burden for simple Packs.
-- Operations, diagnostics, Plans, and recovery guidance MUST let Pack users
+  and one Hook are sufficient for the smallest useful Revision Pack. Advanced
+  capabilities MUST NOT increase the minimum authoring burden for simple Revision Packs.
+- Operations, diagnostics, Plans, and recovery guidance MUST let Revision Pack users
   predict expected results, identify missing prerequisites, and understand
   available recovery actions.
 - Package contracts MUST NOT force authors to understand unnecessary internal

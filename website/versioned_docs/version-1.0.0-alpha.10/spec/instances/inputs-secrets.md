@@ -48,7 +48,7 @@ They are not interchangeable generic maps.
 
 ## Example: a live service configuration file {#informative-live-file-example}
 
-A Pack wrapping NetBird may declare a ServiceStorage-backed file resource with semantic
+A Revision Pack wrapping NetBird may declare a ServiceStorage-backed file resource with semantic
 identity `management_config`, associated with storage `netbird_state` and path
 `management.json`. The declaration may exist while the file is absent. The
 service may later create and continuously use the same file, and a user may
@@ -57,12 +57,12 @@ container recreation continues to use that one persistent resource without
 copying or rematerializing it.
 
 This case does not use `Input -> materialize -> synchronize`. The
-[Pack source](../packages/source-format.md) and [Revision baseline](../packages/revision-format.md)
+[Revision Pack source](../packages/source-format.md) and [Revision baseline](../packages/revision-format.md)
 own declarations and identity. The [Hook protocol](../interfaces/hook-protocol.md),
 [service execution](./service-storage.md), and
 [retirement](../lifecycle/retirement.md) own authority, continuity,
 retention and custody. This is a conceptual example, not an assertion that a
-particular NetBird Pack is distributed. It does not classify resources outside
+particular NetBird Revision Pack is distributed. It does not classify resources outside
 ServiceStorage.
 
 ### PR-REQ-0090 - Ordinary execution context

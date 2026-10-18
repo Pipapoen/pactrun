@@ -19,9 +19,9 @@ pub(crate) fn file_names(
         for name in platform::names(&directory, maximum)? {
             count = count
                 .checked_add(1)
-                .ok_or_else(|| io::Error::other("Pack entry overflow"))?;
+                .ok_or_else(|| io::Error::other("Revision Pack entry overflow"))?;
             if count > maximum {
-                return Err(io::Error::other("Pack entry limit exceeded"));
+                return Err(io::Error::other("Revision Pack entry limit exceeded"));
             }
             let relative = if prefix.is_empty() {
                 name.clone()
@@ -29,7 +29,7 @@ pub(crate) fn file_names(
                 format!("{prefix}/{name}")
             };
             if relative.len() > 1024 {
-                return Err(io::Error::other("Pack member path limit exceeded"));
+                return Err(io::Error::other("Revision Pack member path limit exceeded"));
             }
             let entry = platform::entry(&directory, &name)?;
             if entry.metadata()?.is_dir() {
@@ -51,7 +51,7 @@ mod platform {
             .into_iter()
             .map(|s| {
                 s.into_string()
-                    .map_err(|_| io::Error::other("non-UTF-8 Pack member"))
+                    .map_err(|_| io::Error::other("non-UTF-8 Revision Pack member"))
             })
             .collect()
     }
@@ -61,7 +61,7 @@ mod platform {
             let readable = pactrun_windows_ntfs::open_service_directory(root, name)?;
             if !pactrun_windows_ntfs::same_opened_object(&observed, &readable)? {
                 return Err(io::Error::other(
-                    "Pack directory changed during acquisition",
+                    "Revision Pack directory changed during acquisition",
                 ));
             }
             Ok(readable)
@@ -100,11 +100,13 @@ mod platform {
                 continue;
             }
             if names.len() >= maximum {
-                return Err(io::Error::other("Pack directory entry limit exceeded"));
+                return Err(io::Error::other(
+                    "Revision Pack directory entry limit exceeded",
+                ));
             }
             names.push(
                 std::str::from_utf8(n)
-                    .map_err(|_| io::Error::other("non-UTF-8 Pack member"))?
+                    .map_err(|_| io::Error::other("non-UTF-8 Revision Pack member"))?
                     .to_owned(),
             );
         }
@@ -125,7 +127,7 @@ mod platform {
             FileType::from_raw_mode(fstat(&opened)?.st_mode),
             FileType::RegularFile | FileType::Directory
         ) {
-            return Err(io::Error::other("unsupported Pack entry type"));
+            return Err(io::Error::other("unsupported Revision Pack entry type"));
         }
         Ok(File::from(opened))
     }
@@ -143,14 +145,14 @@ mod platform {
         ) {
             return Err(io::Error::new(
                 io::ErrorKind::Unsupported,
-                format!("unsupported Linux Pack source filesystem type 0x{filesystem:x}"),
+                format!("unsupported Linux Revision Pack source filesystem type 0x{filesystem:x}"),
             ));
         }
         let stat = fstat(&root)?;
         if FileType::from_raw_mode(stat.st_mode) != FileType::Directory {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidData,
-                "Pack source root is not a directory",
+                "Revision Pack source root is not a directory",
             ));
         }
         Ok(File::from(root))
@@ -233,4 +235,4 @@ mod platform {
 }
 
 #[cfg(not(any(windows, target_os = "linux")))]
-compile_error!("Pack source acquisition supports Windows and Linux only");
+compile_error!("Revision Pack source acquisition supports Windows and Linux only");

@@ -4,7 +4,7 @@ title: Authoring Model (moved)
 
 # Authoring Model has moved
 
-Read [Pack Authoring Model](../../spec/packages/authoring.md).
+Read [Revision Pack Authoring Model](../../spec/packages/authoring.md).
 
 ## Section links {#previous-section-links}
 
@@ -18,7 +18,7 @@ Read [Pack Authoring Model](../../spec/packages/authoring.md).
 [PR-REQ-0122 - Normalized projection boundary](../../spec/packages/authoring.md#pr-req-0122---normalized-projection-boundary)
 
 <a id="normalized-pack-definition" />
-[Normalized Pack Definition](../../spec/packages/authoring.md#normalized-pack-definition)
+[Normalized Revision Pack Definition](../../spec/packages/authoring.md#normalized-pack-definition)
 
 <a id="pr-req-0123---explicit-normalized-semantics" />
 [PR-REQ-0123 - Explicit normalized semantics](../../spec/packages/authoring.md#pr-req-0123---explicit-normalized-semantics)

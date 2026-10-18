@@ -1,9 +1,9 @@
-# Author a Pack
+# Author a Revision Pack {#author-a-pack}
 
-Start with the [Pack author guide](../package-authors/index.md).
+Start with the [Revision Pack author guide](../package-authors/index.md).
 Verify the installed executable before authoring setup. Follow the core route;
 Snapshot and Migration tutorials are independent optional exercises.
-Use [Pack fields](../package-authors/reference/pack-fields.md) for values and defaults,
+Use [Revision Pack fields](../package-authors/reference/pack-fields.md) for values and defaults,
 [source details](../package-authors/reference/source-format.md) for exact syntax,
 and [declaration types](../package-authors/reference/revision-format.md) for meaning.
 

@@ -216,9 +216,9 @@ impl Reply {
             || matches!(self.error.as_ref().and_then(|e|e.partial.as_ref()),Some(presentation::PartialResult::Publication(p)) if p.destination_published);
         if published {
             let warning = match self.command {
-                "revision export" => {
-                    Some("Exported Pack is unencrypted and may contain sensitive authored content.")
-                }
+                "revision export" => Some(
+                    "Exported Revision Pack is unencrypted and may contain sensitive authored content.",
+                ),
                 "snapshot export" => {
                     Some("Snapshot bundle is unencrypted and may contain sensitive data.")
                 }

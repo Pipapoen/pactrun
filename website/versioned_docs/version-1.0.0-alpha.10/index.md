@@ -16,8 +16,8 @@ or sharing. Revisions declare Actions, Snapshots, Migrations, and Cleanup.
 | --- | --- |
 | Get Pactrun ready to run | [Install and verify Pactrun](./guides/installation.md) |
 | Try an already verified executable | [First Instance](./introduction.md) |
-| Install and operate a Pack | [User guides](./guides/index.md) |
-| Write a Pack or Hook | [Pack author guide](./package-authors/index.md) |
+| Install and operate a Revision Pack | [User guides](./guides/index.md) |
+| Write a Revision Pack or Hook | [Revision Pack author guide](./package-authors/index.md) |
 | Look up commands and output | [Command reference](./pactrun-users/operations/command-and-output-reference.md) |
 | Understand an exact product rule | [Specification](./spec/index.md) |
 
@@ -36,7 +36,7 @@ the product rules; their maintainer sources are optional.
 
 ## Before using managed data
 
-Run only Packs whose Hooks you trust. Hooks execute host programs and can affect
+Run only Revision Packs whose Hooks you trust. Hooks execute host programs and can affect
 service data. Use a separate storage root for experiments, inspect plans, and
 keep independent backups of important service data.
 

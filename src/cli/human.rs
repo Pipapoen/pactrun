@@ -821,7 +821,7 @@ pub(super) fn render(
             write(
                 out,
                 if command == "revision export" {
-                    "Pack exported."
+                    "Revision Pack exported."
                 } else {
                     "Snapshot exported."
                 },

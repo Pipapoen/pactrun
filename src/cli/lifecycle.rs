@@ -1,7 +1,25 @@
 use super::*;
-use crate::domain::{ObjectDeletion, ObjectDeletionResult};
+use crate::domain::{LocalSelector, ObjectDeletion, ObjectDeletionResult, PackageId};
+
+pub(super) enum PackageReference {
+    Exact(PackageId),
+    Named(LocalSelector),
+}
+
+pub(super) fn parse_package_delete(parser: &mut Parser) -> Result<LifecycleCommand, CliError> {
+    let value = required_value_string(parser, "Package reference")?;
+    let reference = match value.parse() {
+        Ok(id) => PackageReference::Exact(id),
+        Err(_) => PackageReference::Named(
+            LocalSelector::parse(value).map_err(|e| CliError::usage(e.to_string()))?,
+        ),
+    };
+    require_end(parser)?;
+    Ok(LifecycleCommand::Package(reference))
+}
 
 pub(super) enum LifecycleCommand {
+    Package(PackageReference),
     Collect {
         plan: bool,
     },
@@ -14,6 +32,7 @@ pub(super) enum LifecycleCommand {
 impl LifecycleCommand {
     pub(super) fn resolve_ids(&mut self, r: &mut short_ids::Resolver<'_>) -> Result<(), CliError> {
         match self {
+            Self::Package(reference) => r.package(reference),
             Self::Run { run, .. } => run.resolve(r),
             Self::Revision(v) => r.revision(v),
             _ => Ok(()),
@@ -65,6 +84,10 @@ pub(super) fn execute(
     }
     let app = PactrunApplication::open(root).map_err(app_error)?;
     let target = match command {
+        LifecycleCommand::Package(PackageReference::Exact(id)) => ObjectDeletion::Package(id),
+        LifecycleCommand::Package(PackageReference::Named(_)) => {
+            unreachable!("Package resolution precedes execution")
+        }
         LifecycleCommand::Collect { .. } => unreachable!(),
         LifecycleCommand::Run {
             run,
@@ -79,6 +102,7 @@ pub(super) fn execute(
         }),
     };
     let name = match target {
+        ObjectDeletion::Package(_) => "package delete",
         ObjectDeletion::Run { .. } => "run delete",
         ObjectDeletion::Revision(_) => "revision delete",
         _ => unreachable!(),

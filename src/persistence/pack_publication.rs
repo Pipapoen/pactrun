@@ -1,4 +1,4 @@
-//! Pack installation policy is resolved inside the authoritative transaction.
+//! Revision Pack installation policy is resolved inside the authoritative transaction.
 use super::{AcceptanceArbiter, AcceptanceCommitResult, PactrunPersistence, PersistenceError};
 use crate::domain::*;
 use rusqlite::{Transaction, TransactionBehavior};
@@ -9,12 +9,12 @@ pub(super) fn commit_install(
 ) -> Result<(), PersistenceError> {
     match cancellation.before_durable_acceptance(|| {
         tx.commit()
-            .map_err(|e| PersistenceError::sqlite("commit Pack installation", e))
+            .map_err(|e| PersistenceError::sqlite("commit Revision Pack installation", e))
     }) {
         AcceptanceCommitResult::Committed(result) => result,
         AcceptanceCommitResult::Uncertain(error) => Err(error),
         AcceptanceCommitResult::Cancelled => Err(PersistenceError::Io {
-            operation: "Pack installation cancelled before publication",
+            operation: "Revision Pack installation cancelled before publication",
             source: std::io::Error::from(std::io::ErrorKind::Interrupted),
         }),
     }
@@ -129,7 +129,7 @@ impl PactrunPersistence {
             stage
                 .finish_operation_file()
                 .map_err(|source| PersistenceError::Io {
-                    operation: "finish Pack export content",
+                    operation: "finish Revision Pack export content",
                     source,
                 })?;
             blobs.insert(

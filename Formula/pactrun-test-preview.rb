@@ -2,9 +2,9 @@ class PactrunTestPreview < Formula
   desc 'Pactrun immutable revisions and managed instances'
   homepage 'https://github.com/Pipapoen/pactrun'
   license 'MIT'
-  url 'https://github.com/Pipapoen/pactrun/releases/download/v1.0.0-alpha.10/pactrun-test-1.0.0-alpha.10-linux-x86_64.tar.gz'
-  version '1.0.0-alpha.10'
-  sha256 '12b3a00646de0092b811d76ad7ba293cc11d6263bbfff233c7c3dc22162b8f65'
+  url 'https://github.com/Pipapoen/pactrun/releases/download/v1.0.0-alpha.11/pactrun-test-1.0.0-alpha.11-linux-x86_64.tar.gz'
+  version '1.0.0-alpha.11'
+  sha256 '15696ae04ad212fd6d0567afa5d83481138d3dc421e390d29edfa86810d7ff8d'
   depends_on :linux
   depends_on arch: :x86_64
   def install

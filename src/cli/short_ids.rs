@@ -220,6 +220,17 @@ impl<'a> Resolver<'a> {
         }
         Ok(self.application.as_ref().expect("opened read-only"))
     }
+    pub(super) fn package(
+        &mut self,
+        reference: &mut lifecycle::PackageReference,
+    ) -> Result<(), CliError> {
+        if let lifecycle::PackageReference::Named(name) = reference {
+            let id = self.app()?.resolve_named_package(name).map_err(app_error)?;
+            *reference = lifecycle::PackageReference::Exact(id);
+        }
+        Ok(())
+    }
+
     pub(super) fn revision(&mut self, reference: &mut RevisionReference) -> Result<(), CliError> {
         if let RevisionReference::Named(named) = reference {
             let (package, revision) = named.components();

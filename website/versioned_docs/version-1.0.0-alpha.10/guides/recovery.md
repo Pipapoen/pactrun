@@ -20,7 +20,7 @@ pactrun run show <run-id>
 
 Read the committed Revision, recovery guard, terminal outcome, and available
 diagnostics. Do not infer success from an exit message or progress event alone.
-Use the Pack author's procedure to inspect the actual service and backups.
+Use the Revision Pack author's procedure to inspect the actual service and backups.
 
 ## Reconcile a lost execution owner
 
@@ -57,7 +57,7 @@ and, when available, `migration_progress`; do not assume every failure has the
 same result wrapper or that a null progress means all earlier work rolled back.
 The reported guard is current state, not a preserved copy of the historical
 blocking guard; it may have changed or been cleared since that Run failed.
-Check the last committed boundary and current Instance, then follow the Pack's
+Check the last committed boundary and current Instance, then follow the Revision Pack's
 service-specific recovery procedure. Neither an explanatory error nor a
 successful repair Action automatically authorizes retry or clears an old guard.
 

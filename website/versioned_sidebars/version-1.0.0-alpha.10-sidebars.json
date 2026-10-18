@@ -64,7 +64,7 @@
     },
     {
       "type": "category",
-      "label": "Pack authors",
+      "label": "Revision Pack authors",
       "items": [
         "package-authors/index",
         "package-authors/setup",

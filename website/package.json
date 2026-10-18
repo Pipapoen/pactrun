@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node scripts/prepare-text.mjs && docusaurus start",
     "build": "pnpm test:docs && node scripts/prepare-text.mjs && docusaurus build",
-    "test:docs": "node --test scripts/text-docs.test.mjs scripts/spec-docs.test.mjs scripts/catalog.test.mjs scripts/tutorial-setup.test.mjs scripts/role-reading.test.mjs scripts/reader-transform.test.mjs scripts/reading-order.test.mjs scripts/versioning.test.mjs",
+    "test:docs": "node --test scripts/text-docs.test.mjs scripts/spec-docs.test.mjs scripts/catalog.test.mjs scripts/tutorial-setup.test.mjs scripts/role-reading.test.mjs scripts/reader-transform.test.mjs scripts/reading-order.test.mjs scripts/versioning.test.mjs scripts/terminology.test.mjs",
     "serve": "docusaurus serve",
     "clear": "docusaurus clear",
     "typecheck": "tsc --noEmit",

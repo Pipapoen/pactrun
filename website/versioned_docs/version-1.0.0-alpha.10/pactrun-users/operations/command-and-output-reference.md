@@ -22,7 +22,7 @@ For Action parameter syntax, timeouts, defaults, and examples, read the
 
 | Task | Commands | Procedure |
 | --- | --- | --- |
-| Install or export a Revision | pack, revision | [Pack management](../../guides/pack-management.md) |
+| Install or export a Revision | `revision` | [Package and Revision management](../../guides/pack-management.md) |
 | Create and inspect Instances | instance create/list/show | [First Instance](../../introduction.md) |
 | Supply or export configuration | input | [Inputs](../../guides/configure-inputs.md) |
 | Execute and inspect operations | action, invoke, run | [Actions and diagnostics](../../guides/run-and-diagnose.md) |

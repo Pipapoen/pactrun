@@ -6,7 +6,7 @@ title: Configure Inputs and Secrets
 
 Use this procedure for an existing Instance. Replace example names and paths
 with identifiers declared by its Revision.
-If you do not have one, [install a supplied Pack and create an Instance](./use-pack.md)
+If you do not have one, [install a supplied Revision Pack and create an Instance](./use-pack.md)
 first. The empty first-Instance tutorial has no Inputs and its example is retired
 at the end; do not assume it provides this page's `demo` or `config`.
 

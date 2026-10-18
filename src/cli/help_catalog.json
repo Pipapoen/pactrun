@@ -420,7 +420,7 @@
       "description": "Install a Revision from a Revision Pack; does not create an Instance or start a service.",
       "forms": [
         {
-          "usage": "pactrun revision install <directory-or-pack-file> [--package-name <name>] [--revision-name <name>] [--metadata-conflict overwrite|keep]",
+          "usage": "pactrun revision install <path> [--package-name <name>] [--revision-name <name>] [--metadata-conflict overwrite|keep]",
           "description": "Validate the Revision Pack and install its version in the declared Package."
         }
       ],
@@ -438,7 +438,7 @@
       "path": [
         "package"
       ],
-      "description": "Inspect product lineages, generate Package IDs and manage local names.",
+      "description": "Inspect or delete product lineages, generate Package IDs and manage local names.",
       "forms": [],
       "options": [],
       "notes": [],
@@ -455,6 +455,19 @@
       "description": "Show a Package ID, local name and installed Revision count.",
       "forms": [{"usage": "pactrun package show <package>", "description": "Select a Package by ID, unique ID prefix or local name."}],
       "options": [], "notes": [], "examples": ["pactrun package show app"]
+    },
+    {
+      "path": ["package", "delete"],
+      "description": "Delete a Package and all its installed Revisions after checking every Revision's retention requirements.",
+      "forms": [{"usage": "pactrun package delete <package>", "description": "Select a Package by ID, unique prefix or local name. Any retained Revision blocks the entire deletion."}],
+      "options": [],
+      "notes": [
+        "Package identity, local name and all installed Revisions are removed atomically. Instance use, Run pins, service associations and recovery requirements can block deletion.",
+        "This does not retire Instances or delete service data, Run history or Snapshots. Shared content follows ordinary garbage collection.",
+        "Restoring a retained Snapshot still requires its exact producer Revision; keep the matching Revision Pack for reinstallation.",
+        "A missing complete Package ID succeeds without deleting anything. Use revision delete to remove one version while keeping the Package."
+      ],
+      "examples": ["pactrun package delete app"]
     },
     {
       "path": [
@@ -615,11 +628,11 @@
         "revision",
         "export"
       ],
-      "description": "Export an installed Revision as a portable .pack archive.",
+      "description": "Export an installed Revision as a portable Revision Pack.",
       "forms": [
         {
           "usage": "pactrun revision export <revision-reference> --output <base-path> [--include-portable-metadata]",
-          "description": "Export an installed Revision as a portable .pack archive."
+          "description": "Export an installed Revision as a portable Revision Pack."
         }
       ],
       "options": [
@@ -1240,7 +1253,7 @@
       "path": [
         "action"
       ],
-      "description": "Inspect Pack-defined Actions and parameters.",
+      "description": "Inspect Revision Pack-defined Actions and parameters.",
       "forms": [],
       "options": [],
       "notes": [],
@@ -1513,11 +1526,11 @@
         "snapshot",
         "capture"
       ],
-      "description": "Execute the Pack-defined capture capability to create a Snapshot.",
+      "description": "Execute the Revision Pack-defined capture capability to create a Snapshot.",
       "forms": [
         {
           "usage": "pactrun snapshot capture <instance> [execution-options]",
-          "description": "Execute the Pack-defined capture capability to create a Snapshot."
+          "description": "Execute the Revision Pack-defined capture capability to create a Snapshot."
         }
       ],
       "options": [
@@ -1541,11 +1554,11 @@
         "snapshot",
         "restore"
       ],
-      "description": "Execute the Pack-defined restore capability against a selected Snapshot.",
+      "description": "Execute the Revision Pack-defined restore capability against a selected Snapshot.",
       "forms": [
         {
           "usage": "pactrun snapshot restore <instance> <snapshot-id> [execution-options]",
-          "description": "Execute the Pack-defined restore capability against a selected Snapshot."
+          "description": "Execute the Revision Pack-defined restore capability against a selected Snapshot."
         }
       ],
       "options": [

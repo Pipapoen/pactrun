@@ -10,13 +10,13 @@ installed Revision and configured with its own Inputs.
 
 ## From source to Instance
 
-1. The author provides Pack source or a supported distribution with an explicit Package identity.
+1. The author provides Revision Pack source or a supported distribution with an explicit Package identity.
 2. Installation validates the definition, acquires its runtime files, and computes
    or verifies the exact Revision identity.
 3. Creating an Instance selects an installed Revision.
 4. Subsequent operations use that installed Revision, even if the source folder changes.
 
-Editing a Pack directory does not update an existing Instance. Install the new
+Editing a Revision Pack directory does not update an existing Instance. Install the new
 source, then use an authored [Migration path](../operations/snapshots-migrations-and-recovery.md#migrate-to-a-new-revision)
 where appropriate. A new Revision by itself does not prove a safe transition.
 

@@ -4,12 +4,12 @@ title: Installing the First Revision
 
 # Installing the First Revision
 
-You have a Pack source in `pack/`, but Pactrun has not installed it yet.
+You have a Revision Pack source in `pack/`, but Pactrun has not installed it yet.
 Installation checks the source and saves its management definition and runtime
 content as an immutable **Revision** in the default Store. It does not create
 an Instance or run a program.
 
-## Install the Pack source
+## Install the Revision Pack source {#install-the-pack-source}
 
 From your `hello-pack-tutorial` working directory, make sure you replaced the
 placeholder Package ID in `pack/pactrun.yaml` with the ID you generated. Then run:

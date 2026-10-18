@@ -37,8 +37,13 @@ separately checks ready-work draining and cancellation between durable steps.
 Process and filesystem tests need a supported persistent filesystem. Keep test
 outputs in the workspace. The full gate uses pinned cargo-nextest with the `ci`
 profile in `.config/nextest.toml`, and separately runs workspace doctests.
-Each test gets its own process. Process/I/O and Windows console groups have
-additional concurrency limits; explicit concurrency tests retain their internal
+Each test gets its own process. Process/I/O and Windows shell/console groups have
+additional concurrency limits. Windows Shell Loader and console fixtures share
+one slot so unrelated PowerShell startup load does not consume their operation
+deadlines. The binary Snapshot round trip reserves all test slots on Windows
+so its PowerShell 5.1 startup and JSON parsing also run without unrelated Hook
+fixtures competing for the runner; stage timings remain in its captured output.
+Explicit concurrency tests retain their internal
 competing processes. No automatic test retries are enabled.
 
 Before a full nextest run, `tools/verify_test_inventory.py` compares Cargo's
@@ -119,7 +124,7 @@ uses the runner's explicit `--public-source` and `--public-version` options;
 it is not implied by a default fixture pass. See [delivery tools](../tools/README.md)
 for the candidate build and publication boundary.
 
-The runner selects a fixture Pack source format from the selected releases'
+The runner selects a fixture Revision Pack source format from the selected releases'
 advertised common support. Its unchanged-Store-header and baseline-reinstall
 checks require identical Persistence defaults; incompatible matrices are rejected
 before creating the rehearsal directory or starting a package manager.
@@ -146,13 +151,13 @@ For the alpha.4-to-alpha.5 Store transition, add `--store-upgrade` and
 Persistence alpha.1-to-alpha.4 upgrade, unchanged Instance/Revision identities
 and runtime bytes, continued execution of the installed Hook, old-reader refusal
 without Store changes, and candidate reinstall after uninstall. It prepares the
-Pack with the baseline source format, then reinstalls the same Revision using
+Revision Pack with the baseline source format, then reinstalls the same Revision using
 the candidate source format. It does not require an old executable to read the
 upgraded Store or combine with public-source acquisition.
 
 For alpha.7-to-alpha.8 qualification, use `--store-upgrade --versions
 1.0.0-alpha.7 1.0.0-alpha.8`. This explicitly rehearses Persistence
-`1.0-alpha.5` to `1.0-alpha.6`, preserves the supported legacy Pack source and
+`1.0-alpha.5` to `1.0-alpha.6`, preserves the supported legacy Revision Pack source and
 its immutable Revision, and retains the same old-reader-refusal, separate test
 Store, uninstall/reinstall and data-preservation assertions.
 

@@ -42,7 +42,7 @@ Every baseline table MUST be `STRICT` and `WITHOUT ROWID`. Package IDs MUST be B
 of exactly 16 bytes; Revision and runtime blob digests MUST be BLOBs of exactly
 32 bytes. Schema validation MUST verify the actual tables, columns, constraints,
 primary keys, foreign keys, and table options rather than trusting version
-markers alone. Any supported internal persistence evolution is independent from Pack-defined
+markers alone. Any supported internal persistence evolution is independent from Revision Pack-defined
 Revision Migration and MUST preserve existing Pactrun identities.
 
 **Verification: PR-TEST-0052, PR-TEST-0056.**

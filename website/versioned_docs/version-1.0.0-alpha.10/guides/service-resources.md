@@ -6,7 +6,7 @@ title: Inspect service resources
 
 ServiceStorage holds service-authoritative live data. An Input is a detached
 managed value; Workspace is scratch. Choose the correct area before accessing data.
-You need a [live Instance](./use-pack.md) whose Pack declares service resources.
+You need a [live Instance](./use-pack.md) whose Revision Pack declares service resources.
 If its resource list is empty, this procedure does not apply. The empty first
 Instance example does not supply a `database` resource.
 

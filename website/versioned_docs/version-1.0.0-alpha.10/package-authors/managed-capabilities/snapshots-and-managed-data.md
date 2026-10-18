@@ -38,7 +38,7 @@ do not search internal Pactrun storage for files.
 
 Explain whether the service must be stopped and which data is overwritten.
 Snapshot verification checks stored content integrity; application-level validity
-requires the Pack's own checks.
+requires the Revision Pack's own checks.
 
 ## Failure and security
 
@@ -51,7 +51,7 @@ storage and transport requirements. Export authorization does not encrypt a bund
 
 ## Acceptance exercise
 
-For a real service Pack, configure Inputs, create known service data and Capture
+For a real service Revision Pack, configure Inputs, create known service data and Capture
 a consistent Snapshot in disposable storage. Export both the Snapshot and the
 exact installed Revision. Import into a **new store where the Snapshot is absent**
 and Restore into a compatible test Instance. Compare the restored state and Run
@@ -59,7 +59,7 @@ outcome. An `already_present` import is a duplicate-import check, not evidence o
 fresh-store reconstruction. The worked example below gives this sequence for
 fixed demo bytes and a separate incompatible-Revision refusal.
 
-More detail: [Pack fields and values](../reference/pack-fields.md).
+More detail: [Revision Pack fields and values](../reference/pack-fields.md).
 
 <details>
 <summary>Maintainer sources (optional)</summary>
@@ -193,7 +193,7 @@ Write-Output 'Verified snapshot bytes'
 
 ### Exercise Capture and Restore
 
-Install the example Pack:
+Install the example Revision Pack:
 
 ```text
 pactrun revision install ./snapshot-demo --package-name snapshot-example --revision-name initial
@@ -222,7 +222,7 @@ the original store. It does not yet prove recovery from exported files.
 
 The original root is still `./store`. Export the exact installed Revision so
 that recovery does not depend on recreating source files or their line endings.
-A Snapshot bundle does not include the Pack's executable runtime content.
+A Snapshot bundle does not include the Revision Pack's executable runtime content.
 
 ```text
 pactrun revision export <snapshot-reference> --output ./snapshot-pack
@@ -260,7 +260,7 @@ printf '%s\n' "$PACTRUN_STORAGE_ROOT"
 ```
 
 The printed root must end in `recovery-store`. Keep the source store intact.
-Install the exported Pack into the new store, then inspect its empty Snapshot list:
+Install the exported Revision Pack into the new store, then inspect its empty Snapshot list:
 
 ```text
 pactrun revision install ./snapshot-pack.pack --package-name snapshot-example --revision-name initial

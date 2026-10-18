@@ -56,7 +56,7 @@ export PACTRUN_STORAGE_ROOT="$PWD/pactrun-data"
 
 Selecting a location does not create an Instance or service files. A missing
 Store is prepared when first needed for writing. Continue with
-[installing a supplied Pack](./use-pack.md).
+[installing a supplied Revision Pack](./use-pack.md).
 
 ## Select an existing compatible store
 

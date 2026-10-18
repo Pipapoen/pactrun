@@ -4,7 +4,7 @@ title: Snapshot Commands
 
 # Snapshot Commands
 
-Capture and Restore execute Pack capabilities. Listing, inspection, verification,
+Capture and Restore execute Revision Pack capabilities. Listing, inspection, verification,
 and transport are management operations; they do not launch a Hook.
 
 ### PR-REQ-0301 - Snapshot command syntax {#pr-req-0301---m4-human-command-spelling}

@@ -54,9 +54,9 @@ terminal. Restore its previous value or close the terminal after the exercise.
 
 ## Continue
 
-The [first Pack tutorial](./fundamentals/authoring-model.md) supplies a complete
-manifest and script for each platform, then installs and runs the Pack. Use
-[Pack fields](./reference/pack-fields.md) when changing declarations. Keep only
+The [first Revision Pack tutorial](./fundamentals/authoring-model.md) supplies a complete
+manifest and script for each platform, then installs and runs the Revision Pack. Use
+[Revision Pack fields](./reference/pack-fields.md) when changing declarations. Keep only
 synthetic data in this workspace and inspect a retirement plan before cleanup.
 
 For container-backed services, review the
@@ -66,4 +66,4 @@ Hook does not prove that Pactrun can reclaim foreign-owned service directories.
 
 **Done:** `pactrun-demo/pack` exists, the selected store is isolated, and this
 terminal can run the verified executable. Creating the directories has not yet
-installed a Pack or created an Instance.
+installed a Revision Pack or created an Instance.

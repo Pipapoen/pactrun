@@ -74,7 +74,7 @@ Object member order and insignificant whitespace are not contractual. Consumers
 MUST tolerate additional object members. Removing or changing the type or meaning
 of existing members, requiredness or existing enum values requires an explicit
 interface version change. The CLI version is independent of product, persistence,
-Pack, Core, Snapshot and Hook versions.
+Revision Pack, Core, Snapshot and Hook versions.
 
 **Verification: PR-TEST-0554, PR-TEST-0556, PR-TEST-0557, PR-TEST-0558, PR-TEST-0559, PR-TEST-0560, PR-TEST-0562, PR-TEST-0563, PR-TEST-0564, PR-TEST-0565, PR-TEST-0566, PR-TEST-0567, PR-TEST-0568, PR-TEST-0569.**
 

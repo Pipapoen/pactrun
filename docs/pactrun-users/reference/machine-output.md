@@ -78,7 +78,7 @@ Object member order and insignificant whitespace are not contractual. Consumers
 MUST tolerate additional object members. Removing or changing the type or meaning
 of existing members, requiredness or existing enum values requires an explicit
 interface version change. The CLI version is independent of product, persistence,
-Pack, Core, Snapshot and Hook versions.
+Revision Pack, Core, Snapshot and Hook versions.
 
 Failure projections expose nullable `detail`. The two Core-owned initialization
 errors defined by PR-REQ-0361/0362 and `service_storage:allocation_unavailable`

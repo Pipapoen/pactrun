@@ -12,8 +12,8 @@ pub(crate) struct OperationSourceCandidate {
 }
 
 pub(crate) fn parse(bytes: &[u8]) -> Result<OperationSourceCandidate, AuthoringError> {
-    let text =
-        std::str::from_utf8(bytes).map_err(|_| AuthoringError::new("Pack source must be UTF-8"))?;
+    let text = std::str::from_utf8(bytes)
+        .map_err(|_| AuthoringError::new("Revision Pack source must be UTF-8"))?;
     reject_forbidden_tokens(text)?;
     let document = parse_document(text)?;
     let Node::Mapping(fields) = &document else {
@@ -33,7 +33,12 @@ pub(crate) fn parse(bytes: &[u8]) -> Result<OperationSourceCandidate, AuthoringE
     } else {
         &["source_format", "package_id", "revision", "runtime_content"]
     };
-    let mut root = closed_map(document, required, &["portable_metadata"], "Pack source")?;
+    let mut root = closed_map(
+        document,
+        required,
+        &["portable_metadata"],
+        "Revision Pack source",
+    )?;
     if version != OPERATION_SOURCE_FORMAT && !nested {
         return Err(AuthoringError::new(
             "expected Source 1.0-alpha.3 or 1.0-alpha.4",

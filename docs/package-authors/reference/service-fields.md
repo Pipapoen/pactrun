@@ -8,7 +8,7 @@ This page uses Source `1.0-alpha.4`. Use ServiceStorage for service-owned live d
 configuration bytes. Neither a resource declaration nor a successful command
 means the service is healthy, stopped, backed up, or coherent.
 
-This page complements [Pack fields](./pack-fields.md).
+This page complements [Revision Pack fields](./pack-fields.md).
 [Declaration types and identity](./revision-format.md) provides the complete
 mapping and validation details within this author section.
 

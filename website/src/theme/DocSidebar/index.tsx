@@ -7,9 +7,9 @@ import {useEdition} from '../../lib/edition';
 export default function DocSidebar(props: Props): ReactNode {
   const {docBase: base} = useEdition();
   const role = readerRole(props.path, base);
-  const labels = {Users: 'Users', Authors: 'Pack authors'};
+  const labels = {Users: ['Users'], Authors: ['Revision Pack authors', 'Pack authors']};
   const sidebar = role ? props.sidebar
-    .filter(item => item.type === 'category' && item.label === labels[role])
+    .filter(item => item.type === 'category' && labels[role].includes(item.label))
     .map(item => item.type === 'category' ? {...item, collapsed: false} : item) : props.sidebar;
   // Reinitialize category expansion for the new document's active ancestors.
   return <OriginalSidebar key={props.path} {...props} sidebar={sidebar} />;
